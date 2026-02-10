@@ -32,7 +32,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
+        constraints: const BoxConstraints(maxWidth: 640),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(

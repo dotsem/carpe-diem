@@ -10,7 +10,9 @@ class PriorityPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: Priority.values.map((p) {
         final isSelected = p == selected;
         return Padding(

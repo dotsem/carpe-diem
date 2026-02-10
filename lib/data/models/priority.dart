@@ -29,6 +29,6 @@ enum Priority {
     Priority.low => Icons.signal_cellular_alt_1_bar_rounded,
     Priority.medium => Icons.signal_cellular_alt_2_bar_rounded,
     Priority.high => Icons.signal_cellular_alt_rounded,
-    Priority.urgent => Icons.warning_amber_rounded,
+    Priority.urgent => Icons.warning,
   };
 }

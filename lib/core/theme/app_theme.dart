@@ -12,7 +12,7 @@ class AppColors {
   static const error = Color(0xFFCF6679);
   static const success = Color(0xFF4CAF50);
 
-  static const priorityUrgent = Color(0xFF6200FF);
+  static const priorityUrgent = Color(0xFF8800FF);
   static const priorityHigh = Color(0xFFE53935);
   static const priorityMedium = Color(0xFFFFA726);
   static const priorityLow = Color(0xFF66BB6A);
