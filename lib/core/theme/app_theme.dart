@@ -9,7 +9,7 @@ class AppColors {
   static const textSecondary = Color(0xFFB0B0B0);
   static const accent = Color(0xFFFF7B00);
   static const accentLight = Color(0xFFFF9F40);
-  static const error = Color(0xFFCF6679);
+  static const error = Color.fromARGB(255, 238, 70, 101);
   static const success = Color(0xFF4CAF50);
 
   static const priorityUrgent = Color(0xFF8800FF);

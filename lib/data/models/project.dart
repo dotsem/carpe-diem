@@ -8,8 +8,9 @@ class Project {
   final Color color;
   final Priority priority;
   final DateTime createdAt;
+  final DateTime? updatedAt;
 
-  const Project({required this.id, required this.name, this.description, required this.color, this.priority = Priority.none, required this.createdAt});
+  const Project({required this.id, required this.name, this.description, required this.color, this.priority = Priority.none, required this.createdAt, this.updatedAt});
 
   Map<String, dynamic> toMap() => {'id': id, 'name': name, 'description': description, 'color': color.toARGB32(), 'priority': priority.index, 'createdAt': createdAt.toIso8601String()};
 
@@ -20,8 +21,9 @@ class Project {
     color: Color(map['color'] as int),
     priority: Priority.values[map['priority'] as int],
     createdAt: DateTime.parse(map['createdAt'] as String),
+    updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt'] as String) : null,
   );
 
   Project copyWith({String? name, String? description, Color? color, Priority? priority}) =>
-      Project(id: id, name: name ?? this.name, description: description ?? this.description, color: color ?? this.color, priority: priority ?? this.priority, createdAt: createdAt);
+      Project(id: id, name: name ?? this.name, description: description ?? this.description, color: color ?? this.color, priority: priority ?? this.priority, createdAt: createdAt, updatedAt: updatedAt);
 }
