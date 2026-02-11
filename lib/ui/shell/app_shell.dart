@@ -38,8 +38,7 @@ class _SideNav extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Icon(Icons.wb_sunny_rounded, color: AppColors.accent, size: 28),
-                const SizedBox(width: 10),
+                Image.asset('assets/images/logo.png', width: 48),
                 Text(
                   'Carpe Diem',
                   style: Theme.of(
