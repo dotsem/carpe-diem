@@ -1,3 +1,5 @@
+import 'package:carpe_diem/data/models/project.dart';
+import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
 import 'package:carpe_diem/ui/widgets/project_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +72,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
         return Padding(
           padding: const EdgeInsets.all(32),
-          child: Wrap(spacing: 16, runSpacing: 16, children: provider.projects.map((p) => ProjectCard(project: p)).toList()),
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: provider.projects.map((p) => ProjectCard(project: p, onTap: () => _showEditProject(context, p))).toList(),
+          ),
         );
       },
     );
@@ -80,6 +86,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     showDialog(
       context: context,
       builder: (_) => ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const AddProjectDialog()),
+    );
+  }
+
+  void _showEditProject(BuildContext context, Project project) {
+    showDialog(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<ProjectProvider>(),
+        child: EditProjectDialog(project: project),
+      ),
     );
   }
 }

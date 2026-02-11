@@ -1,14 +1,12 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/project.dart';
-import 'package:carpe_diem/providers/project_provider.dart';
-import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
+  final VoidCallback? onTap;
 
-  const ProjectCard({super.key, required this.project});
+  const ProjectCard({super.key, required this.project, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +18,7 @@ class ProjectCard extends StatelessWidget {
           side: BorderSide(color: project.priority.color),
         ),
         child: InkWell(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (_) => ChangeNotifierProvider.value(
-                value: context.read<ProjectProvider>(),
-                child: EditProjectDialog(project: project),
-              ),
-            );
-          },
+          onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(20),
