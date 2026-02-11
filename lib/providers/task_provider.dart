@@ -10,11 +10,13 @@ class TaskProvider extends ChangeNotifier {
 
   List<Task> _tasks = [];
   List<Task> _overdueTasks = [];
+  List<Task> _unscheduledTasks = [];
   bool _isLoading = false;
   DateTime _currentDate = DateTime.now();
 
   List<Task> get tasks => _tasks;
   List<Task> get overdueTasks => _overdueTasks;
+  List<Task> get unscheduledTasks => _unscheduledTasks;
   bool get isLoading => _isLoading;
 
   Future<void> loadTasksForDate(DateTime date) async {
@@ -28,10 +30,19 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadUnscheduledTasks() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _unscheduledTasks = await _repo.getUnscheduled();
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> addTask({
     required String title,
     String? description,
-    required DateTime scheduledDate,
+    DateTime? scheduledDate,
     String? projectId,
     Priority priority = Priority.none,
   }) async {
@@ -39,39 +50,45 @@ class TaskProvider extends ChangeNotifier {
       id: _uuid.v4(),
       title: title,
       description: description,
-      scheduledDate: _normalizeDate(scheduledDate),
+      scheduledDate: scheduledDate != null ? _normalizeDate(scheduledDate) : null,
       projectId: projectId,
       priority: priority,
       createdAt: DateTime.now(),
     );
     await _repo.insert(task);
     await loadTasksForDate(_currentDate);
+    await loadUnscheduledTasks();
   }
 
   Future<void> toggleComplete(Task task) async {
     final updated = task.copyWith(isCompleted: !task.isCompleted);
     await _repo.update(updated);
-    await loadTasksForDate(_currentDate);
+    await _refreshAll();
   }
 
   Future<void> updateTask(Task task) async {
     await _repo.update(task);
-    await loadTasksForDate(_currentDate);
+    await _refreshAll();
   }
 
   Future<void> deleteTask(Task task) async {
     await _repo.delete(task.id);
-    await loadTasksForDate(_currentDate);
+    await _refreshAll();
   }
 
   Future<void> rescheduleOverdue(Task task, DateTime newDate) async {
     final updated = task.copyWith(scheduledDate: _normalizeDate(newDate));
     await _repo.update(updated);
-    await loadTasksForDate(_currentDate);
+    await _refreshAll();
   }
 
   Future<List<Task>> getTasksForProject(String projectId) async {
     return _repo.getByProject(projectId);
+  }
+
+  Future<void> _refreshAll() async {
+    await loadTasksForDate(_currentDate);
+    await loadUnscheduledTasks();
   }
 
   DateTime _normalizeDate(DateTime date) => DateTime(date.year, date.month, date.day);

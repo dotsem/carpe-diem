@@ -24,7 +24,7 @@ class DatabaseHelper {
     final dir = await getApplicationDocumentsDirectory();
     final path = join(dir.path, AppConstants.dbName);
 
-    return openDatabase(path, version: AppConstants.dbVersion, onCreate: _onCreate);
+    return openDatabase(path, version: AppConstants.dbVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
   }
 
   static Future<void> _onCreate(Database db, int version) async {
@@ -44,7 +44,7 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         description TEXT,
-        scheduledDate TEXT NOT NULL,
+        scheduledDate TEXT,
         isCompleted INTEGER NOT NULL DEFAULT 0,
         projectId TEXT,
         priority INTEGER NOT NULL DEFAULT 0,
@@ -52,5 +52,30 @@ class DatabaseHelper {
         FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
       )
     ''');
+  }
+
+  static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _migrateV1ToV2(db);
+    }
+  }
+
+  static Future<void> _migrateV1ToV2(Database db) async {
+    await db.execute('''
+      CREATE TABLE tasks_new (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        scheduledDate TEXT,
+        isCompleted INTEGER NOT NULL DEFAULT 0,
+        projectId TEXT,
+        priority INTEGER NOT NULL DEFAULT 0,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
+      )
+    ''');
+    await db.execute('INSERT INTO tasks_new SELECT * FROM tasks');
+    await db.execute('DROP TABLE tasks');
+    await db.execute('ALTER TABLE tasks_new RENAME TO tasks');
   }
 }

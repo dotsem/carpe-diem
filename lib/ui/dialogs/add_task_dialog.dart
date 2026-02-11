@@ -8,10 +8,10 @@ import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  final DateTime initialDate;
+  final DateTime? initialDate;
   final String? initialProjectId;
 
-  const AddTaskDialog({super.key, required this.initialDate, this.initialProjectId});
+  const AddTaskDialog({super.key, this.initialDate, this.initialProjectId});
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -20,7 +20,7 @@ class AddTaskDialog extends StatefulWidget {
 class _AddTaskDialogState extends State<AddTaskDialog> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  late DateTime _selectedDate;
+  DateTime? _selectedDate;
   String? _selectedProjectId;
   Priority _priority = Priority.none;
 
@@ -78,14 +78,21 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: _DatePickerButton(date: _selectedDate, maxDate: _maxDate, onChanged: (d) => setState(() => _selectedDate = d)),
+                    child: _DatePickerButton(
+                      date: _selectedDate,
+                      maxDate: _maxDate,
+                      onChanged: (d) => setState(() => _selectedDate = d),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   if (projects.isNotEmpty)
                     Expanded(
                       child: DropdownButtonFormField<String?>(
                         initialValue: _selectedProjectId,
-                        decoration: const InputDecoration(hintText: 'Project', contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
+                        decoration: const InputDecoration(
+                          hintText: 'Project',
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
                         dropdownColor: AppColors.surfaceLight,
                         items: [
                           const DropdownMenuItem(value: null, child: Text('No project')),
@@ -131,15 +138,21 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
 
-    context.read<TaskProvider>().addTask(title: title, description: _descController.text.trim().isEmpty ? null : _descController.text.trim(), scheduledDate: _selectedDate, projectId: _selectedProjectId, priority: _priority);
+    context.read<TaskProvider>().addTask(
+      title: title,
+      description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+      scheduledDate: _selectedDate,
+      projectId: _selectedProjectId,
+      priority: _priority,
+    );
     Navigator.of(context).pop();
   }
 }
 
 class _DatePickerButton extends StatelessWidget {
-  final DateTime date;
+  final DateTime? date;
   final DateTime maxDate;
-  final ValueChanged<DateTime> onChanged;
+  final ValueChanged<DateTime?> onChanged;
 
   const _DatePickerButton({required this.date, required this.maxDate, required this.onChanged});
 
@@ -147,7 +160,12 @@ class _DatePickerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        final picked = await showDatePicker(context: context, initialDate: date, firstDate: DateTime.now(), lastDate: maxDate);
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime.now(),
+          firstDate: DateTime.now(),
+          lastDate: maxDate,
+        );
         if (picked != null) onChanged(picked);
       },
       borderRadius: BorderRadius.circular(8),
@@ -158,7 +176,17 @@ class _DatePickerButton extends StatelessWidget {
           children: [
             const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
             const SizedBox(width: 8),
-            Text('${date.day}/${date.month}/${date.year}', style: const TextStyle(color: AppColors.text)),
+            Text(
+              date != null ? '${date!.day}/${date!.month}/${date!.year}' : 'No date',
+              style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
+            ),
+            if (date != null) ...[
+              const Spacer(),
+              GestureDetector(
+                onTap: () => onChanged(null),
+                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+              ),
+            ],
           ],
         ),
       ),

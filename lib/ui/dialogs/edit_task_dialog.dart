@@ -1,3 +1,4 @@
+import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/task.dart';
@@ -19,6 +20,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   late Priority _priority;
+  DateTime? _scheduledDate;
 
   @override
   void initState() {
@@ -26,7 +28,10 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     _nameController.text = widget.task.title;
     _descController.text = widget.task.description ?? '';
     _priority = widget.task.priority;
+    _scheduledDate = widget.task.scheduledDate;
   }
+
+  DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +65,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
               Text('Priority', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
               PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
+              const SizedBox(height: 16),
+              _buildDatePicker(context),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -93,6 +100,44 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     );
   }
 
+  Widget _buildDatePicker(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _scheduledDate ?? DateTime.now(),
+          firstDate: DateTime.now(),
+          lastDate: _maxDate,
+        );
+        if (picked != null) setState(() => _scheduledDate = picked);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(8)),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
+            const SizedBox(width: 8),
+            Text(
+              _scheduledDate != null
+                  ? '${_scheduledDate!.day}/${_scheduledDate!.month}/${_scheduledDate!.year}'
+                  : 'No date',
+              style: TextStyle(color: _scheduledDate != null ? AppColors.text : AppColors.textSecondary),
+            ),
+            if (_scheduledDate != null) ...[
+              const Spacer(),
+              GestureDetector(
+                onTap: () => setState(() => _scheduledDate = null),
+                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   void _submit() {
     if (_nameController.text.trim().isEmpty) return;
     context.read<TaskProvider>().updateTask(
@@ -100,6 +145,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
         title: _nameController.text.trim(),
         description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
         priority: _priority,
+        scheduledDate: _scheduledDate,
+        clearScheduledDate: _scheduledDate == null,
       ),
     );
     Navigator.of(context).pop();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carpe_diem/ui/screens/home_screen.dart';
 import 'package:carpe_diem/ui/screens/projects_screen.dart';
+import 'package:carpe_diem/ui/screens/task_screen.dart';
 import 'package:carpe_diem/ui/shell/app_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -22,6 +23,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/projects',
           pageBuilder: (context, state) => const NoTransitionPage(child: ProjectsScreen()),
+        ),
+        GoRoute(
+          path: '/tasks',
+          pageBuilder: (context, state) => const NoTransitionPage(child: TaskScreen()),
         ),
       ],
     ),

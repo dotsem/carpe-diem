@@ -42,14 +42,32 @@ class _SideNav extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   'Carpe Diem',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 40),
-          _NavItem(icon: Icons.today_rounded, label: 'Today', isSelected: currentPath == '/', onTap: () => context.go('/')),
-          _NavItem(icon: Icons.folder_rounded, label: 'Projects', isSelected: currentPath == '/projects', onTap: () => context.go('/projects')),
+          _NavItem(
+            icon: Icons.today_rounded,
+            label: 'Today',
+            isSelected: currentPath == '/',
+            onTap: () => context.go('/'),
+          ),
+          _NavItem(
+            icon: Icons.inbox_rounded,
+            label: 'Backlog',
+            isSelected: currentPath == '/tasks',
+            onTap: () => context.go('/tasks'),
+          ),
+          _NavItem(
+            icon: Icons.folder_rounded,
+            label: 'Projects',
+            isSelected: currentPath == '/projects',
+            onTap: () => context.go('/projects'),
+          ),
         ],
       ),
     );
@@ -82,7 +100,10 @@ class _NavItem extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   label,
-                  style: TextStyle(color: isSelected ? AppColors.accent : AppColors.textSecondary, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal),
+                  style: TextStyle(
+                    color: isSelected ? AppColors.accent : AppColors.textSecondary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
                 ),
               ],
             ),

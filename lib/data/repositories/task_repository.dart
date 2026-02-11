@@ -14,20 +14,41 @@ class TaskRepository {
   Future<List<Task>> getByDate(DateTime date) async {
     final db = await _db;
     final dateStr = DateTime(date.year, date.month, date.day).toIso8601String();
-    final maps = await db.query('tasks', where: 'scheduledDate = ?', whereArgs: [dateStr], orderBy: 'priority DESC, createdAt DESC');
+    final maps = await db.query(
+      'tasks',
+      where: 'scheduledDate = ?',
+      whereArgs: [dateStr],
+      orderBy: 'priority DESC, createdAt DESC',
+    );
     return maps.map(Task.fromMap).toList();
   }
 
   Future<List<Task>> getOverdue(DateTime today) async {
     final db = await _db;
     final dateStr = DateTime(today.year, today.month, today.day).toIso8601String();
-    final maps = await db.query('tasks', where: 'scheduledDate < ? AND isCompleted = 0', whereArgs: [dateStr], orderBy: 'priority DESC, scheduledDate ASC');
+    final maps = await db.query(
+      'tasks',
+      where: 'scheduledDate IS NOT NULL AND scheduledDate < ? AND isCompleted = 0',
+      whereArgs: [dateStr],
+      orderBy: 'priority DESC, scheduledDate ASC',
+    );
+    return maps.map(Task.fromMap).toList();
+  }
+
+  Future<List<Task>> getUnscheduled() async {
+    final db = await _db;
+    final maps = await db.query('tasks', where: 'scheduledDate IS NULL', orderBy: 'priority DESC, createdAt DESC');
     return maps.map(Task.fromMap).toList();
   }
 
   Future<List<Task>> getByProject(String projectId) async {
     final db = await _db;
-    final maps = await db.query('tasks', where: 'projectId = ?', whereArgs: [projectId], orderBy: 'priority DESC, scheduledDate ASC');
+    final maps = await db.query(
+      'tasks',
+      where: 'projectId = ?',
+      whereArgs: [projectId],
+      orderBy: 'priority DESC, scheduledDate ASC',
+    );
     return maps.map(Task.fromMap).toList();
   }
 
