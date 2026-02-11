@@ -5,6 +5,7 @@ import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/color_picker.dart';
+import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class AddProjectDialog extends StatefulWidget {
   const AddProjectDialog({super.key});
@@ -28,52 +29,44 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return SizedDialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('New Project', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'Project name'),
+            style: const TextStyle(color: AppColors.text),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _descController,
+            decoration: const InputDecoration(hintText: 'Description (optional)'),
+            style: const TextStyle(color: AppColors.text),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 16),
+          Text('Color', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          ProjectColorPicker(selected: _selectedColor, onChanged: (c) => setState(() => _selectedColor = c)),
+          const SizedBox(height: 16),
+          Text('Priority', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text('New Project', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _nameController,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: 'Project name'),
-                style: const TextStyle(color: AppColors.text),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _descController,
-                decoration: const InputDecoration(hintText: 'Description (optional)'),
-                style: const TextStyle(color: AppColors.text),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              Text('Color', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              ProjectColorPicker(selected: _selectedColor, onChanged: (c) => setState(() => _selectedColor = c)),
-              const SizedBox(height: 16),
-              Text('Priority', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                  const SizedBox(width: 12),
-                  FilledButton(onPressed: _submit, child: const Text('Create Project')),
-                ],
-              ),
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+              const SizedBox(width: 12),
+              FilledButton(onPressed: _submit, child: const Text('Create Project')),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -82,7 +75,12 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    context.read<ProjectProvider>().addProject(name: name, description: _descController.text.trim().isEmpty ? null : _descController.text.trim(), color: _selectedColor, priority: _priority);
+    context.read<ProjectProvider>().addProject(
+      name: name,
+      description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+      color: _selectedColor,
+      priority: _priority,
+    );
     Navigator.of(context).pop();
   }
 }
