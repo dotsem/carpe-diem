@@ -45,7 +45,7 @@ class TaskProvider extends ChangeNotifier {
       createdAt: DateTime.now(),
     );
     await _repo.insert(task);
-    await loadTasksForDate(scheduledDate);
+    await loadTasksForDate(_currentDate);
   }
 
   Future<void> toggleComplete(Task task) async {
