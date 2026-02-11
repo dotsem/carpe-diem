@@ -1,3 +1,4 @@
+import 'package:carpe_diem/ui/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -80,37 +81,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 ),
               ),
               const SizedBox(width: 12),
-              if (projects.isNotEmpty)
-                Expanded(
-                  child: DropdownButtonFormField<String?>(
-                    initialValue: _selectedProjectId,
-                    decoration: const InputDecoration(
-                      hintText: 'Project',
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    ),
-                    dropdownColor: AppColors.surfaceLight,
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('No project')),
-                      ...projects.map(
-                        (p) => DropdownMenuItem(
-                          value: p.id,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(color: p.color, shape: BoxShape.circle),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(p.name),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                    onChanged: (v) => setState(() => _selectedProjectId = v),
-                  ),
-                ),
+              ProjectPicker(
+                projects: projects,
+                selectedProjectId: _selectedProjectId,
+                onChanged: (id) => setState(() => _selectedProjectId = id),
+              ),
             ],
           ),
           const SizedBox(height: 24),
