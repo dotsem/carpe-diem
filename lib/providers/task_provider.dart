@@ -105,5 +105,32 @@ class TaskProvider extends ChangeNotifier {
     await _refreshAll();
   }
 
+  Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
+    final tasks = _parseMarkdown(markdown);
+    for (final task in tasks) {
+      await _repo.insert(task.copyWith(projectId: projectId));
+    }
+    await _refreshAll();
+  }
+
+  List<Task> _parseMarkdown(String markdown) {
+    final tasks = <Task>[];
+    final lines = markdown.split('\n');
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) continue;
+
+      if ((trimmed.startsWith('- [ ]') || trimmed.startsWith('- ')) && !trimmed.startsWith('- [x]')) {
+        final match = RegExp(r'^- \[?(x|\s)?\]?\s+(.*)$').firstMatch(trimmed);
+        if (match != null) {
+          final isCompleted = match.group(1) == 'x';
+          final title = match.group(2)!.trim();
+          tasks.add(Task(id: _uuid.v4(), title: title, isCompleted: isCompleted, createdAt: DateTime.now()));
+        }
+      }
+    }
+    return tasks;
+  }
+
   DateTime _normalizeDate(DateTime date) => DateTime(date.year, date.month, date.day);
 }

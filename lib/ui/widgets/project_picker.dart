@@ -16,32 +16,30 @@ class _ProjectPickerState extends State<ProjectPicker> {
   @override
   Widget build(BuildContext context) {
     return (widget.projects.isNotEmpty)
-        ? Expanded(
-            child: DropdownButtonFormField<String?>(
-              initialValue: widget.selectedProjectId,
-              decoration: _inputDecoration(),
-              dropdownColor: AppColors.surfaceLight,
-              items: [
-                const DropdownMenuItem(value: null, child: Text('No project')),
-                ...widget.projects.map(
-                  (p) => DropdownMenuItem(
-                    value: p.id,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(color: p.color, shape: BoxShape.circle),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(p.name),
-                      ],
-                    ),
+        ? DropdownButtonFormField<String?>(
+            initialValue: widget.selectedProjectId,
+            decoration: _inputDecoration(),
+            dropdownColor: AppColors.surfaceLight,
+            items: [
+              const DropdownMenuItem(value: null, child: Text('No project')),
+              ...widget.projects.map(
+                (p) => DropdownMenuItem(
+                  value: p.id,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(color: p.color, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(p.name),
+                    ],
                   ),
                 ),
-              ],
-              onChanged: (v) => widget.onChanged(v),
-            ),
+              ),
+            ],
+            onChanged: (v) => widget.onChanged(v),
           )
         : Expanded(
             child: DropdownButtonFormField<String?>(

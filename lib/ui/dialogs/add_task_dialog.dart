@@ -81,10 +81,12 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 ),
               ),
               const SizedBox(width: 12),
-              ProjectPicker(
-                projects: projects,
-                selectedProjectId: _selectedProjectId,
-                onChanged: (id) => setState(() => _selectedProjectId = id),
+              Expanded(
+                child: ProjectPicker(
+                  projects: projects,
+                  selectedProjectId: _selectedProjectId,
+                  onChanged: (id) => setState(() => _selectedProjectId = id),
+                ),
               ),
             ],
           ),

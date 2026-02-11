@@ -5,8 +5,15 @@ class SizedDialog extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
   final double maxWidth;
+  final double? minWidth;
 
-  const SizedDialog({super.key, required this.child, this.padding = const EdgeInsets.all(24), this.maxWidth = 640});
+  const SizedDialog({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(24),
+    this.maxWidth = 640,
+    this.minWidth,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +22,7 @@ class SizedDialog extends StatelessWidget {
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       content: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
+        constraints: BoxConstraints(maxWidth: maxWidth, minWidth: minWidth ?? 0),
         child: Padding(padding: padding!, child: child),
       ),
     );

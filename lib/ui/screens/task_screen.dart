@@ -1,6 +1,7 @@
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/import_from_md_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -50,6 +51,8 @@ class _TaskScreenState extends State<TaskScreen> {
             ],
           ),
           const Spacer(),
+          FilledButton.icon(onPressed: () => _showImportFromMD(context), label: const Text('Import from MD')),
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => _showAddTask(context),
             icon: const Icon(Icons.add),
@@ -135,6 +138,16 @@ class _TaskScreenState extends State<TaskScreen> {
           value: context.read<ProjectProvider>(),
           child: EditTaskDialog(task: task),
         ),
+      ),
+    );
+  }
+
+  void _showImportFromMD(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<TaskProvider>(),
+        child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const ImportFromMDDialog()),
       ),
     );
   }
