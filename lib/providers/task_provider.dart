@@ -11,6 +11,7 @@ class TaskProvider extends ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _overdueTasks = [];
   bool _isLoading = false;
+  DateTime _currentDate = DateTime.now();
 
   List<Task> get tasks => _tasks;
   List<Task> get overdueTasks => _overdueTasks;
@@ -18,17 +19,31 @@ class TaskProvider extends ChangeNotifier {
 
   Future<void> loadTasksForDate(DateTime date) async {
     _isLoading = true;
+    _currentDate = _normalizeDate(date);
     notifyListeners();
 
-    final normalized = _normalizeDate(date);
-    _tasks = await _repo.getByDate(normalized);
-    _overdueTasks = await _repo.getOverdue(normalized);
+    _tasks = await _repo.getByDate(_currentDate);
+    _overdueTasks = await _repo.getOverdue(_currentDate);
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> addTask({required String title, String? description, required DateTime scheduledDate, String? projectId, Priority priority = Priority.none}) async {
-    final task = Task(id: _uuid.v4(), title: title, description: description, scheduledDate: _normalizeDate(scheduledDate), projectId: projectId, priority: priority, createdAt: DateTime.now());
+  Future<void> addTask({
+    required String title,
+    String? description,
+    required DateTime scheduledDate,
+    String? projectId,
+    Priority priority = Priority.none,
+  }) async {
+    final task = Task(
+      id: _uuid.v4(),
+      title: title,
+      description: description,
+      scheduledDate: _normalizeDate(scheduledDate),
+      projectId: projectId,
+      priority: priority,
+      createdAt: DateTime.now(),
+    );
     await _repo.insert(task);
     await loadTasksForDate(scheduledDate);
   }
@@ -36,23 +51,23 @@ class TaskProvider extends ChangeNotifier {
   Future<void> toggleComplete(Task task) async {
     final updated = task.copyWith(isCompleted: !task.isCompleted);
     await _repo.update(updated);
-    await loadTasksForDate(task.scheduledDate);
+    await loadTasksForDate(_currentDate);
   }
 
   Future<void> updateTask(Task task) async {
     await _repo.update(task);
-    await loadTasksForDate(task.scheduledDate);
+    await loadTasksForDate(_currentDate);
   }
 
   Future<void> deleteTask(Task task) async {
     await _repo.delete(task.id);
-    await loadTasksForDate(task.scheduledDate);
+    await loadTasksForDate(_currentDate);
   }
 
   Future<void> rescheduleOverdue(Task task, DateTime newDate) async {
     final updated = task.copyWith(scheduledDate: _normalizeDate(newDate));
     await _repo.update(updated);
-    await loadTasksForDate(newDate);
+    await loadTasksForDate(_currentDate);
   }
 
   Future<List<Task>> getTasksForProject(String projectId) async {

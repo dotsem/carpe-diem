@@ -23,8 +23,20 @@ class ProjectProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addProject({required String name, String? description, required Color color, Priority priority = Priority.none}) async {
-    final project = Project(id: _uuid.v4(), name: name, description: description, color: color, priority: priority, createdAt: DateTime.now());
+  Future<void> addProject({
+    required String name,
+    String? description,
+    required Color color,
+    Priority priority = Priority.none,
+  }) async {
+    final project = Project(
+      id: _uuid.v4(),
+      name: name,
+      description: description,
+      color: color,
+      priority: priority,
+      createdAt: DateTime.now(),
+    );
     await _repo.insert(project);
     await loadProjects();
   }
@@ -34,8 +46,8 @@ class ProjectProvider extends ChangeNotifier {
     await loadProjects();
   }
 
-  Future<void> deleteProject(String id) async {
-    await _repo.delete(id);
+  Future<void> deleteProject(Project project) async {
+    await _repo.delete(project.id);
     await loadProjects();
   }
 

@@ -8,10 +8,10 @@ class TaskCard extends StatelessWidget {
   final Project? project;
   final VoidCallback onToggle;
   final VoidCallback onTap;
-  final VoidCallback? onDelete;
+  final Widget? trailing;
   final bool isOverdue;
 
-  const TaskCard({super.key, required this.task, this.project, required this.onToggle, required this.onTap, this.onDelete, this.isOverdue = false});
+  const TaskCard({super.key, required this.task, this.project, required this.onToggle, required this.onTap, this.trailing, this.isOverdue = false});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class TaskCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (onDelete != null) IconButton(icon: const Icon(Icons.close, size: 18), color: AppColors.textSecondary, onPressed: onDelete),
+                ?trailing,
               ],
             ),
           ),

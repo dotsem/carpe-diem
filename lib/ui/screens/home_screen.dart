@@ -1,3 +1,5 @@
+import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -62,13 +64,25 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_isToday ? 'Today' : _dateFormat.format(_selectedDate), style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                _isToday ? 'Today' : _dateFormat.format(_selectedDate),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
-              Text(_isToday ? _dateFormat.format(_selectedDate) : '${_normalizedSelected.difference(DateTime(_today.year, _today.month, _today.day)).inDays} days from now', style: const TextStyle(color: AppColors.textSecondary)),
+              Text(
+                _isToday
+                    ? _dateFormat.format(_selectedDate)
+                    : '${_normalizedSelected.difference(DateTime(_today.year, _today.month, _today.day)).inDays} days from now',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
             ],
           ),
           const Spacer(),
-          FilledButton.icon(onPressed: () => _showAddTask(context), icon: const Icon(Icons.add), label: const Text('Add Task')),
+          FilledButton.icon(
+            onPressed: () => _showAddTask(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Task'),
+          ),
         ],
       ),
     );
@@ -95,15 +109,25 @@ class _HomeScreenState extends State<HomeScreen> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 width: 52,
-                decoration: BoxDecoration(color: isSelected ? AppColors.accent : AppColors.surface, borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.accent : AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(dayOfWeek, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : AppColors.textSecondary)),
+                    Text(
+                      dayOfWeek,
+                      style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : AppColors.textSecondary),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       '${day.day}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : AppColors.text),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.white : AppColors.text,
+                      ),
                     ),
                   ],
                 ),
@@ -133,7 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
                 const SizedBox(height: 16),
-                Text(_isToday ? 'No tasks for today' : 'No tasks scheduled', style: const TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+                Text(
+                  _isToday ? 'No tasks for today' : 'No tasks scheduled',
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                ),
                 const SizedBox(height: 8),
                 TextButton(onPressed: () => _showAddTask(context), child: const Text('Add your first task')),
               ],
@@ -147,23 +174,52 @@ class _HomeScreenState extends State<HomeScreen> {
             if (overdue.isNotEmpty && _isToday) ...[
               Text(
                 'Overdue',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               ...overdue.map(
-                (task) =>
-                    TaskCard(task: task, project: task.projectId != null ? projectProvider.getById(task.projectId!) : null, isOverdue: true, onToggle: () => provider.toggleComplete(task), onTap: () {}, onDelete: () => provider.deleteTask(task)),
+                (task) => TaskCard(
+                  task: task,
+                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+                  isOverdue: true,
+                  onToggle: () => provider.toggleComplete(task),
+                  onTap: () {},
+                  trailing: _taskTrailing(context, task),
+                ),
               ),
               const SizedBox(height: 20),
             ],
             if (tasks.isNotEmpty) ...[
               Text('Tasks', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              ...tasks.map((task) => TaskCard(task: task, project: task.projectId != null ? projectProvider.getById(task.projectId!) : null, onToggle: () => provider.toggleComplete(task), onTap: () {}, onDelete: () => provider.deleteTask(task))),
+              ...tasks.map(
+                (task) => TaskCard(
+                  task: task,
+                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+                  onToggle: () => provider.toggleComplete(task),
+                  onTap: () {},
+                  trailing: _taskTrailing(context, task),
+                ),
+              ),
             ],
           ],
         );
       },
+    );
+  }
+
+  Widget _taskTrailing(BuildContext context, Task task) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.edit, size: 18),
+          color: AppColors.textSecondary,
+          onPressed: () => _showEditTask(context, task),
+        ),
+      ],
     );
   }
 
@@ -175,6 +231,19 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ChangeNotifierProvider.value(
           value: context.read<ProjectProvider>(),
           child: AddTaskDialog(initialDate: _selectedDate),
+        ),
+      ),
+    );
+  }
+
+  void _showEditTask(BuildContext context, Task task) {
+    showDialog(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<TaskProvider>(),
+        child: ChangeNotifierProvider.value(
+          value: context.read<ProjectProvider>(),
+          child: EditTaskDialog(task: task),
         ),
       ),
     );

@@ -1,34 +1,32 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
-import 'package:carpe_diem/data/models/project.dart';
+import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
+import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/delete_dialog.dart';
-import 'package:carpe_diem/ui/widgets/color_picker.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class EditProjectDialog extends StatefulWidget {
-  final Project project;
-  const EditProjectDialog({super.key, required this.project});
+class EditTaskDialog extends StatefulWidget {
+  final Task task;
+  const EditTaskDialog({super.key, required this.task});
 
   @override
-  State<EditProjectDialog> createState() => _EditProjectDialogState();
+  State<EditTaskDialog> createState() => _EditTaskDialogState();
 }
 
-class _EditProjectDialogState extends State<EditProjectDialog> {
+class _EditTaskDialogState extends State<EditTaskDialog> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  late Color _selectedColor;
   late Priority _priority;
 
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.project.name;
-    _descController.text = widget.project.description ?? '';
-    _selectedColor = widget.project.color;
-    _priority = widget.project.priority;
+    _nameController.text = widget.task.title;
+    _descController.text = widget.task.description ?? '';
+    _priority = widget.task.priority;
   }
 
   @override
@@ -44,12 +42,12 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Edit Project', style: Theme.of(context).textTheme.titleLarge),
+              Text('Edit Task', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 20),
               TextField(
                 controller: _nameController,
                 autofocus: true,
-                decoration: const InputDecoration(hintText: 'Project name'),
+                decoration: const InputDecoration(hintText: 'Task name'),
                 style: const TextStyle(color: AppColors.text),
               ),
               const SizedBox(height: 12),
@@ -59,10 +57,6 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                 style: const TextStyle(color: AppColors.text),
                 maxLines: 2,
               ),
-              const SizedBox(height: 16),
-              Text('Color', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              ProjectColorPicker(selected: _selectedColor, onChanged: (c) => setState(() => _selectedColor = c)),
               const SizedBox(height: 16),
               Text('Priority', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
@@ -75,11 +69,11 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                     onPressed: () => showDialog(
                       context: context,
                       builder: (context) => DeleteDialog(
-                        title: 'Delete Project',
-                        message: 'Are you sure you want to delete this project?',
+                        title: 'Delete Task',
+                        message: 'Are you sure you want to delete this task?',
                         onConfirm: () {
                           Navigator.of(context).pop();
-                          context.read<ProjectProvider>().deleteProject(widget.project);
+                          context.read<TaskProvider>().deleteTask(widget.task);
                         },
                       ),
                     ),
@@ -101,19 +95,14 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   }
 
   void _submit() {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) return;
-
-    final project = Project(
-      id: widget.project.id,
-      name: name,
-      description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
-      color: _selectedColor,
-      priority: _priority,
-      createdAt: widget.project.createdAt,
-      updatedAt: DateTime.now(),
+    if (_nameController.text.trim().isEmpty) return;
+    context.read<TaskProvider>().updateTask(
+      widget.task.copyWith(
+        title: _nameController.text.trim(),
+        description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+        priority: _priority,
+      ),
     );
-    context.read<ProjectProvider>().updateProject(project);
     Navigator.of(context).pop();
   }
 }
