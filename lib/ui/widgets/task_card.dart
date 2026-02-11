@@ -10,8 +10,20 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onTap;
   final Widget? trailing;
   final bool isOverdue;
+  final bool selectionMode;
+  final bool isSelected;
 
-  const TaskCard({super.key, required this.task, this.project, required this.onToggle, required this.onTap, this.trailing, this.isOverdue = false});
+  const TaskCard({
+    super.key,
+    required this.task,
+    this.project,
+    required this.onToggle,
+    required this.onTap,
+    this.trailing,
+    this.isOverdue = false,
+    this.selectionMode = false,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +35,13 @@ class TaskCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            gradient: project?.color != null ? LinearGradient(colors: [AppColors.surface, project!.color], begin: Alignment.center, end: Alignment.centerRight) : null,
+            gradient: project?.color != null
+                ? LinearGradient(
+                    colors: [AppColors.surface, project!.color],
+                    begin: Alignment.center,
+                    end: Alignment.centerRight,
+                  )
+                : null,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -31,7 +49,7 @@ class TaskCard extends StatelessWidget {
               children: [
                 _priorityIndicator(),
                 const SizedBox(width: 8),
-                Checkbox(value: task.isCompleted, onChanged: (_) => onToggle()),
+                Checkbox(value: selectionMode ? isSelected : task.isCompleted, onChanged: (_) => onToggle()),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(
@@ -39,7 +57,12 @@ class TaskCard extends StatelessWidget {
                     children: [
                       Text(
                         task.title,
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, decoration: task.isCompleted ? TextDecoration.lineThrough : null, color: task.isCompleted ? AppColors.textSecondary : AppColors.text),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          decoration: (!selectionMode && task.isCompleted) ? TextDecoration.lineThrough : null,
+                          color: (task.isCompleted && !selectionMode) ? AppColors.textSecondary : AppColors.text,
+                        ),
                       ),
                       if (task.description != null && task.description!.isNotEmpty)
                         Padding(

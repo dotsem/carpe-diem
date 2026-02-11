@@ -1,5 +1,6 @@
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/pick_tasks_from_backlog_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -78,6 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const Spacer(),
+          FilledButton.icon(
+            onPressed: () => _showPickTasksFromBacklog(context),
+            icon: const Icon(Icons.inbox_rounded),
+            label: const Text('Pick Tasks from Backlog'),
+          ),
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => _showAddTask(context),
             icon: const Icon(Icons.add),
@@ -247,5 +254,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _showPickTasksFromBacklog(BuildContext context) {
+    showDialog(context: context, builder: (_) => PickTaskFromBacklogDialog());
   }
 }

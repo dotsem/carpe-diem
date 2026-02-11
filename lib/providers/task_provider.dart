@@ -86,9 +86,23 @@ class TaskProvider extends ChangeNotifier {
     return _repo.getByProject(projectId);
   }
 
+  Future<List<Task>> getBacklog() async {
+    return _repo.getUnscheduled();
+  }
+
   Future<void> _refreshAll() async {
     await loadTasksForDate(_currentDate);
     await loadUnscheduledTasks();
+  }
+
+  Future<void> scheduleTasksForToday(List<String> taskIds) async {
+    final today = _normalizeDate(DateTime.now());
+    for (final id in taskIds) {
+      final task = _tasks.firstWhere((t) => t.id == id, orElse: () => _unscheduledTasks.firstWhere((t) => t.id == id));
+      final updated = task.copyWith(scheduledDate: today);
+      await _repo.update(updated);
+    }
+    await _refreshAll();
   }
 
   DateTime _normalizeDate(DateTime date) => DateTime(date.year, date.month, date.day);
