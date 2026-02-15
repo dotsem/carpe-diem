@@ -12,6 +12,7 @@ class TaskCard extends StatelessWidget {
   final bool isOverdue;
   final bool selectionMode;
   final bool isSelected;
+  final void Function(Offset localPosition, RenderBox renderBox)? onContextMenu;
 
   const TaskCard({
     super.key,
@@ -23,6 +24,7 @@ class TaskCard extends StatelessWidget {
     this.isOverdue = false,
     this.selectionMode = false,
     this.isSelected = false,
+    this.onContextMenu,
   });
 
   @override
@@ -31,6 +33,9 @@ class TaskCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
         onTap: onTap,
+        onSecondaryTapDown: onContextMenu != null
+            ? (details) => onContextMenu!(details.localPosition, context.findRenderObject() as RenderBox)
+            : null,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           decoration: BoxDecoration(

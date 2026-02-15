@@ -44,7 +44,12 @@ class ProjectCard extends StatelessWidget {
                       width: 24,
                       height: 24,
                       decoration: BoxDecoration(color: AppColors.surfaceLight, shape: BoxShape.circle),
-                      child: Icon(project.priority.icon, size: 16, color: project.priority.color, semanticLabel: project.priority.name),
+                      child: Icon(
+                        project.priority.icon,
+                        size: 16,
+                        color: project.priority.color,
+                        semanticLabel: project.priority.name,
+                      ),
                     ),
                   ],
                 ),

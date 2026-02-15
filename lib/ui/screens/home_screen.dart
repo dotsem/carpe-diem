@@ -193,6 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   isOverdue: true,
                   onToggle: () => provider.toggleComplete(task),
                   onTap: () {},
+                  onContextMenu: (localPosition, renderBox) =>
+                      _showContextMenu(context, task, localPosition, renderBox),
                   trailing: _taskTrailing(context, task),
                 ),
               ),
@@ -207,6 +209,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
                   onToggle: () => provider.toggleComplete(task),
                   onTap: () {},
+                  onContextMenu: (localPosition, renderBox) =>
+                      _showContextMenu(context, task, localPosition, renderBox),
                   trailing: _taskTrailing(context, task),
                 ),
               ),
@@ -225,6 +229,36 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: const Icon(Icons.edit, size: 18),
           color: AppColors.textSecondary,
           onPressed: () => _showEditTask(context, task),
+        ),
+      ],
+    );
+  }
+
+  void _showContextMenu(BuildContext context, Task task, Offset localPosition, RenderBox renderBox) {
+    final provider = context.read<TaskProvider>();
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    final Offset position = renderBox.localToGlobal(localPosition, ancestor: overlay);
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(Rect.fromLTWH(position.dx, position.dy, 0, 0), Offset.zero & overlay.size),
+      items: [
+        PopupMenuItem(
+          onTap: () => provider.scheduleTasksForTomorrow([task.id]),
+          child: const ListTile(leading: Icon(Icons.today), title: Text('Reschedule for Tomorrow'), dense: true),
+        ),
+        PopupMenuItem(
+          onTap: () => _showEditTask(context, task),
+          child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
+        ),
+        PopupMenuItem(
+          onTap: () => provider.deleteTask(task),
+          child: const ListTile(
+            leading: Icon(Icons.delete, color: AppColors.error),
+            title: Text('Delete', style: TextStyle(color: AppColors.error)),
+            dense: true,
+          ),
         ),
       ],
     );
