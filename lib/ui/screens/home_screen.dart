@@ -246,7 +246,11 @@ class _HomeScreenState extends State<HomeScreen> {
       items: [
         PopupMenuItem(
           onTap: () => provider.scheduleTasksForTomorrow([task.id]),
-          child: const ListTile(leading: Icon(Icons.today), title: Text('Reschedule for Tomorrow'), dense: true),
+          child: const ListTile(
+            leading: Icon(Icons.next_plan_outlined),
+            title: Text('Reschedule for Tomorrow'),
+            dense: true,
+          ),
         ),
         PopupMenuItem(
           onTap: () => _showEditTask(context, task),

@@ -123,6 +123,14 @@ class _TaskScreenState extends State<TaskScreen> {
           child: const ListTile(leading: Icon(Icons.today), title: Text('Schedule for Today'), dense: true),
         ),
         PopupMenuItem(
+          onTap: () => provider.scheduleTasksForTomorrow([task.id]),
+          child: const ListTile(
+            leading: Icon(Icons.next_plan_outlined),
+            title: Text('Schedule for Tomorrow'),
+            dense: true,
+          ),
+        ),
+        PopupMenuItem(
           onTap: () => _showEditTask(context, task),
           child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
         ),
