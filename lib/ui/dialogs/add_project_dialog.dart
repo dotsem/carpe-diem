@@ -1,3 +1,4 @@
+import 'package:carpe_diem/ui/widgets/context_menu/label_context_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -5,6 +6,7 @@ import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/color_picker.dart';
+import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class AddProjectDialog extends StatefulWidget {
@@ -19,6 +21,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   final _descController = TextEditingController();
   Color _selectedColor = AppColors.accent;
   Priority _priority = Priority.none;
+  String? _selectedLabelId;
 
   @override
   void dispose() {
@@ -57,6 +60,10 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           Text('Priority', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
           PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
+          const SizedBox(height: 16),
+          Text('Label', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          LabelPicker(selectedLabelId: _selectedLabelId, onSelected: (id) => setState(() => _selectedLabelId = id)),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -80,6 +87,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
       description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
       color: _selectedColor,
       priority: _priority,
+      labelId: _selectedLabelId,
     );
     Navigator.of(context).pop();
   }

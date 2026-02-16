@@ -35,7 +35,17 @@ class DatabaseHelper {
         description TEXT,
         color INTEGER NOT NULL,
         priority INTEGER NOT NULL DEFAULT 0,
-        createdAt TEXT NOT NULL
+        labelId TEXT,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE SET NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE labels (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        color INTEGER NOT NULL
       )
     ''');
 
@@ -58,6 +68,20 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await _migrateV1ToV2(db);
     }
+    if (oldVersion < 3) {
+      await _migrateV2ToV3(db);
+    }
+  }
+
+  static Future<void> _migrateV2ToV3(Database db) async {
+    await db.execute('''
+      CREATE TABLE labels (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        color INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('ALTER TABLE projects ADD COLUMN labelId TEXT');
   }
 
   static Future<void> _migrateV1ToV2(Database db) async {

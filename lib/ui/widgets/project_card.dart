@@ -1,6 +1,8 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/project.dart';
+import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
@@ -62,6 +64,36 @@ class ProjectCard extends StatelessWidget {
                     style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                   ),
                 ],
+                const SizedBox(height: 12),
+                Consumer<LabelProvider>(
+                  builder: (context, labelProvider, _) {
+                    final label = labelProvider.getById(project.labelId);
+                    if (label == null) return const SizedBox.shrink();
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: label.color.withAlpha(25),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: label.color.withAlpha(75)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(color: label.color, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            label.name,
+                            style: TextStyle(color: label.color, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
