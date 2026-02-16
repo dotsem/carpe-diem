@@ -8,8 +8,9 @@ import 'package:carpe_diem/providers/label_provider.dart';
 class LabelPicker extends StatelessWidget {
   final List<String> selectedLabelIds;
   final ValueChanged<List<String>> onSelected;
+  final bool allowAdd;
 
-  const LabelPicker({super.key, required this.selectedLabelIds, required this.onSelected});
+  const LabelPicker({super.key, required this.selectedLabelIds, required this.onSelected, this.allowAdd = true});
 
   @override
   Widget build(BuildContext context) {
@@ -52,12 +53,13 @@ class LabelPicker extends StatelessWidget {
                 ),
               );
             }),
-            ActionChip(
-              label: const Text('New Label'),
-              avatar: const Icon(Icons.add, size: 16),
-              onPressed: () => _showAddLabel(context),
-              backgroundColor: AppColors.surfaceLight,
-            ),
+            if (allowAdd)
+              ActionChip(
+                label: const Text('New Label'),
+                avatar: const Icon(Icons.add, size: 16),
+                onPressed: () => _showAddLabel(context),
+                backgroundColor: AppColors.surfaceLight,
+              ),
           ],
         );
       },

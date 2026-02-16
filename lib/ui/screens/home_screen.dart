@@ -1,5 +1,8 @@
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
+import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/dialogs/pick_tasks_from_backlog_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late DateTime _selectedDate;
+  TaskFilter _filter = const TaskFilter();
   final _dateFormat = DateFormat('EEEE, MMMM d');
 
   @override
@@ -51,6 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _header(context),
         _daySelector(),
+        FilterBar(
+          filter: _filter,
+          onFilterTap: () => _showFilterDialog(context),
+          onClearFilter: () => setState(() => _filter = const TaskFilter()),
+        ),
         const Divider(height: 1),
         Expanded(child: _taskList()),
       ],
@@ -154,8 +163,14 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
-        final overdue = provider.overdueTasks;
-        final tasks = provider.tasks;
+        final overdue = provider.overdueTasks.where((t) {
+          final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          return _filter.applyToTask(t, project?.labelIds ?? []);
+        }).toList();
+        final tasks = provider.tasks.where((t) {
+          final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          return _filter.applyToTask(t, project?.labelIds ?? []);
+        }).toList();
 
         if (overdue.isEmpty && tasks.isEmpty) {
           return Center(
@@ -296,5 +311,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showPickTasksFromBacklog(BuildContext context) {
     showDialog(context: context, builder: (_) => PickTaskFromBacklogDialog());
+  }
+
+  void _showFilterDialog(BuildContext context) async {
+    final result = await showDialog<TaskFilter>(
+      context: context,
+      builder: (_) => FilterDialog(initialFilter: _filter),
+    );
+    if (result != null) {
+      setState(() => _filter = result);
+    }
   }
 }

@@ -1,7 +1,10 @@
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/import_from_md_dialog.dart';
+import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -17,6 +20,8 @@ class TaskScreen extends StatefulWidget {
 }
 
 class _TaskScreenState extends State<TaskScreen> {
+  TaskFilter _filter = const TaskFilter();
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +36,11 @@ class _TaskScreenState extends State<TaskScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _header(context),
+        FilterBar(
+          filter: _filter,
+          onFilterTap: () => _showFilterDialog(context),
+          onClearFilter: () => setState(() => _filter = const TaskFilter()),
+        ),
         const Divider(height: 1),
         Expanded(child: _taskList()),
       ],
@@ -71,7 +81,10 @@ class _TaskScreenState extends State<TaskScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
-        final tasks = provider.unscheduledTasks;
+        final tasks = provider.unscheduledTasks.where((t) {
+          final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          return _filter.applyToTask(t, project?.labelIds ?? []);
+        }).toList();
 
         if (tasks.isEmpty) {
           return Center(
@@ -190,5 +203,15 @@ class _TaskScreenState extends State<TaskScreen> {
         child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const ImportFromMDDialog()),
       ),
     );
+  }
+
+  void _showFilterDialog(BuildContext context) async {
+    final result = await showDialog<TaskFilter>(
+      context: context,
+      builder: (_) => FilterDialog(initialFilter: _filter),
+    );
+    if (result != null) {
+      setState(() => _filter = result);
+    }
   }
 }
