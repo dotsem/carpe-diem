@@ -1,5 +1,10 @@
+import 'package:carpe_diem/data/models/label.dart';
+import 'package:carpe_diem/data/repositories/project_repository.dart';
+import 'package:carpe_diem/providers/label_provider.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/label_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/project.dart';
 
@@ -81,12 +86,18 @@ class TaskCard extends StatelessWidget {
                         ),
                       if (project != null || isOverdue) ...[
                         const SizedBox(height: 4),
-                        Row(children: [if (project != null) _projectChip(), if (isOverdue) _overdueChip()]),
+                        Row(
+                          children: [
+                            if (isOverdue) _overdueChip(),
+                            if (project != null) _projectChip(),
+                            if (project != null) ..._getLabels(context),
+                          ],
+                        ),
                       ],
                     ],
                   ),
                 ),
-                ?trailing,
+                if (trailing != null) trailing!,
               ],
             ),
           ),
@@ -118,5 +129,17 @@ class TaskCard extends StatelessWidget {
       decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
       child: const Text('Overdue', style: TextStyle(fontSize: 11, color: AppColors.error)),
     );
+  }
+
+  List<Widget> _getLabels(BuildContext context) {
+    final labelProvider = context.watch<LabelProvider>();
+    final labels = project!.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
+
+    return labels.map((label) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: LabelChip(label: label),
+      );
+    }).toList();
   }
 }

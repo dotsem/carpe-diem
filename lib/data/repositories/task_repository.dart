@@ -1,3 +1,4 @@
+import 'package:carpe_diem/data/models/project.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/data/models/task.dart';
@@ -48,6 +49,20 @@ class TaskRepository {
       where: 'projectId = ?',
       whereArgs: [projectId],
       orderBy: 'priority DESC, scheduledDate ASC',
+    );
+    return maps.map(Task.fromMap).toList();
+  }
+
+  Future<List<Task>> getByLabel(String labelId) async {
+    final db = await _db;
+    final maps = await db.rawQuery(
+      '''
+      SELECT t.* FROM tasks t
+      INNER JOIN project_labels pl ON t.projectId = pl.projectId
+      WHERE pl.labelId = ?
+      ORDER BY t.priority DESC, t.scheduledDate ASC
+    ''',
+      [labelId],
     );
     return maps.map(Task.fromMap).toList();
   }

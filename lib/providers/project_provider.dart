@@ -1,3 +1,5 @@
+import 'package:carpe_diem/data/models/label.dart';
+import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:carpe_diem/data/models/project.dart';
@@ -59,5 +61,9 @@ class ProjectProvider extends ChangeNotifier {
     } catch (_) {
       return null;
     }
+  }
+
+  List<Label> getLabels(Project project, LabelProvider labelProvider) {
+    return project.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
   }
 }
