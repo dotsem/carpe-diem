@@ -7,7 +7,7 @@ class Project {
   final String? description;
   final Color color;
   final Priority priority;
-  final String? labelId;
+  final List<String> labelIds;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -17,7 +17,7 @@ class Project {
     this.description,
     required this.color,
     this.priority = Priority.none,
-    this.labelId,
+    this.labelIds = const [],
     required this.createdAt,
     this.updatedAt,
   });
@@ -28,36 +28,29 @@ class Project {
     'description': description,
     'color': color.toARGB32(),
     'priority': priority.index,
-    'labelId': labelId,
     'createdAt': createdAt.toIso8601String(),
   };
 
-  factory Project.fromMap(Map<String, dynamic> map) => Project(
+  factory Project.fromMap(Map<String, dynamic> map, {List<String> labelIds = const []}) => Project(
     id: map['id'] as String,
     name: map['name'] as String,
     description: map['description'] as String?,
     color: Color(map['color'] as int),
     priority: Priority.values[map['priority'] as int],
-    labelId: map['labelId'] as String?,
+    labelIds: labelIds,
     createdAt: DateTime.parse(map['createdAt'] as String),
     updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt'] as String) : null,
   );
 
-  Project copyWith({
-    String? name,
-    String? description,
-    Color? color,
-    Priority? priority,
-    String? labelId,
-    bool removeLabel = false,
-  }) => Project(
-    id: id,
-    name: name ?? this.name,
-    description: description ?? this.description,
-    color: color ?? this.color,
-    priority: priority ?? this.priority,
-    labelId: removeLabel ? null : (labelId ?? this.labelId),
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+  Project copyWith({String? name, String? description, Color? color, Priority? priority, List<String>? labelIds}) =>
+      Project(
+        id: id,
+        name: name ?? this.name,
+        description: description ?? this.description,
+        color: color ?? this.color,
+        priority: priority ?? this.priority,
+        labelIds: labelIds ?? this.labelIds,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 }

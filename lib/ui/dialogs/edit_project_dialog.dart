@@ -23,7 +23,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   final _descController = TextEditingController();
   late Color _selectedColor;
   late Priority _priority;
-  String? _selectedLabelId;
+  List<String> _selectedLabelIds = [];
 
   @override
   void initState() {
@@ -32,7 +32,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     _descController.text = widget.project.description ?? '';
     _selectedColor = widget.project.color;
     _priority = widget.project.priority;
-    _selectedLabelId = widget.project.labelId;
+    _selectedLabelIds = List<String>.from(widget.project.labelIds);
   }
 
   @override
@@ -66,9 +66,12 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           const SizedBox(height: 8),
           PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
           const SizedBox(height: 16),
-          Text('Label', style: Theme.of(context).textTheme.labelLarge),
+          Text('Labels', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
-          LabelPicker(selectedLabelId: _selectedLabelId, onSelected: (id) => setState(() => _selectedLabelId = id)),
+          LabelPicker(
+            selectedLabelIds: _selectedLabelIds,
+            onSelected: (ids) => setState(() => _selectedLabelIds = ids),
+          ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -110,7 +113,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
       description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
       color: _selectedColor,
       priority: _priority,
-      labelId: _selectedLabelId,
+      labelIds: _selectedLabelIds,
       createdAt: widget.project.createdAt,
       updatedAt: DateTime.now(),
     );

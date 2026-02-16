@@ -35,9 +35,7 @@ class DatabaseHelper {
         description TEXT,
         color INTEGER NOT NULL,
         priority INTEGER NOT NULL DEFAULT 0,
-        labelId TEXT,
-        createdAt TEXT NOT NULL,
-        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE SET NULL
+        createdAt TEXT NOT NULL
       )
     ''');
 
@@ -46,6 +44,16 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         color INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE project_labels (
+        projectId TEXT NOT NULL,
+        labelId TEXT NOT NULL,
+        PRIMARY KEY (projectId, labelId),
+        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE CASCADE
       )
     ''');
 
@@ -65,41 +73,56 @@ class DatabaseHelper {
   }
 
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await _migrateV1ToV2(db);
-    }
-    if (oldVersion < 3) {
-      await _migrateV2ToV3(db);
+    if (oldVersion < 4) {
+      await _migrateToV4(db);
     }
   }
 
-  static Future<void> _migrateV2ToV3(Database db) async {
+  static Future<void> _migrateToV4(Database db) async {
+    // Create the junction table
     await db.execute('''
-      CREATE TABLE labels (
+      CREATE TABLE project_labels (
+        projectId TEXT NOT NULL,
+        labelId TEXT NOT NULL,
+        PRIMARY KEY (projectId, labelId),
+        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Move existing labelId to the junction table if it exists
+    try {
+      final List<Map<String, dynamic>> projects = await db.query('projects', columns: ['id', 'labelId']);
+      for (final project in projects) {
+        final projectId = project['id'] as String;
+        final labelId = project['labelId'] as String?;
+        if (labelId != null) {
+          await db.insert('project_labels', {'projectId': projectId, 'labelId': labelId});
+        }
+      }
+    } catch (e) {
+      // labelId column might not exist if coming from even older versions
+    }
+
+    // Since SQLite ALTER TABLE DROP COLUMN is not always available,
+    // we use the pattern: create new table, copy data, drop old, rename
+    await db.execute('''
+      CREATE TABLE projects_new (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        color INTEGER NOT NULL
-      )
-    ''');
-    await db.execute('ALTER TABLE projects ADD COLUMN labelId TEXT');
-  }
-
-  static Future<void> _migrateV1ToV2(Database db) async {
-    await db.execute('''
-      CREATE TABLE tasks_new (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
         description TEXT,
-        scheduledDate TEXT,
-        isCompleted INTEGER NOT NULL DEFAULT 0,
-        projectId TEXT,
+        color INTEGER NOT NULL,
         priority INTEGER NOT NULL DEFAULT 0,
-        createdAt TEXT NOT NULL,
-        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
+        createdAt TEXT NOT NULL
       )
     ''');
-    await db.execute('INSERT INTO tasks_new SELECT * FROM tasks');
-    await db.execute('DROP TABLE tasks');
-    await db.execute('ALTER TABLE tasks_new RENAME TO tasks');
+
+    await db.execute('''
+      INSERT INTO projects_new (id, name, description, color, priority, createdAt)
+      SELECT id, name, description, color, priority, createdAt FROM projects
+    ''');
+
+    await db.execute('DROP TABLE projects');
+    await db.execute('ALTER TABLE projects_new RENAME TO projects');
   }
 }

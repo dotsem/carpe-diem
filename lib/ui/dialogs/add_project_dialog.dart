@@ -21,7 +21,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   final _descController = TextEditingController();
   Color _selectedColor = AppColors.accent;
   Priority _priority = Priority.none;
-  String? _selectedLabelId;
+  List<String> _selectedLabelIds = [];
 
   @override
   void dispose() {
@@ -61,9 +61,12 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           const SizedBox(height: 8),
           PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
           const SizedBox(height: 16),
-          Text('Label', style: Theme.of(context).textTheme.labelLarge),
+          Text('Labels', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
-          LabelPicker(selectedLabelId: _selectedLabelId, onSelected: (id) => setState(() => _selectedLabelId = id)),
+          LabelPicker(
+            selectedLabelIds: _selectedLabelIds,
+            onSelected: (ids) => setState(() => _selectedLabelIds = ids),
+          ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -87,7 +90,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
       description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
       color: _selectedColor,
       priority: _priority,
-      labelId: _selectedLabelId,
+      labelIds: _selectedLabelIds,
     );
     Navigator.of(context).pop();
   }

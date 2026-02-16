@@ -6,10 +6,10 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 
 class LabelPicker extends StatelessWidget {
-  final String? selectedLabelId;
-  final ValueChanged<String?> onSelected;
+  final List<String> selectedLabelIds;
+  final ValueChanged<List<String>> onSelected;
 
-  const LabelPicker({super.key, this.selectedLabelId, required this.onSelected});
+  const LabelPicker({super.key, required this.selectedLabelIds, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -19,17 +19,8 @@ class LabelPicker extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            ChoiceChip(
-              label: const Text('None'),
-              selected: selectedLabelId == null,
-              onSelected: (selected) {
-                if (selected) onSelected(null);
-              },
-              backgroundColor: AppColors.surfaceLight,
-              selectedColor: AppColors.accent,
-            ),
             ...provider.labels.map((label) {
-              final isSelected = label.id == selectedLabelId;
+              final isSelected = selectedLabelIds.contains(label.id);
               return Builder(
                 builder: (context) => GestureDetector(
                   onSecondaryTapDown: (details) {
@@ -40,15 +31,22 @@ class LabelPicker extends StatelessWidget {
                       context.findRenderObject() as RenderBox,
                     );
                   },
-                  child: ChoiceChip(
+                  child: FilterChip(
                     label: Text(label.name),
                     selected: isSelected,
                     onSelected: (selected) {
-                      if (selected) onSelected(label.id);
+                      final newIds = List<String>.from(selectedLabelIds);
+                      if (selected) {
+                        newIds.add(label.id);
+                      } else {
+                        newIds.remove(label.id);
+                      }
+                      onSelected(newIds);
                     },
                     avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
                     backgroundColor: AppColors.surfaceLight,
                     selectedColor: label.color.withAlpha(200),
+                    checkmarkColor: Colors.white,
                     labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
                   ),
                 ),
