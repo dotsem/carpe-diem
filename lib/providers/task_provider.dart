@@ -1,5 +1,3 @@
-import 'package:carpe_diem/data/models/project.dart';
-import 'package:carpe_diem/data/repositories/project_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:carpe_diem/data/models/task.dart';

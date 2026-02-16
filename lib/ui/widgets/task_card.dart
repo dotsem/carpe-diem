@@ -1,5 +1,4 @@
 import 'package:carpe_diem/data/models/label.dart';
-import 'package:carpe_diem/data/repositories/project_repository.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/label_chip.dart';
 import 'package:flutter/material.dart';
@@ -97,7 +96,7 @@ class TaskCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (trailing != null) trailing!,
+                ?trailing,
               ],
             ),
           ),
