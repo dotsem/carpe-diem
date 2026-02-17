@@ -62,19 +62,20 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       return;
     }
 
-    if (widget.task.isCompleted) {
-      // Undo immediately
+    if (widget.task.status.isDone) {
       widget.onToggle();
-    } else {
+    } else if (widget.task.status.isInProgress) {
+      // In progress -> start 5s timer to complete
       if (_isPending) {
-        // Cancel pending completion
         _controller.reset();
         setState(() => _isPending = false);
       } else {
-        // Start pending completion
         setState(() => _isPending = true);
         _controller.forward();
       }
+    } else {
+      // Todo -> immediately move to in progress
+      widget.onToggle();
     }
   }
 
@@ -88,6 +89,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final bool showDone = widget.task.isCompleted || _isPending;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -123,11 +126,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                 children: [
                   _priorityIndicator(),
                   const SizedBox(width: 8),
-                  Checkbox(
-                    value: widget.selectionMode ? widget.isSelected : (widget.task.isCompleted || _isPending),
-                    onChanged: (_) => _handleToggle(),
-                    fillColor: _isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
-                  ),
+                  _statusIndicator(),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -138,12 +137,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            decoration: (!widget.selectionMode && (widget.task.isCompleted || _isPending))
-                                ? TextDecoration.lineThrough
-                                : null,
-                            color: ((widget.task.isCompleted || _isPending) && !widget.selectionMode)
-                                ? AppColors.textSecondary
-                                : AppColors.text,
+                            decoration: (!widget.selectionMode && showDone) ? TextDecoration.lineThrough : null,
+                            color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
                           ),
                         ),
                         if (widget.task.description != null && widget.task.description!.isNotEmpty)
@@ -156,11 +151,12 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                               style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                             ),
                           ),
-                        if (widget.project != null || widget.isOverdue) ...[
+                        if (widget.project != null || widget.isOverdue || widget.task.status.isInProgress) ...[
                           const SizedBox(height: 4),
                           Row(
                             children: [
                               if (widget.isOverdue && !widget.task.isCompleted && !_isPending) _overdueChip(),
+                              if (widget.task.status.isInProgress && !_isPending) _statusChip(),
                               if (widget.project != null) _projectChip(),
                               if (widget.project != null) ..._getLabels(context),
                             ],
@@ -179,11 +175,49 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     );
   }
 
+  Widget _statusIndicator() {
+    if (widget.selectionMode) {
+      return Checkbox(value: widget.isSelected, onChanged: (_) => _handleToggle());
+    }
+
+    final task = widget.task;
+    if (task.status.isInProgress) {
+      return GestureDetector(
+        onTap: _handleToggle,
+        child: Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
+            border: Border.all(color: AppColors.accent, width: 2),
+          ),
+          child: _isPending ? const Icon(Icons.close, size: 12, color: AppColors.accent) : null,
+        ),
+      );
+    }
+
+    return Checkbox(
+      value: task.isCompleted || _isPending,
+      onChanged: (_) => _handleToggle(),
+      fillColor: _isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
+    );
+  }
+
   Widget _priorityIndicator() {
     return Container(
       width: 6,
       height: 40,
       decoration: BoxDecoration(color: widget.task.priority.color, borderRadius: BorderRadius.circular(2)),
+    );
+  }
+
+  Widget _statusChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      margin: const EdgeInsets.only(right: 6),
+      decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
+      child: const Text('In Progress', style: TextStyle(fontSize: 11, color: AppColors.accent)),
     );
   }
 
@@ -240,7 +274,6 @@ class _ProgressPainter extends CustomPainter {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
     final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
 
-    // We want to animate the stroke drawing path
     final path = Path()..addRRect(rrect);
     final metrics = path.computeMetrics().first;
     final extractPath = metrics.extractPath(0.0, metrics.length * progress);

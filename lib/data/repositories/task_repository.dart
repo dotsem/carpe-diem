@@ -1,6 +1,7 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/data/models/task_status.dart';
 
 class TaskRepository {
   Future<Database> get _db => DatabaseHelper.database;
@@ -31,8 +32,8 @@ class TaskRepository {
     final dateStr = DateTime(today.year, today.month, today.day).toIso8601String();
     final maps = await db.query(
       'tasks',
-      where: 'scheduledDate IS NOT NULL AND scheduledDate < ? AND isCompleted = 0',
-      whereArgs: [dateStr],
+      where: 'scheduledDate IS NOT NULL AND scheduledDate < ? AND status != ?',
+      whereArgs: [dateStr, TaskStatus.done.index],
       orderBy: 'priority DESC, scheduledDate ASC',
     );
     return maps.map(Task.fromMap).toList();

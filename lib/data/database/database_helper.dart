@@ -64,6 +64,7 @@ class DatabaseHelper {
         description TEXT,
         scheduledDate TEXT,
         isCompleted INTEGER NOT NULL DEFAULT 0,
+        status INTEGER NOT NULL DEFAULT 0,
         projectId TEXT,
         priority INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT NOT NULL,
@@ -77,15 +78,28 @@ class DatabaseHelper {
     if (oldVersion < 5) {
       await _migrateToV5(db);
     }
+    if (oldVersion < 6) {
+      await _migrateToV6(db);
+    }
   }
 
   static Future<void> _migrateToV5(Database db) async {
-    // Check if completedAt column exists
     final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info(tasks)');
     final hasCompletedAt = columns.any((column) => column['name'] == 'completedAt');
 
     if (!hasCompletedAt) {
       await db.execute('ALTER TABLE tasks ADD COLUMN completedAt TEXT');
+    }
+  }
+
+  static Future<void> _migrateToV6(Database db) async {
+    final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info(tasks)');
+    final hasStatus = columns.any((column) => column['name'] == 'status');
+
+    if (!hasStatus) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN status INTEGER NOT NULL DEFAULT 0');
+      // Migrate: isCompleted=1 -> status=2 (done)
+      await db.execute('UPDATE tasks SET status = 2 WHERE isCompleted = 1');
     }
   }
 }

@@ -1,9 +1,11 @@
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/dialogs/pick_tasks_from_backlog_dialog.dart';
+import 'package:carpe_diem/ui/widgets/kanban_board.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -61,12 +63,13 @@ class _HomeScreenState extends State<HomeScreen> {
           onClearFilter: () => setState(() => _filter = const TaskFilter()),
         ),
         const Divider(height: 1),
-        Expanded(child: _taskList()),
+        Expanded(child: _body()),
       ],
     );
   }
 
   Widget _header(BuildContext context) {
+    final provider = context.watch<TaskProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 28, 32, 0),
       child: Row(
@@ -88,6 +91,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const Spacer(),
+          IconButton(
+            onPressed: () => provider.toggleLayoutMode(),
+            icon: Icon(provider.layoutMode == LayoutMode.list ? Icons.view_kanban : Icons.view_list),
+            tooltip: provider.layoutMode == LayoutMode.list ? 'Kanban view' : 'List view',
+          ),
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => _showPickTasksFromBacklog(context),
             icon: const Icon(Icons.inbox_rounded),
@@ -155,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _taskList() {
+  Widget _body() {
     return Consumer<TaskProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
@@ -163,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
+
         final overdue = provider.overdueTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
           return _filter.applyToTask(t, project?.labelIds ?? []);
@@ -173,93 +183,100 @@ class _HomeScreenState extends State<HomeScreen> {
           return _filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
-        final activeTasks = allTasks.where((t) => !t.isCompleted).toList();
-        final completedTasks = allTasks.where((t) => t.isCompleted).toList();
-
-        if (overdue.isEmpty && activeTasks.isEmpty && completedTasks.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
-                const SizedBox(height: 16),
-                Text(
-                  _isToday ? 'No tasks for today' : 'No tasks scheduled',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                TextButton(onPressed: () => _showAddTask(context), child: const Text('Add your first task')),
-              ],
-            ),
+        if (provider.layoutMode == LayoutMode.kanban) {
+          return KanbanBoard(
+            tasks: [...overdue, ...allTasks],
+            projectProvider: projectProvider,
+            onStatusChange: (task, status) => provider.updateTaskStatus(task, status),
+            onContextMenu: (task, pos, box) => _showContextMenu(context, task, pos, box),
+            onEdit: (task) => _showEditTask(context, task),
           );
         }
 
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
-          children: [
-            if (overdue.isNotEmpty && _isToday) ...[
-              Text(
-                'Overdue',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              ...overdue.map(
-                (task) => TaskCard(
-                  task: task,
-                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
-                  isOverdue: true,
-                  onToggle: () => provider.toggleComplete(task),
-                  onTap: () {},
-                  onContextMenu: (localPosition, renderBox) =>
-                      _showContextMenu(context, task, localPosition, renderBox),
-                  trailing: _taskTrailing(context, task),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-            if (activeTasks.isNotEmpty) ...[
-              if (overdue.isNotEmpty && _isToday)
-                Text('Tasks', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-              if (overdue.isNotEmpty && _isToday) const SizedBox(height: 8),
-
-              ...activeTasks.map(
-                (task) => TaskCard(
-                  task: task,
-                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
-                  onToggle: () => provider.toggleComplete(task),
-                  onTap: () {},
-                  onContextMenu: (localPosition, renderBox) =>
-                      _showContextMenu(context, task, localPosition, renderBox),
-                  trailing: _taskTrailing(context, task),
-                ),
-              ),
-            ],
-            if (completedTasks.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              Text(
-                'Completed',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 8),
-              ...completedTasks.map(
-                (task) => TaskCard(
-                  task: task,
-                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
-                  onToggle: () => provider.toggleComplete(task),
-                  onTap: () {},
-                  onContextMenu: (localPosition, renderBox) =>
-                      _showContextMenu(context, task, localPosition, renderBox),
-                  trailing: _taskTrailing(context, task),
-                ),
-              ),
-            ],
-          ],
-        );
+        return _listLayout(provider, projectProvider, overdue, allTasks);
       },
+    );
+  }
+
+  Widget _listLayout(TaskProvider provider, ProjectProvider projectProvider, List<Task> overdue, List<Task> allTasks) {
+    final inProgressTasks = allTasks.where((t) => t.status.isInProgress).toList();
+    final todoTasks = allTasks.where((t) => t.status.isTodo).toList();
+    final completedTasks = allTasks.where((t) => t.isCompleted).toList();
+
+    if (overdue.isEmpty && inProgressTasks.isEmpty && todoTasks.isEmpty && completedTasks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
+            const SizedBox(height: 16),
+            Text(
+              _isToday ? 'No tasks for today' : 'No tasks scheduled',
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            TextButton(onPressed: () => _showAddTask(context), child: const Text('Add your first task')),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
+      children: [
+        if (inProgressTasks.isNotEmpty) ...[
+          Text(
+            'In Progress',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: AppColors.accent, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          ...inProgressTasks.map((task) => _buildTaskCard(task, projectProvider, provider)),
+          const SizedBox(height: 20),
+        ],
+        if (overdue.isNotEmpty && _isToday) ...[
+          Text(
+            'Overdue',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          ...overdue.map((task) => _buildTaskCard(task, projectProvider, provider, isOverdue: true)),
+          const SizedBox(height: 20),
+        ],
+        if (todoTasks.isNotEmpty) ...[
+          if (inProgressTasks.isNotEmpty || (overdue.isNotEmpty && _isToday))
+            Text('Todo', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+          if (inProgressTasks.isNotEmpty || (overdue.isNotEmpty && _isToday)) const SizedBox(height: 8),
+          ...todoTasks.map((task) => _buildTaskCard(task, projectProvider, provider)),
+        ],
+        if (completedTasks.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Text(
+            'Done',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          ...completedTasks.map((task) => _buildTaskCard(task, projectProvider, provider)),
+        ],
+      ],
+    );
+  }
+
+  TaskCard _buildTaskCard(Task task, ProjectProvider projectProvider, TaskProvider provider, {bool isOverdue = false}) {
+    return TaskCard(
+      key: ValueKey(task.id),
+      task: task,
+      project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+      isOverdue: isOverdue,
+      onToggle: () => provider.toggleComplete(task),
+      onTap: () {},
+      onContextMenu: (localPosition, renderBox) => _showContextMenu(context, task, localPosition, renderBox),
+      trailing: _taskTrailing(context, task),
     );
   }
 
@@ -279,34 +296,82 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showContextMenu(BuildContext context, Task task, Offset localPosition, RenderBox renderBox) {
     final provider = context.read<TaskProvider>();
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-
     final Offset position = renderBox.localToGlobal(localPosition, ancestor: overlay);
+
+    final items = <PopupMenuEntry<void>>[];
+
+    if (task.status.isTodo) {
+      items.add(
+        PopupMenuItem(
+          onTap: () => provider.updateTaskStatus(task, TaskStatus.inProgress),
+          child: const ListTile(leading: Icon(Icons.play_arrow), title: Text('Start (In Progress)'), dense: true),
+        ),
+      );
+      items.add(
+        PopupMenuItem(
+          onTap: () => provider.updateTaskStatus(task, TaskStatus.done),
+          child: const ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Mark as Done'), dense: true),
+        ),
+      );
+    }
+
+    if (task.status.isInProgress) {
+      items.add(
+        PopupMenuItem(
+          onTap: () => provider.updateTaskStatus(task, TaskStatus.todo),
+          child: const ListTile(leading: Icon(Icons.undo), title: Text('Back to Todo'), dense: true),
+        ),
+      );
+      items.add(
+        PopupMenuItem(
+          onTap: () => provider.updateTaskStatus(task, TaskStatus.done),
+          child: const ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Mark as Done'), dense: true),
+        ),
+      );
+    }
+
+    if (task.status.isDone) {
+      items.add(
+        PopupMenuItem(
+          onTap: () => provider.updateTaskStatus(task, TaskStatus.todo),
+          child: const ListTile(leading: Icon(Icons.undo), title: Text('Back to Todo'), dense: true),
+        ),
+      );
+      items.add(
+        PopupMenuItem(
+          onTap: () => provider.updateTaskStatus(task, TaskStatus.inProgress),
+          child: const ListTile(leading: Icon(Icons.play_arrow), title: Text('Back to In Progress'), dense: true),
+        ),
+      );
+    }
+
+    items.addAll([
+      PopupMenuItem(
+        onTap: () => provider.scheduleTasksForTomorrow([task.id]),
+        child: const ListTile(
+          leading: Icon(Icons.next_plan_outlined),
+          title: Text('Reschedule for Tomorrow'),
+          dense: true,
+        ),
+      ),
+      PopupMenuItem(
+        onTap: () => _showEditTask(context, task),
+        child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
+      ),
+      PopupMenuItem(
+        onTap: () => provider.deleteTask(task),
+        child: const ListTile(
+          leading: Icon(Icons.delete, color: AppColors.error),
+          title: Text('Delete', style: TextStyle(color: AppColors.error)),
+          dense: true,
+        ),
+      ),
+    ]);
 
     showMenu(
       context: context,
       position: RelativeRect.fromRect(Rect.fromLTWH(position.dx, position.dy, 0, 0), Offset.zero & overlay.size),
-      items: [
-        PopupMenuItem(
-          onTap: () => provider.scheduleTasksForTomorrow([task.id]),
-          child: const ListTile(
-            leading: Icon(Icons.next_plan_outlined),
-            title: Text('Reschedule for Tomorrow'),
-            dense: true,
-          ),
-        ),
-        PopupMenuItem(
-          onTap: () => _showEditTask(context, task),
-          child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
-        ),
-        PopupMenuItem(
-          onTap: () => provider.deleteTask(task),
-          child: const ListTile(
-            leading: Icon(Icons.delete, color: AppColors.error),
-            title: Text('Delete', style: TextStyle(color: AppColors.error)),
-            dense: true,
-          ),
-        ),
-      ],
+      items: items,
     );
   }
 

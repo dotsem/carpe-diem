@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/repositories/task_repository.dart';
+
+enum LayoutMode { list, kanban }
 
 class TaskProvider extends ChangeNotifier {
   final TaskRepository _repo = TaskRepository();
@@ -13,11 +16,18 @@ class TaskProvider extends ChangeNotifier {
   List<Task> _unscheduledTasks = [];
   bool _isLoading = false;
   DateTime _currentDate = DateTime.now();
+  LayoutMode _layoutMode = LayoutMode.list;
 
   List<Task> get tasks => _tasks;
   List<Task> get overdueTasks => _overdueTasks;
   List<Task> get unscheduledTasks => _unscheduledTasks;
   bool get isLoading => _isLoading;
+  LayoutMode get layoutMode => _layoutMode;
+
+  void toggleLayoutMode() {
+    _layoutMode = _layoutMode == LayoutMode.list ? LayoutMode.kanban : LayoutMode.list;
+    notifyListeners();
+  }
 
   Future<void> loadTasksForDate(DateTime date, {bool silent = false}) async {
     if (!silent) {
@@ -70,11 +80,24 @@ class TaskProvider extends ChangeNotifier {
     await loadUnscheduledTasks();
   }
 
-  Future<void> toggleComplete(Task task) async {
-    final isCompleted = !task.isCompleted;
-    final updated = task.copyWith(isCompleted: isCompleted, completedAt: isCompleted ? DateTime.now() : null);
+  Future<void> updateTaskStatus(Task task, TaskStatus status) async {
+    final updated = task.copyWith(status: status);
     await _repo.update(updated);
     await _refreshAll();
+  }
+
+  Future<void> toggleComplete(Task task) async {
+    switch (task.status) {
+      case TaskStatus.todo:
+        await updateTaskStatus(task, TaskStatus.inProgress);
+        break;
+      case TaskStatus.inProgress:
+        await updateTaskStatus(task, TaskStatus.done);
+        break;
+      case TaskStatus.done:
+        await updateTaskStatus(task, TaskStatus.todo);
+        break;
+    }
   }
 
   Future<void> updateTask(Task task) async {
@@ -146,9 +169,16 @@ class TaskProvider extends ChangeNotifier {
       if ((trimmed.startsWith('- [ ]') || trimmed.startsWith('- ')) && !trimmed.startsWith('- [x]')) {
         final match = RegExp(r'^- \[?(x|\s)?\]?\s+(.*)$').firstMatch(trimmed);
         if (match != null) {
-          final isCompleted = match.group(1) == 'x';
+          final isDone = match.group(1) == 'x';
           final title = match.group(2)!.trim();
-          tasks.add(Task(id: _uuid.v4(), title: title, isCompleted: isCompleted, createdAt: DateTime.now()));
+          tasks.add(
+            Task(
+              id: _uuid.v4(),
+              title: title,
+              status: isDone ? TaskStatus.done : TaskStatus.todo,
+              createdAt: DateTime.now(),
+            ),
+          );
         }
       }
     }
