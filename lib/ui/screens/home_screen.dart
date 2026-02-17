@@ -1,4 +1,5 @@
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/data/models/task_layout.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
@@ -93,8 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const Spacer(),
           IconButton(
             onPressed: () => provider.toggleLayoutMode(),
-            icon: Icon(provider.layoutMode == LayoutMode.list ? Icons.view_kanban : Icons.view_list),
-            tooltip: provider.layoutMode == LayoutMode.list ? 'Kanban view' : 'List view',
+            icon: Icon(provider.layoutMode == TaskLayout.list ? Icons.view_kanban : Icons.view_list),
+            tooltip: provider.layoutMode == TaskLayout.list ? 'Kanban view' : 'List view',
           ),
           const SizedBox(width: 8),
           FilledButton.icon(
@@ -183,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return _filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
-        if (provider.layoutMode == LayoutMode.kanban) {
+        if (provider.layoutMode == TaskLayout.kanban) {
           return KanbanBoard(
             tasks: [...overdue, ...allTasks],
             projectProvider: projectProvider,

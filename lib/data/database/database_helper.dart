@@ -72,6 +72,13 @@ class DatabaseHelper {
         FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
   }
 
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -80,6 +87,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 6) {
       await _migrateToV6(db);
+    }
+    if (oldVersion < 7) {
+      await _migrateToV7(db);
     }
   }
 
@@ -101,5 +111,14 @@ class DatabaseHelper {
       // Migrate: isCompleted=1 -> status=2 (done)
       await db.execute('UPDATE tasks SET status = 2 WHERE isCompleted = 1');
     }
+  }
+
+  static Future<void> _migrateToV7(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
   }
 }

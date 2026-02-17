@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/routes/app_router.dart';
@@ -22,8 +23,16 @@ class CarpeDiemApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
         ChangeNotifierProvider(create: (_) => LabelProvider()..loadLabels()),
-        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProxyProvider<SettingsProvider, TaskProvider>(
+          create: (context) => TaskProvider(context.read<SettingsProvider>()),
+          update: (_, settings, taskProvider) {
+            final provider = taskProvider ?? TaskProvider(settings);
+            provider.refreshLayout();
+            return provider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => ProjectProvider()..loadProjects()),
       ],
       child: MaterialApp.router(

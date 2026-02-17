@@ -1,3 +1,5 @@
+import 'package:carpe_diem/data/models/task_layout.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:carpe_diem/data/models/task.dart';
@@ -5,27 +7,39 @@ import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/repositories/task_repository.dart';
 
-enum LayoutMode { list, kanban }
-
 class TaskProvider extends ChangeNotifier {
   final TaskRepository _repo = TaskRepository();
+  final SettingsProvider _settingsProvider;
   final _uuid = const Uuid();
+
+  TaskProvider(this._settingsProvider) {
+    _layoutMode = _settingsProvider.getTaskLayout();
+  }
+
+  void refreshLayout() {
+    final newMode = _settingsProvider.getTaskLayout();
+    if (_layoutMode != newMode) {
+      _layoutMode = newMode;
+      notifyListeners();
+    }
+  }
 
   List<Task> _tasks = [];
   List<Task> _overdueTasks = [];
   List<Task> _unscheduledTasks = [];
   bool _isLoading = false;
   DateTime _currentDate = DateTime.now();
-  LayoutMode _layoutMode = LayoutMode.list;
+  late TaskLayout _layoutMode;
 
   List<Task> get tasks => _tasks;
   List<Task> get overdueTasks => _overdueTasks;
   List<Task> get unscheduledTasks => _unscheduledTasks;
   bool get isLoading => _isLoading;
-  LayoutMode get layoutMode => _layoutMode;
+  TaskLayout get layoutMode => _layoutMode;
 
   void toggleLayoutMode() {
-    _layoutMode = _layoutMode == LayoutMode.list ? LayoutMode.kanban : LayoutMode.list;
+    _layoutMode = _layoutMode == TaskLayout.list ? TaskLayout.kanban : TaskLayout.list;
+    _settingsProvider.setTaskLayout(_layoutMode);
     notifyListeners();
   }
 
