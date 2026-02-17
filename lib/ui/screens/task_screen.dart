@@ -81,12 +81,15 @@ class _TaskScreenState extends State<TaskScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
-        final tasks = provider.unscheduledTasks.where((t) {
+        final allTasks = provider.unscheduledTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
           return _filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
-        if (tasks.isEmpty) {
+        final activeTasks = allTasks.where((t) => !t.isCompleted).toList();
+        final completedTasks = allTasks.where((t) => t.isCompleted).toList();
+
+        if (activeTasks.isEmpty && completedTasks.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -103,8 +106,27 @@ class _TaskScreenState extends State<TaskScreen> {
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
-          children: tasks
-              .map(
+          children: [
+            ...activeTasks.map(
+              (task) => TaskCard(
+                task: task,
+                project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+                onToggle: () => provider.toggleComplete(task),
+                onTap: () {},
+                onContextMenu: (localPosition, renderBox) => _showContextMenu(context, task, localPosition, renderBox),
+                trailing: _taskTrailing(context, task),
+              ),
+            ),
+            if (completedTasks.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Text(
+                'Completed',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              ...completedTasks.map(
                 (task) => TaskCard(
                   task: task,
                   project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
@@ -114,8 +136,9 @@ class _TaskScreenState extends State<TaskScreen> {
                       _showContextMenu(context, task, localPosition, renderBox),
                   trailing: _taskTrailing(context, task),
                 ),
-              )
-              .toList(),
+              ),
+            ],
+          ],
         );
       },
     );

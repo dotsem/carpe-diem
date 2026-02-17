@@ -19,23 +19,33 @@ class TaskProvider extends ChangeNotifier {
   List<Task> get unscheduledTasks => _unscheduledTasks;
   bool get isLoading => _isLoading;
 
-  Future<void> loadTasksForDate(DateTime date) async {
-    _isLoading = true;
+  Future<void> loadTasksForDate(DateTime date, {bool silent = false}) async {
+    if (!silent) {
+      _isLoading = true;
+      notifyListeners();
+    }
     _currentDate = _normalizeDate(date);
-    notifyListeners();
 
     _tasks = await _repo.getByDate(_currentDate);
     _overdueTasks = await _repo.getOverdue(_currentDate);
-    _isLoading = false;
+
+    if (!silent) {
+      _isLoading = false;
+    }
     notifyListeners();
   }
 
-  Future<void> loadUnscheduledTasks() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> loadUnscheduledTasks({bool silent = false}) async {
+    if (!silent) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     _unscheduledTasks = await _repo.getUnscheduled();
-    _isLoading = false;
+
+    if (!silent) {
+      _isLoading = false;
+    }
     notifyListeners();
   }
 
@@ -61,7 +71,8 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> toggleComplete(Task task) async {
-    final updated = task.copyWith(isCompleted: !task.isCompleted);
+    final isCompleted = !task.isCompleted;
+    final updated = task.copyWith(isCompleted: isCompleted, completedAt: isCompleted ? DateTime.now() : null);
     await _repo.update(updated);
     await _refreshAll();
   }
@@ -95,8 +106,8 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> _refreshAll() async {
-    await loadTasksForDate(_currentDate);
-    await loadUnscheduledTasks();
+    await loadTasksForDate(_currentDate, silent: true);
+    await loadUnscheduledTasks(silent: true);
   }
 
   Future<void> scheduleTasksForDate(List<String> taskIds, DateTime date) async {

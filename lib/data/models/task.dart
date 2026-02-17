@@ -9,6 +9,7 @@ class Task {
   final String? projectId;
   final Priority priority;
   final DateTime createdAt;
+  final DateTime? completedAt;
 
   const Task({
     required this.id,
@@ -19,6 +20,7 @@ class Task {
     this.projectId,
     this.priority = Priority.none,
     required this.createdAt,
+    this.completedAt,
   });
 
   Map<String, dynamic> toMap() => {
@@ -30,6 +32,7 @@ class Task {
     'projectId': projectId,
     'priority': priority.index,
     'createdAt': createdAt.toIso8601String(),
+    'completedAt': completedAt?.toIso8601String(),
   };
 
   factory Task.fromMap(Map<String, dynamic> map) => Task(
@@ -41,6 +44,7 @@ class Task {
     projectId: map['projectId'] as String?,
     priority: Priority.values[map['priority'] as int],
     createdAt: DateTime.parse(map['createdAt'] as String),
+    completedAt: map['completedAt'] != null ? DateTime.parse(map['completedAt'] as String) : null,
   );
 
   Task copyWith({
@@ -51,6 +55,7 @@ class Task {
     bool? isCompleted,
     String? projectId,
     Priority? priority,
+    DateTime? completedAt,
   }) => Task(
     id: id,
     title: title ?? this.title,
@@ -60,5 +65,8 @@ class Task {
     projectId: projectId ?? this.projectId,
     priority: priority ?? this.priority,
     createdAt: createdAt,
+    completedAt: isCompleted == true
+        ? (completedAt ?? DateTime.now())
+        : (isCompleted == false ? null : this.completedAt),
   );
 }

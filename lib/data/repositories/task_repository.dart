@@ -13,11 +13,14 @@ class TaskRepository {
 
   Future<List<Task>> getByDate(DateTime date) async {
     final db = await _db;
-    final dateStr = DateTime(date.year, date.month, date.day).toIso8601String();
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+    final scheduledDateStr = startOfDay.toIso8601String();
+
     final maps = await db.query(
       'tasks',
-      where: 'scheduledDate = ?',
-      whereArgs: [dateStr],
+      where: '(scheduledDate = ?) OR (completedAt >= ? AND completedAt < ?)',
+      whereArgs: [scheduledDateStr, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
       orderBy: 'priority DESC, createdAt DESC',
     );
     return maps.map(Task.fromMap).toList();

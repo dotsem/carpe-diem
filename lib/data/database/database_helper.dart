@@ -67,78 +67,25 @@ class DatabaseHelper {
         projectId TEXT,
         priority INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT NOT NULL,
+        completedAt TEXT,
         FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
       )
     ''');
   }
 
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 4) {
-      await _migrateToV4(db);
+    if (oldVersion < 5) {
+      await _migrateToV5(db);
     }
   }
 
-  static Future<void> _migrateToV4(Database db) async {
-    // Create the junction table if it doesn't exist
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS project_labels (
-        projectId TEXT NOT NULL,
-        labelId TEXT NOT NULL,
-        PRIMARY KEY (projectId, labelId),
-        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
-        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE CASCADE
-      )
-    ''');
+  static Future<void> _migrateToV5(Database db) async {
+    // Check if completedAt column exists
+    final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info(tasks)');
+    final hasCompletedAt = columns.any((column) => column['name'] == 'completedAt');
 
-    // Move existing labelIds to the junction table if the column still exists
-    try {
-      final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info(projects)');
-      final hasLabelId = columns.any((column) => column['name'] == 'labelId');
-
-      if (hasLabelId) {
-        final List<Map<String, dynamic>> projects = await db.query('projects', columns: ['id', 'labelId']);
-        for (final project in projects) {
-          final projectId = project['id'] as String;
-          final labelId = project['labelId'] as String?;
-          if (labelId != null) {
-            // Use insert ignore or check existence to avoid duplicates if re-running
-            await db.insert('project_labels', {
-              'projectId': projectId,
-              'labelId': labelId,
-            }, conflictAlgorithm: ConflictAlgorithm.ignore);
-          }
-        }
-      }
-    } catch (e) {
-      // Ignore errors during data migration, we'll try to proceed with schema change
-    }
-
-    // Since SQLite ALTER TABLE DROP COLUMN is not always available,
-    // we use the pattern: create new table, copy data, drop old, rename
-    // First, check if labelId column exists. If it doesn't, we might have already done this.
-    final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info(projects)');
-    final hasLabelId = columns.any((column) => column['name'] == 'labelId');
-
-    if (hasLabelId) {
-      await db.execute('DROP TABLE IF EXISTS projects_new');
-      await db.execute('''
-        CREATE TABLE projects_new (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          color INTEGER NOT NULL,
-          priority INTEGER NOT NULL DEFAULT 0,
-          createdAt TEXT NOT NULL
-        )
-      ''');
-
-      await db.execute('''
-        INSERT INTO projects_new (id, name, description, color, priority, createdAt)
-        SELECT id, name, description, color, priority, createdAt FROM projects
-      ''');
-
-      await db.execute('DROP TABLE projects');
-      await db.execute('ALTER TABLE projects_new RENAME TO projects');
+    if (!hasCompletedAt) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN completedAt TEXT');
     }
   }
 }

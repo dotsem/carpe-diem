@@ -167,12 +167,16 @@ class _HomeScreenState extends State<HomeScreen> {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
           return _filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
-        final tasks = provider.tasks.where((t) {
+
+        final allTasks = provider.tasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
           return _filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
-        if (overdue.isEmpty && tasks.isEmpty) {
+        final activeTasks = allTasks.where((t) => !t.isCompleted).toList();
+        final completedTasks = allTasks.where((t) => t.isCompleted).toList();
+
+        if (overdue.isEmpty && activeTasks.isEmpty && completedTasks.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -215,10 +219,33 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
             ],
-            if (tasks.isNotEmpty) ...[
-              Text('Tasks', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+            if (activeTasks.isNotEmpty) ...[
+              if (overdue.isNotEmpty && _isToday)
+                Text('Tasks', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+              if (overdue.isNotEmpty && _isToday) const SizedBox(height: 8),
+
+              ...activeTasks.map(
+                (task) => TaskCard(
+                  task: task,
+                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+                  onToggle: () => provider.toggleComplete(task),
+                  onTap: () {},
+                  onContextMenu: (localPosition, renderBox) =>
+                      _showContextMenu(context, task, localPosition, renderBox),
+                  trailing: _taskTrailing(context, task),
+                ),
+              ),
+            ],
+            if (completedTasks.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Text(
+                'Completed',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 8),
-              ...tasks.map(
+              ...completedTasks.map(
                 (task) => TaskCard(
                   task: task,
                   project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
