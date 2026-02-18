@@ -31,6 +31,7 @@ class ProjectProvider extends ChangeNotifier {
     required Color color,
     Priority priority = Priority.none,
     List<String> labelIds = const [],
+    DateTime? deadline,
   }) async {
     final project = Project(
       id: _uuid.v4(),
@@ -39,6 +40,7 @@ class ProjectProvider extends ChangeNotifier {
       color: color,
       priority: priority,
       labelIds: labelIds,
+      deadline: deadline,
       createdAt: DateTime.now(),
     );
     await _repo.insert(project);

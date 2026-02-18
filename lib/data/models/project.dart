@@ -8,6 +8,7 @@ class Project {
   final Color color;
   final Priority priority;
   final List<String> labelIds;
+  final DateTime? deadline;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -18,6 +19,7 @@ class Project {
     required this.color,
     this.priority = Priority.none,
     this.labelIds = const [],
+    this.deadline,
     required this.createdAt,
     this.updatedAt,
   });
@@ -28,6 +30,7 @@ class Project {
     'description': description,
     'color': color.toARGB32(),
     'priority': priority.index,
+    'deadline': deadline?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
   };
 
@@ -38,19 +41,27 @@ class Project {
     color: Color(map['color'] as int),
     priority: Priority.values[map['priority'] as int],
     labelIds: labelIds,
+    deadline: map['deadline'] != null ? DateTime.parse(map['deadline'] as String) : null,
     createdAt: DateTime.parse(map['createdAt'] as String),
     updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt'] as String) : null,
   );
 
-  Project copyWith({String? name, String? description, Color? color, Priority? priority, List<String>? labelIds}) =>
-      Project(
-        id: id,
-        name: name ?? this.name,
-        description: description ?? this.description,
-        color: color ?? this.color,
-        priority: priority ?? this.priority,
-        labelIds: labelIds ?? this.labelIds,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-      );
+  Project copyWith({
+    String? name,
+    String? description,
+    Color? color,
+    Priority? priority,
+    List<String>? labelIds,
+    DateTime? deadline,
+  }) => Project(
+    id: id,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    color: color ?? this.color,
+    priority: priority ?? this.priority,
+    labelIds: labelIds ?? this.labelIds,
+    deadline: deadline ?? this.deadline,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
 }

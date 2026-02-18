@@ -25,6 +25,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   DateTime? _selectedDate;
   String? _selectedProjectId;
   Priority _priority = Priority.none;
+  DateTime? _deadline;
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             children: [
               Expanded(
                 child: _DatePickerButton(
+                  label: 'Schedule date',
                   date: _selectedDate,
                   maxDate: _maxDate,
                   onChanged: (d) => setState(() => _selectedDate = d),
@@ -89,6 +91,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          _DatePickerButton(
+            label: 'Deadline',
+            date: _deadline,
+            firstDate: DateTime.now(),
+            onChanged: (d) => setState(() => _deadline = d),
           ),
           const SizedBox(height: 24),
           Row(
@@ -114,17 +123,26 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       scheduledDate: _selectedDate,
       projectId: _selectedProjectId,
       priority: _priority,
+      deadline: _deadline,
     );
     Navigator.of(context).pop();
   }
 }
 
 class _DatePickerButton extends StatelessWidget {
+  final String label;
   final DateTime? date;
-  final DateTime maxDate;
+  final DateTime? firstDate;
+  final DateTime? maxDate;
   final ValueChanged<DateTime?> onChanged;
 
-  const _DatePickerButton({required this.date, required this.maxDate, required this.onChanged});
+  const _DatePickerButton({
+    required this.label,
+    required this.date,
+    this.firstDate,
+    this.maxDate,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -133,8 +151,8 @@ class _DatePickerButton extends StatelessWidget {
         final picked = await showDatePicker(
           context: context,
           initialDate: date ?? DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: maxDate,
+          firstDate: firstDate ?? DateTime(2000),
+          lastDate: maxDate ?? DateTime(2100),
         );
         if (picked != null) onChanged(picked);
       },
@@ -147,7 +165,7 @@ class _DatePickerButton extends StatelessWidget {
             const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
             const SizedBox(width: 8),
             Text(
-              date != null ? '${date!.day}/${date!.month}/${date!.year}' : 'No date',
+              date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
               style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
             ),
             if (date != null) ...[

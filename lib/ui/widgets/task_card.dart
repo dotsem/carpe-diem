@@ -159,6 +159,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                             children: [
                               if (widget.isOverdue && !widget.task.isCompleted && !_isPending) _overdueChip(),
                               if (widget.task.status.isInProgress && !_isPending) _statusChip(),
+                              if (widget.task.deadline != null) _deadlineChip(),
                               if (widget.project != null) _projectChip(),
                               if (widget.project != null) ..._getLabels(context),
                             ],
@@ -230,6 +231,29 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(widget.project!.name, style: TextStyle(fontSize: 11, color: AppColors.text)),
+    );
+  }
+
+  Widget _deadlineChip() {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final date = widget.task.deadline!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.textSecondary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.timer_outlined, size: 10, color: AppColors.textSecondary),
+          const SizedBox(width: 4),
+          Text(
+            'Due: ${months[date.month - 1]} ${date.day}',
+            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
     );
   }
 

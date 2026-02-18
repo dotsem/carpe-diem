@@ -22,6 +22,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   final _descController = TextEditingController();
   late Priority _priority;
   DateTime? _scheduledDate;
+  DateTime? _deadline;
 
   @override
   void initState() {
@@ -30,6 +31,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     _descController.text = widget.task.description ?? '';
     _priority = widget.task.priority;
     _scheduledDate = widget.task.scheduledDate;
+    _deadline = widget.task.deadline;
   }
 
   DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
@@ -61,7 +63,21 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
           const SizedBox(height: 8),
           PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
           const SizedBox(height: 16),
-          _buildDatePicker(context),
+          _buildDatePicker(
+            context,
+            'Schedule Date',
+            _scheduledDate,
+            (d) => setState(() => _scheduledDate = d),
+            maxDate: _maxDate,
+          ),
+          const SizedBox(height: 12),
+          _buildDatePicker(
+            context,
+            'Deadline (Optional)',
+            _deadline,
+            (d) => setState(() => _deadline = d),
+            firstDate: widget.task.createdAt,
+          ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -93,16 +109,23 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     );
   }
 
-  Widget _buildDatePicker(BuildContext context) {
+  Widget _buildDatePicker(
+    BuildContext context,
+    String label,
+    DateTime? date,
+    ValueChanged<DateTime?> onChanged, {
+    DateTime? firstDate,
+    DateTime? maxDate,
+  }) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate: _scheduledDate ?? DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: _maxDate,
+          initialDate: date ?? DateTime.now(),
+          firstDate: firstDate ?? DateTime(2000),
+          lastDate: maxDate ?? DateTime(2100),
         );
-        if (picked != null) setState(() => _scheduledDate = picked);
+        if (picked != null) onChanged(picked);
       },
       borderRadius: BorderRadius.circular(8),
       child: Container(
@@ -113,15 +136,13 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
             const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
             const SizedBox(width: 8),
             Text(
-              _scheduledDate != null
-                  ? '${_scheduledDate!.day}/${_scheduledDate!.month}/${_scheduledDate!.year}'
-                  : 'No date',
-              style: TextStyle(color: _scheduledDate != null ? AppColors.text : AppColors.textSecondary),
+              date != null ? '${date.day}/${date.month}/${date.year}' : label,
+              style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
             ),
-            if (_scheduledDate != null) ...[
+            if (date != null) ...[
               const Spacer(),
               GestureDetector(
-                onTap: () => setState(() => _scheduledDate = null),
+                onTap: () => onChanged(null),
                 child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
               ),
             ],
@@ -140,6 +161,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
         priority: _priority,
         scheduledDate: _scheduledDate,
         clearScheduledDate: _scheduledDate == null,
+        deadline: _deadline,
+        clearDeadline: _deadline == null,
       ),
     );
     Navigator.of(context).pop();

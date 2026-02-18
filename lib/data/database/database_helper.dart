@@ -35,6 +35,7 @@ class DatabaseHelper {
         description TEXT,
         color INTEGER NOT NULL,
         priority INTEGER NOT NULL DEFAULT 0,
+        deadline TEXT,
         createdAt TEXT NOT NULL
       )
     ''');
@@ -67,6 +68,7 @@ class DatabaseHelper {
         status INTEGER NOT NULL DEFAULT 0,
         projectId TEXT,
         priority INTEGER NOT NULL DEFAULT 0,
+        deadline TEXT,
         createdAt TEXT NOT NULL,
         completedAt TEXT,
         FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
@@ -90,6 +92,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 7) {
       await _migrateToV7(db);
+    }
+    if (oldVersion < 8) {
+      await _migrateToV8(db);
     }
   }
 
@@ -120,5 +125,17 @@ class DatabaseHelper {
         value TEXT NOT NULL
       )
     ''');
+  }
+
+  static Future<void> _migrateToV8(Database db) async {
+    final List<Map<String, dynamic>> projectColumns = await db.rawQuery('PRAGMA table_info(projects)');
+    if (!projectColumns.any((c) => c['name'] == 'deadline')) {
+      await db.execute('ALTER TABLE projects ADD COLUMN deadline TEXT');
+    }
+
+    final List<Map<String, dynamic>> taskColumns = await db.rawQuery('PRAGMA table_info(tasks)');
+    if (!taskColumns.any((c) => c['name'] == 'deadline')) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN deadline TEXT');
+    }
   }
 }

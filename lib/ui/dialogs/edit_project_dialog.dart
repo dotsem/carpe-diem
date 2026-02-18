@@ -2,11 +2,11 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
+import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:carpe_diem/ui/widgets/color_picker.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/label_picker.dart';
-import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,6 +24,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   late Color _selectedColor;
   late Priority _priority;
   List<String> _selectedLabelIds = [];
+  DateTime? _deadline;
 
   @override
   void initState() {
@@ -33,6 +34,14 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     _selectedColor = widget.project.color;
     _priority = widget.project.priority;
     _selectedLabelIds = List<String>.from(widget.project.labelIds);
+    _deadline = widget.project.deadline;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descController.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,6 +81,14 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             selectedLabelIds: _selectedLabelIds,
             onSelected: (ids) => setState(() => _selectedLabelIds = ids),
           ),
+          const SizedBox(height: 16),
+          _buildDatePicker(
+            context,
+            'Deadline',
+            _deadline,
+            (d) => setState(() => _deadline = d),
+            firstDate: widget.project.createdAt,
+          ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -103,6 +120,51 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     );
   }
 
+  Widget _buildDatePicker(
+    BuildContext context,
+    String label,
+    DateTime? date,
+    ValueChanged<DateTime?> onChanged, {
+    DateTime? firstDate,
+    DateTime? maxDate,
+  }) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: (date != null && (firstDate == null || date.isAfter(firstDate)))
+              ? date
+              : (firstDate ?? DateTime.now()),
+          firstDate: firstDate ?? DateTime(2000),
+          lastDate: maxDate ?? DateTime(2100),
+        );
+        if (picked != null) onChanged(picked);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(8)),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
+            const SizedBox(width: 8),
+            Text(
+              date != null ? '${date.day}/${date.month}/${date.year}' : label,
+              style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
+            ),
+            if (date != null) ...[
+              const Spacer(),
+              GestureDetector(
+                onTap: () => onChanged(null),
+                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   void _submit() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
@@ -114,6 +176,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
       color: _selectedColor,
       priority: _priority,
       labelIds: _selectedLabelIds,
+      deadline: _deadline,
       createdAt: widget.project.createdAt,
       updatedAt: DateTime.now(),
     );

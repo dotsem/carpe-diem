@@ -8,7 +8,7 @@ class TaskRepository {
 
   Future<List<Task>> getAll() async {
     final db = await _db;
-    final maps = await db.query('tasks', orderBy: 'priority DESC, createdAt DESC');
+    final maps = await db.query('tasks', orderBy: '(deadline IS NULL), deadline ASC, priority DESC, createdAt DESC');
     return maps.map(Task.fromMap).toList();
   }
 
@@ -22,7 +22,7 @@ class TaskRepository {
       'tasks',
       where: '(scheduledDate = ?) OR (completedAt >= ? AND completedAt < ?)',
       whereArgs: [scheduledDateStr, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
-      orderBy: 'priority DESC, createdAt DESC',
+      orderBy: '(deadline IS NULL), deadline ASC, priority DESC, createdAt DESC',
     );
     return maps.map(Task.fromMap).toList();
   }
@@ -41,7 +41,11 @@ class TaskRepository {
 
   Future<List<Task>> getUnscheduled() async {
     final db = await _db;
-    final maps = await db.query('tasks', where: 'scheduledDate IS NULL', orderBy: 'priority DESC, createdAt DESC');
+    final maps = await db.query(
+      'tasks',
+      where: 'scheduledDate IS NULL',
+      orderBy: '(deadline IS NULL), deadline ASC, priority DESC, createdAt DESC',
+    );
     return maps.map(Task.fromMap).toList();
   }
 
@@ -51,7 +55,7 @@ class TaskRepository {
       'tasks',
       where: 'projectId = ?',
       whereArgs: [projectId],
-      orderBy: 'priority DESC, scheduledDate ASC',
+      orderBy: '(deadline IS NULL), deadline ASC, priority DESC, scheduledDate ASC',
     );
     return maps.map(Task.fromMap).toList();
   }
@@ -63,7 +67,7 @@ class TaskRepository {
       SELECT t.* FROM tasks t
       INNER JOIN project_labels pl ON t.projectId = pl.projectId
       WHERE pl.labelId = ?
-      ORDER BY t.priority DESC, t.scheduledDate ASC
+      ORDER BY (t.deadline IS NULL), t.deadline ASC, t.priority DESC, t.scheduledDate ASC
     ''',
       [labelId],
     );

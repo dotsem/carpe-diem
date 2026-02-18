@@ -50,6 +50,8 @@ class TaskProvider extends ChangeNotifier {
     }
     _currentDate = _normalizeDate(date);
 
+    await _autoScheduleDeadlines();
+
     _tasks = await _repo.getByDate(_currentDate);
     _overdueTasks = await _repo.getOverdue(_currentDate);
 
@@ -79,6 +81,7 @@ class TaskProvider extends ChangeNotifier {
     DateTime? scheduledDate,
     String? projectId,
     Priority priority = Priority.none,
+    DateTime? deadline,
   }) async {
     final task = Task(
       id: _uuid.v4(),
@@ -87,6 +90,7 @@ class TaskProvider extends ChangeNotifier {
       scheduledDate: scheduledDate != null ? _normalizeDate(scheduledDate) : null,
       projectId: projectId,
       priority: priority,
+      deadline: deadline != null ? _normalizeDate(deadline) : null,
       createdAt: DateTime.now(),
     );
     await _repo.insert(task);
@@ -200,4 +204,20 @@ class TaskProvider extends ChangeNotifier {
   }
 
   DateTime _normalizeDate(DateTime date) => DateTime(date.year, date.month, date.day);
+
+  Future<void> _autoScheduleDeadlines() async {
+    final backlog = await _repo.getUnscheduled();
+    final today = _normalizeDate(DateTime.now());
+
+    for (final task in backlog) {
+      if (task.deadline != null) {
+        final normalizedDeadline = _normalizeDate(task.deadline!);
+        // If deadline is today or in the past, schedule it for the deadline date
+        if (normalizedDeadline.isBefore(today.add(const Duration(days: 1)))) {
+          final updated = task.copyWith(scheduledDate: normalizedDeadline);
+          await _repo.update(updated);
+        }
+      }
+    }
+  }
 }

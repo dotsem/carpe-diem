@@ -7,7 +7,7 @@ class ProjectRepository {
 
   Future<List<Project>> getAll() async {
     final db = await _db;
-    final maps = await db.query('projects', orderBy: 'priority DESC, name ASC');
+    final maps = await db.query('projects', orderBy: '(deadline IS NULL), deadline ASC, priority DESC, name ASC');
 
     List<Project> projects = [];
     for (final map in maps) {

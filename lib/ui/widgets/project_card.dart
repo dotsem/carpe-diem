@@ -66,6 +66,7 @@ class ProjectCard extends StatelessWidget {
                     style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                   ),
                 ],
+                if (project.deadline != null) ...[const SizedBox(height: 8), _DeadlineRow(deadline: project.deadline!)],
                 const SizedBox(height: 12),
                 Consumer<LabelProvider>(
                   builder: (context, labelProvider, _) {
@@ -86,6 +87,27 @@ class ProjectCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// TODO add color when dealine approaches
+class _DeadlineRow extends StatelessWidget {
+  final DateTime deadline;
+  const _DeadlineRow({required this.deadline});
+
+  @override
+  Widget build(BuildContext context) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return Row(
+      children: [
+        const Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
+        const SizedBox(width: 6),
+        Text(
+          'Deadline: ${months[deadline.month - 1]} ${deadline.day}',
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+      ],
     );
   }
 }

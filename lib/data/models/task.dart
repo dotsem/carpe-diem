@@ -9,6 +9,7 @@ class Task {
   final TaskStatus status;
   final String? projectId;
   final Priority priority;
+  final DateTime? deadline;
   final DateTime createdAt;
   final DateTime? completedAt;
 
@@ -22,6 +23,7 @@ class Task {
     this.status = TaskStatus.todo,
     this.projectId,
     this.priority = Priority.none,
+    this.deadline,
     required this.createdAt,
     this.completedAt,
   });
@@ -35,6 +37,7 @@ class Task {
     'status': status.index,
     'projectId': projectId,
     'priority': priority.index,
+    'deadline': deadline?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
     'completedAt': completedAt?.toIso8601String(),
   };
@@ -47,6 +50,7 @@ class Task {
     status: TaskStatus.values[map['status'] as int],
     projectId: map['projectId'] as String?,
     priority: Priority.values[map['priority'] as int],
+    deadline: map['deadline'] != null ? DateTime.parse(map['deadline'] as String) : null,
     createdAt: DateTime.parse(map['createdAt'] as String),
     completedAt: map['completedAt'] != null ? DateTime.parse(map['completedAt'] as String) : null,
   );
@@ -59,6 +63,8 @@ class Task {
     TaskStatus? status,
     String? projectId,
     Priority? priority,
+    DateTime? deadline,
+    bool clearDeadline = false,
     DateTime? completedAt,
   }) => Task(
     id: id,
@@ -68,6 +74,7 @@ class Task {
     status: status ?? this.status,
     projectId: projectId ?? this.projectId,
     priority: priority ?? this.priority,
+    deadline: clearDeadline ? null : (deadline ?? this.deadline),
     createdAt: createdAt,
     completedAt: status == TaskStatus.done
         ? (completedAt ?? DateTime.now())
