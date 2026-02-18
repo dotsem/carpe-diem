@@ -185,7 +185,12 @@ class _KanbanCard extends StatelessWidget {
     required this.onEdit,
   });
 
-  bool get isOverdue => task.scheduledDate != null && task.scheduledDate!.isBefore(DateTime.now());
+  bool get isOverdue {
+    if (task.scheduledDate == null) return false;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return task.scheduledDate!.isBefore(today);
+  }
 
   @override
   Widget build(BuildContext context) {

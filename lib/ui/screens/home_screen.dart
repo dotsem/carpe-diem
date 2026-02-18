@@ -186,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (provider.layoutMode == TaskLayout.kanban) {
           return KanbanBoard(
-            tasks: [...overdue, ...allTasks],
+            tasks: [...(_isToday ? overdue : []), ...allTasks],
             projectProvider: projectProvider,
             onStatusChange: (task, status) => provider.updateTaskStatus(task, status),
             onContextMenu: (task, pos, box) => showTaskCardContextMenu(context, task, pos, box),
