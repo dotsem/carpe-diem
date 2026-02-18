@@ -189,8 +189,6 @@ class _KanbanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final taskProject = task.projectId != null ? project.getById(task.projectId!) : null;
-
     return Draggable<Task>(
       data: task,
       feedback: Material(
