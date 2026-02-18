@@ -1,11 +1,13 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ProjectPicker extends StatefulWidget {
   final List<Project> projects;
   final Function(String?) onChanged;
   final String? selectedProjectId;
+
   const ProjectPicker({super.key, this.selectedProjectId, required this.onChanged, required this.projects});
 
   @override
@@ -13,41 +15,231 @@ class ProjectPicker extends StatefulWidget {
 }
 
 class _ProjectPickerState extends State<ProjectPicker> {
+  final MenuController _menuController = MenuController();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  String _searchQuery = '';
+  int _selectedIndex = -1;
+
+  String _normalize(String text) {
+    return text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  }
+
+  bool _isFuzzyMatch(String target, String query) {
+    if (query.isEmpty) return true;
+    final normalizedTarget = _normalize(target);
+    final normalizedQuery = _normalize(query);
+
+    return normalizedTarget.contains(normalizedQuery);
+  }
+
+  List<Project?> get _filteredProjects {
+    final all = [null, ...widget.projects];
+    if (_searchQuery.isEmpty) return all;
+    return all.where((p) {
+      final name = p?.name ?? 'No project';
+      return _isFuzzyMatch(name, _searchQuery);
+    }).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.onKeyEvent = (node, event) {
+      if (event is KeyDownEvent) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+          setState(() {
+            _selectedIndex = (_selectedIndex + 1) % _filteredProjects.length;
+          });
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+          setState(() {
+            _selectedIndex = (_selectedIndex - 1 + _filteredProjects.length) % _filteredProjects.length;
+          });
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+          if (_selectedIndex >= 0 && _selectedIndex < _filteredProjects.length) {
+            _onProjectSelected(_filteredProjects[_selectedIndex]);
+            return KeyEventResult.handled;
+          }
+        }
+      }
+      return KeyEventResult.ignored;
+    };
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onProjectSelected(Project? project) {
+    widget.onChanged(project?.id);
+    _menuController.close();
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+      _selectedIndex = -1;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return (widget.projects.isNotEmpty)
-        ? DropdownButtonFormField<String?>(
-            initialValue: widget.selectedProjectId,
-            decoration: _inputDecoration(),
-            dropdownColor: AppColors.surfaceLight,
-            items: [
-              const DropdownMenuItem(value: null, child: Text('No project')),
-              ...widget.projects.map(
-                (p) => DropdownMenuItem(
-                  value: p.id,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(color: p.color, shape: BoxShape.circle),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(p.name),
-                    ],
+    if (widget.projects.isEmpty) {
+      return InputDecorator(
+        decoration: _inputDecoration().copyWith(hintText: 'No projects yet'),
+        child: const Text('No projects yet', style: TextStyle(color: AppColors.textSecondary)),
+      );
+    }
+
+    final selectedProject = widget.selectedProjectId == null
+        ? null
+        : widget.projects.firstWhere((p) => p.id == widget.selectedProjectId, orElse: () => widget.projects.first);
+
+    return MenuAnchor(
+      controller: _menuController,
+      onOpen: () {
+        _searchFocusNode.requestFocus();
+        setState(() => _selectedIndex = 0);
+      },
+      style: MenuStyle(
+        backgroundColor: WidgetStateProperty.all(AppColors.surfaceLight),
+        elevation: WidgetStateProperty.all(8),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+      ),
+      menuChildren: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            width: 300,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSearchBar(),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 250,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: _filteredProjects.isEmpty
+                          ? [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 32),
+                                child: Center(
+                                  child: Text('No results found', style: TextStyle(color: AppColors.textSecondary)),
+                                ),
+                              ),
+                            ]
+                          : List.generate(_filteredProjects.length, (index) {
+                              final project = _filteredProjects[index];
+                              final isHighlighted = index == _selectedIndex;
+                              return _buildProjectItem(project, isHighlighted, index);
+                            }),
+                    ),
                   ),
                 ),
-              ),
-            ],
-            onChanged: (v) => widget.onChanged(v),
-          )
-        : Expanded(
-            child: DropdownButtonFormField<String?>(
-              items: const [],
-              onChanged: null,
-              decoration: _inputDecoration().copyWith(hintText: 'No projects yet'),
+              ],
             ),
-          );
+          ),
+        ),
+      ],
+      builder: (context, controller, child) {
+        return InkWell(
+          onTap: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          child: InputDecorator(
+            decoration: _inputDecoration(),
+            child: Row(
+              children: [
+                if (selectedProject != null) ...[
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(color: selectedProject.color, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(selectedProject.name)),
+                ] else
+                  const Expanded(child: Text('No project')),
+                const Icon(Icons.arrow_drop_down),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: _searchController,
+      focusNode: _searchFocusNode,
+      decoration: InputDecoration(
+        hintText: 'Search projects...',
+        prefixIcon: const Icon(Icons.search, size: 20),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        fillColor: AppColors.surface,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+      ),
+      onChanged: (value) {
+        setState(() {
+          _searchQuery = value;
+          _selectedIndex = 0;
+        });
+      },
+      onSubmitted: (_) {
+        if (_selectedIndex >= 0 && _selectedIndex < _filteredProjects.length) {
+          _onProjectSelected(_filteredProjects[_selectedIndex]);
+        } else {
+          _searchFocusNode.requestFocus();
+        }
+      },
+    );
+  }
+
+  Widget _buildProjectItem(Project? project, bool isHighlighted, int index) {
+    return InkWell(
+      onTap: () => _onProjectSelected(project),
+      onHover: (hovering) {
+        if (hovering) setState(() => _selectedIndex = index);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isHighlighted ? AppColors.accent.withAlpha(25) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            if (project == null)
+              const Icon(Icons.block, size: 12, color: AppColors.textSecondary)
+            else
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(color: project.color, shape: BoxShape.circle),
+              ),
+            const SizedBox(width: 8),
+            Text(
+              project?.name ?? 'No project',
+              style: TextStyle(
+                color: isHighlighted ? AppColors.accent : AppColors.text,
+                fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   InputDecoration _inputDecoration() {
