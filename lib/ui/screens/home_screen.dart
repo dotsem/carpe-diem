@@ -1,9 +1,9 @@
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_layout.dart';
-import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/dialogs/pick_tasks_from_backlog_dialog.dart';
 import 'package:carpe_diem/ui/widgets/kanban_board.dart';
@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tasks: [...overdue, ...allTasks],
             projectProvider: projectProvider,
             onStatusChange: (task, status) => provider.updateTaskStatus(task, status),
-            onContextMenu: (task, pos, box) => _showContextMenu(context, task, pos, box),
+            onContextMenu: (task, pos, box) => showTaskCardContextMenu(context, task, pos, box),
             onEdit: (task) => _showEditTask(context, task),
           );
         }
@@ -276,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isOverdue: isOverdue,
       onToggle: () => provider.toggleComplete(task),
       onTap: () {},
-      onContextMenu: (localPosition, renderBox) => _showContextMenu(context, task, localPosition, renderBox),
+      onContextMenu: (localPosition, renderBox) => showTaskCardContextMenu(context, task, localPosition, renderBox),
       trailing: _taskTrailing(context, task),
     );
   }
@@ -291,88 +291,6 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () => _showEditTask(context, task),
         ),
       ],
-    );
-  }
-
-  void _showContextMenu(BuildContext context, Task task, Offset localPosition, RenderBox renderBox) {
-    final provider = context.read<TaskProvider>();
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final Offset position = renderBox.localToGlobal(localPosition, ancestor: overlay);
-
-    final items = <PopupMenuEntry<void>>[];
-
-    if (task.status.isTodo) {
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.inProgress),
-          child: const ListTile(leading: Icon(Icons.play_arrow), title: Text('Start (In Progress)'), dense: true),
-        ),
-      );
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.done),
-          child: const ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Mark as Done'), dense: true),
-        ),
-      );
-    }
-
-    if (task.status.isInProgress) {
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.todo),
-          child: const ListTile(leading: Icon(Icons.undo), title: Text('Back to Todo'), dense: true),
-        ),
-      );
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.done),
-          child: const ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Mark as Done'), dense: true),
-        ),
-      );
-    }
-
-    if (task.status.isDone) {
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.todo),
-          child: const ListTile(leading: Icon(Icons.undo), title: Text('Back to Todo'), dense: true),
-        ),
-      );
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.inProgress),
-          child: const ListTile(leading: Icon(Icons.play_arrow), title: Text('Back to In Progress'), dense: true),
-        ),
-      );
-    }
-
-    items.addAll([
-      PopupMenuItem(
-        onTap: () => provider.scheduleTasksForTomorrow([task.id]),
-        child: const ListTile(
-          leading: Icon(Icons.next_plan_outlined),
-          title: Text('Reschedule for Tomorrow'),
-          dense: true,
-        ),
-      ),
-      PopupMenuItem(
-        onTap: () => _showEditTask(context, task),
-        child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
-      ),
-      PopupMenuItem(
-        onTap: () => provider.deleteTask(task),
-        child: const ListTile(
-          leading: Icon(Icons.delete, color: AppColors.error),
-          title: Text('Delete', style: TextStyle(color: AppColors.error)),
-          dense: true,
-        ),
-      ),
-    ]);
-
-    showMenu(
-      context: context,
-      position: RelativeRect.fromRect(Rect.fromLTWH(position.dx, position.dy, 0, 0), Offset.zero & overlay.size),
-      items: items,
     );
   }
 

@@ -3,13 +3,14 @@ import 'package:carpe_diem/data/models/label.dart';
 
 class LabelChip extends StatelessWidget {
   final Label label;
+  final double verticalPadding;
 
-  const LabelChip({super.key, required this.label});
+  const LabelChip({super.key, required this.label, this.verticalPadding = 2});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: verticalPadding),
       decoration: BoxDecoration(
         color: label.color.withAlpha(25),
         borderRadius: BorderRadius.circular(4),

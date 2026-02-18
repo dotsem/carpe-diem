@@ -1,8 +1,12 @@
+import 'package:carpe_diem/providers/task_provider.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
+import 'package:carpe_diem/ui/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
+import 'package:provider/provider.dart';
 
 class KanbanBoard extends StatelessWidget {
   final List<Task> tasks;
@@ -181,6 +185,8 @@ class _KanbanCard extends StatelessWidget {
     required this.onEdit,
   });
 
+  bool get isOverdue => task.scheduledDate != null && task.scheduledDate!.isBefore(DateTime.now());
+
   @override
   Widget build(BuildContext context) {
     final taskProject = task.projectId != null ? project.getById(task.projectId!) : null;
@@ -197,72 +203,36 @@ class _KanbanCard extends StatelessWidget {
           child: Text(task.title, style: const TextStyle(color: AppColors.text, fontSize: 14)),
         ),
       ),
-      childWhenDragging: Opacity(opacity: 0.3, child: _cardContent(taskProject)),
+      childWhenDragging: Opacity(
+        opacity: 0.3,
+        child: _buildTaskCard(context, task, project, context.read<TaskProvider>(), isOverdue: isOverdue),
+      ),
       child: GestureDetector(
         onSecondaryTapDown: (details) {
           final box = context.findRenderObject() as RenderBox;
           onContextMenu(task, details.localPosition, box);
         },
         onTap: () => onEdit(task),
-        child: _cardContent(taskProject),
+        child: _buildTaskCard(context, task, project, context.read<TaskProvider>(), isOverdue: isOverdue),
       ),
     );
   }
 
-  Widget _cardContent(dynamic project) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(color: task.priority.color, borderRadius: BorderRadius.circular(2)),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    task.title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: task.isCompleted ? AppColors.textSecondary : AppColors.text,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (task.description != null && task.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4, left: 12),
-                child: Text(
-                  task.description!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-              ),
-            if (project != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: project.color.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(project.name, style: const TextStyle(fontSize: 10, color: AppColors.text)),
-                ),
-              ),
-          ],
-        ),
-      ),
+  TaskCard _buildTaskCard(
+    BuildContext context,
+    Task task,
+    ProjectProvider projectProvider,
+    TaskProvider provider, {
+    bool isOverdue = false,
+  }) {
+    return TaskCard(
+      key: ValueKey(task.id),
+      task: task,
+      project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+      isOverdue: isOverdue,
+      onToggle: () => provider.toggleComplete(task),
+      onTap: () {},
+      onContextMenu: (localPosition, renderBox) => showTaskCardContextMenu(context, task, localPosition, renderBox),
     );
   }
 }

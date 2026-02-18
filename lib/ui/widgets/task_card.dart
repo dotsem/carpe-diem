@@ -153,7 +153,9 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                           ),
                         if (widget.project != null || widget.isOverdue || widget.task.status.isInProgress) ...[
                           const SizedBox(height: 4),
-                          Row(
+                          Wrap(
+                            spacing: 4,
+                            runSpacing: 4,
                             children: [
                               if (widget.isOverdue && !widget.task.isCompleted && !_isPending) _overdueChip(),
                               if (widget.task.status.isInProgress && !_isPending) _statusChip(),
@@ -215,7 +217,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   Widget _statusChip() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      margin: const EdgeInsets.only(right: 6),
       decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
       child: const Text('In Progress', style: TextStyle(fontSize: 11, color: AppColors.accent)),
     );
@@ -224,7 +225,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   Widget _projectChip() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      margin: const EdgeInsets.only(right: 6),
       decoration: BoxDecoration(
         color: widget.project!.color.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(4),
@@ -245,12 +245,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     final labelProvider = context.watch<LabelProvider>();
     final labels = widget.project!.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
 
-    return labels.map((label) {
-      return Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: LabelChip(label: label),
-      );
-    }).toList();
+    return labels.map((label) => LabelChip(label: label, verticalPadding: 1)).toList();
   }
 }
 
