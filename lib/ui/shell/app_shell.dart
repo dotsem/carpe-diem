@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:carpe_diem/providers/project_provider.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -63,9 +65,53 @@ class _SideNav extends StatelessWidget {
           ),
           _NavItem(
             icon: Icons.folder_rounded,
-            label: 'Projects',
+            label: 'All Projects',
             isSelected: currentPath == '/projects',
             onTap: () => context.go('/projects'),
+          ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'PROJECTS',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Consumer<ProjectProvider>(
+              builder: (context, projectProvider, child) {
+                final projects = List.of(projectProvider.projects)
+                  ..sort((a, b) {
+                    final pComp = b.priority.index.compareTo(a.priority.index);
+                    if (pComp != 0) return pComp;
+                    return a.name.compareTo(b.name);
+                  });
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  itemCount: projects.length,
+                  itemBuilder: (context, index) {
+                    final project = projects[index];
+                    final isSelected = currentPath.startsWith('/projects/${project.id}');
+                    return _NavItem(
+                      icon: Icons.circle,
+                      iconColor: project.color,
+                      iconSize: 12,
+                      label: project.name,
+                      isSelected: isSelected,
+                      onTap: () => context.go('/projects/${project.id}'),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -78,8 +124,17 @@ class _NavItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final Color? iconColor;
+  final double iconSize;
 
-  const _NavItem({required this.icon, required this.label, required this.isSelected, required this.onTap});
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.iconColor,
+    this.iconSize = 20,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -95,13 +150,20 @@ class _NavItem extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Icon(icon, color: isSelected ? AppColors.accent : AppColors.textSecondary, size: 20),
+                Icon(
+                  icon,
+                  color: iconColor ?? (isSelected ? AppColors.accent : AppColors.textSecondary),
+                  size: iconSize,
+                ),
                 const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected ? AppColors.accent : AppColors.textSecondary,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                Expanded(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isSelected ? AppColors.accent : AppColors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
                   ),
                 ),
               ],
