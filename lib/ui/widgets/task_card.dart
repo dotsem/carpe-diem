@@ -151,7 +151,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                               style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                             ),
                           ),
-                        if (widget.project != null || widget.isOverdue || widget.task.status.isInProgress) ...[
+                        if (widget.project != null ||
+                            widget.isOverdue ||
+                            widget.task.status.isInProgress ||
+                            widget.task.deadline != null) ...[
                           const SizedBox(height: 4),
                           Wrap(
                             spacing: 4,
