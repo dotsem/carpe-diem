@@ -16,6 +16,7 @@ class TaskCard extends StatefulWidget {
   final bool isOverdue;
   final bool selectionMode;
   final bool isSelected;
+  final bool useTimer;
   final void Function(Offset localPosition, RenderBox renderBox)? onContextMenu;
 
   const TaskCard({
@@ -28,6 +29,7 @@ class TaskCard extends StatefulWidget {
     this.isOverdue = false,
     this.selectionMode = false,
     this.isSelected = false,
+    this.useTimer = true,
     this.onContextMenu,
   });
 
@@ -65,6 +67,11 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     if (widget.task.status.isDone) {
       widget.onToggle();
     } else if (widget.task.status.isInProgress) {
+      if (!widget.useTimer) {
+        widget.onToggle();
+        return;
+      }
+
       // In progress -> start 5s timer to complete
       if (_isPending) {
         _controller.reset();
