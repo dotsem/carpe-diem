@@ -6,6 +6,7 @@ import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/color_picker.dart';
 import 'package:carpe_diem/ui/widgets/label_picker.dart';
+import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class AddProjectDialog extends StatefulWidget {
@@ -68,7 +69,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             onSelected: (ids) => setState(() => _selectedLabelIds = ids),
           ),
           const SizedBox(height: 16),
-          _DatePickerButton(label: 'Deadline', date: _deadline, onChanged: (d) => setState(() => _deadline = d)),
+          DatePickerButton(label: 'Deadline', date: _deadline, onChanged: (d) => setState(() => _deadline = d)),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -96,60 +97,5 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
       deadline: _deadline,
     );
     Navigator.of(context).pop();
-  }
-}
-
-class _DatePickerButton extends StatelessWidget {
-  final String label;
-  final DateTime? date;
-  final DateTime? firstDate;
-  final DateTime? maxDate;
-  final ValueChanged<DateTime?> onChanged;
-
-  const _DatePickerButton({
-    required this.label,
-    required this.date,
-    this.firstDate,
-    this.maxDate,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: (date != null && date!.isAfter(firstDate ?? DateTime(2000)))
-              ? date!
-              : (firstDate ?? DateTime.now()),
-          firstDate: firstDate ?? DateTime.now(),
-          lastDate: maxDate ?? DateTime(2100),
-        );
-        if (picked != null) onChanged(picked);
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(8)),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
-            const SizedBox(width: 8),
-            Text(
-              date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
-              style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
-            ),
-            if (date != null) ...[
-              const Spacer(),
-              GestureDetector(
-                onTap: () => onChanged(null),
-                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 }

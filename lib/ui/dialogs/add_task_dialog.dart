@@ -7,6 +7,7 @@ import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
+import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -75,10 +76,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
           Row(
             children: [
               Expanded(
-                child: _DatePickerButton(
+                child: DatePickerButton(
                   label: 'Schedule date',
                   date: _selectedDate,
-                  maxDate: _maxDate,
+                  lastDate: _maxDate,
                   onChanged: (d) => setState(() => _selectedDate = d),
                 ),
               ),
@@ -93,7 +94,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             ],
           ),
           const SizedBox(height: 12),
-          _DatePickerButton(
+          DatePickerButton(
             label: 'Deadline',
             date: _deadline,
             firstDate: DateTime.now(),
@@ -126,58 +127,5 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       deadline: _deadline,
     );
     Navigator.of(context).pop();
-  }
-}
-
-class _DatePickerButton extends StatelessWidget {
-  final String label;
-  final DateTime? date;
-  final DateTime? firstDate;
-  final DateTime? maxDate;
-  final ValueChanged<DateTime?> onChanged;
-
-  const _DatePickerButton({
-    required this.label,
-    required this.date,
-    this.firstDate,
-    this.maxDate,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: date ?? DateTime.now(),
-          firstDate: firstDate ?? DateTime(2000),
-          lastDate: maxDate ?? DateTime(2100),
-        );
-        if (picked != null) onChanged(picked);
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(8)),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
-            const SizedBox(width: 8),
-            Text(
-              date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
-              style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
-            ),
-            if (date != null) ...[
-              const Spacer(),
-              GestureDetector(
-                onTap: () => onChanged(null),
-                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 }

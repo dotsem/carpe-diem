@@ -8,6 +8,7 @@ import 'package:carpe_diem/ui/widgets/color_picker.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
 import 'package:provider/provider.dart';
 
 class EditProjectDialog extends StatefulWidget {
@@ -82,11 +83,10 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             onSelected: (ids) => setState(() => _selectedLabelIds = ids),
           ),
           const SizedBox(height: 16),
-          _buildDatePicker(
-            context,
-            'Deadline',
-            _deadline,
-            (d) => setState(() => _deadline = d),
+          DatePickerButton(
+            label: 'Deadline',
+            date: _deadline,
+            onChanged: (d) => setState(() => _deadline = d),
             firstDate: widget.project.createdAt,
           ),
           const SizedBox(height: 24),
@@ -116,51 +116,6 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDatePicker(
-    BuildContext context,
-    String label,
-    DateTime? date,
-    ValueChanged<DateTime?> onChanged, {
-    DateTime? firstDate,
-    DateTime? maxDate,
-  }) {
-    return InkWell(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: (date != null && (firstDate == null || date.isAfter(firstDate)))
-              ? date
-              : (firstDate ?? DateTime.now()),
-          firstDate: firstDate ?? DateTime(2000),
-          lastDate: maxDate ?? DateTime(2100),
-        );
-        if (picked != null) onChanged(picked);
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(8)),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
-            const SizedBox(width: 8),
-            Text(
-              date != null ? '${date.day}/${date.month}/${date.year}' : label,
-              style: TextStyle(color: date != null ? AppColors.text : AppColors.textSecondary),
-            ),
-            if (date != null) ...[
-              const Spacer(),
-              GestureDetector(
-                onTap: () => onChanged(null),
-                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }

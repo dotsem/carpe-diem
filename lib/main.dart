@@ -1,5 +1,6 @@
 import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/database/database_helper.dart';
@@ -40,6 +41,8 @@ class CarpeDiemApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
         routerConfig: appRouter,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: [const Locale('en', 'US'), const Locale('en', 'GB')],
       ),
     );
   }
