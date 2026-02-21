@@ -12,6 +12,8 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
+import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
+import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 
 class TaskScreen extends StatefulWidget {
   const TaskScreen({super.key});
@@ -22,6 +24,9 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   TaskFilter _filter = const TaskFilter();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -29,6 +34,13 @@ class _TaskScreenState extends State<TaskScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TaskProvider>().loadUnscheduledTasks();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -41,6 +53,16 @@ class _TaskScreenState extends State<TaskScreen> {
           filter: _filter,
           onFilterTap: () => _showFilterDialog(context),
           onClearFilter: () => setState(() => _filter = const TaskFilter()),
+        ),
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+          child: FuzzySearchBar(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            hintText: 'Search backlog tasks...',
+            onChanged: (value) => setState(() => _searchQuery = value),
+          ),
         ),
         const Divider(height: 1),
         Expanded(child: _taskList()),
@@ -82,10 +104,19 @@ class _TaskScreenState extends State<TaskScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
-        final allTasks = provider.unscheduledTasks.where((t) {
+        var allTasks = provider.unscheduledTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
           return _filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
+
+        if (_searchQuery.isNotEmpty) {
+          allTasks = FuzzySearchUtils.search<Task>(
+            query: _searchQuery,
+            items: allTasks,
+            itemToString: (t) => '${t.title} ${t.description ?? ''}',
+            threshold: 0.3,
+          );
+        }
 
         final activeTasks = allTasks.where((t) => !t.isCompleted).toList();
         final completedTasks = allTasks.where((t) => t.isCompleted).toList();

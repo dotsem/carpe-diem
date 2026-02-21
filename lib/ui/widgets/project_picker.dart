@@ -2,6 +2,8 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
+import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 
 class ProjectPicker extends StatefulWidget {
   final List<Project> projects;
@@ -21,25 +23,16 @@ class _ProjectPickerState extends State<ProjectPicker> {
   String _searchQuery = '';
   int _selectedIndex = -1;
 
-  String _normalize(String text) {
-    return text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-  }
-
-  bool _isFuzzyMatch(String target, String query) {
-    if (query.isEmpty) return true;
-    final normalizedTarget = _normalize(target);
-    final normalizedQuery = _normalize(query);
-
-    return normalizedTarget.contains(normalizedQuery);
-  }
-
   List<Project?> get _filteredProjects {
     final all = [null, ...widget.projects];
     if (_searchQuery.isEmpty) return all;
-    return all.where((p) {
-      final name = p?.name ?? 'No project';
-      return _isFuzzyMatch(name, _searchQuery);
-    }).toList();
+
+    return FuzzySearchUtils.search<Project?>(
+      query: _searchQuery,
+      items: all,
+      itemToString: (project) => project?.name ?? 'No project',
+      threshold: 0.3,
+    );
   }
 
   @override
@@ -179,17 +172,10 @@ class _ProjectPickerState extends State<ProjectPicker> {
   }
 
   Widget _buildSearchBar() {
-    return TextField(
+    return FuzzySearchBar(
       controller: _searchController,
       focusNode: _searchFocusNode,
-      decoration: InputDecoration(
-        hintText: 'Search projects...',
-        prefixIcon: const Icon(Icons.search, size: 20),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        fillColor: AppColors.surface,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-      ),
+      hintText: 'Search projects...',
       onChanged: (value) {
         setState(() {
           _searchQuery = value;
