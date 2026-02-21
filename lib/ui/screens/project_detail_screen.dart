@@ -13,6 +13,9 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_list_view.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -87,6 +90,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
             ],
           ),
+          floatingActionButton: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Colors.black, blurRadius: 15, spreadRadius: 2, offset: const Offset(0, 4))],
+            ),
+            child: FloatingActionButton(
+              onPressed: () => _showAddTask(context),
+              backgroundColor: project.color,
+              elevation: 0,
+              highlightElevation: 0,
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          ),
         );
       },
     );
@@ -119,7 +135,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
                         ),
                       ),
-                      // Could add edit buttons here in the future
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary),
+                        onPressed: () => _showEditProject(context, project),
+                        tooltip: 'Edit Project',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                        onPressed: () => _showDeleteProject(context, project),
+                        tooltip: 'Delete Project',
+                      ),
                     ],
                   ),
                 ),
@@ -179,6 +204,47 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ],
         child: EditTaskDialog(task: task),
       ),
+    ).then((_) => _loadTasks());
+  }
+
+  void _showEditProject(BuildContext context, Project project) {
+    showDialog(
+      context: context,
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: context.read<ProjectProvider>()),
+          ChangeNotifierProvider.value(value: context.read<LabelProvider>()),
+        ],
+        child: EditProjectDialog(project: project),
+      ),
     );
+  }
+
+  void _showDeleteProject(BuildContext context, Project project) {
+    showDialog(
+      context: context,
+      builder: (ctx) => DeleteDialog(
+        title: 'Delete Project',
+        message:
+            'Are you sure you want to delete "${project.name}"? This will not delete the tasks, but they will no longer be associated with this project.',
+        onConfirm: () {
+          context.read<ProjectProvider>().deleteProject(project);
+          Navigator.of(context).pop(); // Pop from detail screen
+        },
+      ),
+    );
+  }
+
+  void _showAddTask(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: context.read<TaskProvider>()),
+          ChangeNotifierProvider.value(value: context.read<ProjectProvider>()),
+        ],
+        child: AddTaskDialog(initialProjectId: widget.projectId),
+      ),
+    ).then((_) => _loadTasks());
   }
 }
