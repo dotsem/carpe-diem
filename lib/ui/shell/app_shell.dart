@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:carpe_diem/data/models/priority.dart';
+import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 
 class AppShell extends StatelessWidget {
@@ -94,19 +96,54 @@ class _SideNav extends StatelessWidget {
                     if (pComp != 0) return pComp;
                     return a.name.compareTo(b.name);
                   });
+
+                final groups = <Priority, List<Project>>{};
+                for (final project in projects) {
+                  groups.putIfAbsent(project.priority, () => []).add(project);
+                }
+
+                final priorities = groups.keys.toList()..sort((a, b) => b.index.compareTo(a.index));
+
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  itemCount: projects.length,
-                  itemBuilder: (context, index) {
-                    final project = projects[index];
-                    final isSelected = currentPath.startsWith('/projects/${project.id}');
-                    return _NavItem(
-                      icon: Icons.circle,
-                      iconColor: project.color,
-                      iconSize: 12,
-                      label: project.name,
-                      isSelected: isSelected,
-                      onTap: () => context.go('/projects/${project.id}'),
+                  itemCount: priorities.length,
+                  itemBuilder: (context, pIndex) {
+                    final priority = priorities[pIndex];
+                    final groupProjects = groups[priority]!;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8, bottom: 8),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: groupProjects.map((project) {
+                                final isSelected = currentPath.startsWith('/projects/${project.id}');
+                                return _NavItem(
+                                  icon: Icons.circle,
+                                  iconColor: project.color,
+                                  iconSize: 12,
+                                  label: project.name,
+                                  isSelected: isSelected,
+                                  onTap: () => context.go('/projects/${project.id}'),
+                                  outerPadding: const EdgeInsets.only(right: 12, top: 2, bottom: 2),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: 3,
+                            child: Container(
+                              decoration: BoxDecoration(color: priority.color, borderRadius: BorderRadius.circular(2)),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -126,6 +163,7 @@ class _NavItem extends StatelessWidget {
   final VoidCallback onTap;
   final Color? iconColor;
   final double iconSize;
+  final EdgeInsets? outerPadding;
 
   const _NavItem({
     required this.icon,
@@ -134,12 +172,13 @@ class _NavItem extends StatelessWidget {
     required this.onTap,
     this.iconColor,
     this.iconSize = 20,
+    this.outerPadding,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: outerPadding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
         color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
