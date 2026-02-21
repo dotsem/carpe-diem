@@ -1,6 +1,7 @@
 import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
-import 'package:carpe_diem/ui/widgets/context_menu/label_chip.dart';
+import 'package:carpe_diem/ui/widgets/chip/chip.dart';
+import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -167,10 +168,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                             spacing: 4,
                             runSpacing: 4,
                             children: [
-                              if (widget.isOverdue && !widget.task.isCompleted && !_isPending) _overdueChip(),
-                              if (widget.task.status.isInProgress && !_isPending) _statusChip(),
-                              if (widget.task.deadline != null) _deadlineChip(),
-                              if (widget.project != null) _projectChip(),
+                              if (widget.isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
+                              if (widget.task.status.isInProgress && !_isPending) StatusChip(),
+                              if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
+                              if (widget.project != null) ProjectChip(project: widget.project),
                               if (widget.project != null) ..._getLabels(context),
                             ],
                           ),
@@ -222,56 +223,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       width: 6,
       height: 40,
       decoration: BoxDecoration(color: widget.task.priority.color, borderRadius: BorderRadius.circular(2)),
-    );
-  }
-
-  Widget _statusChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
-      child: const Text('In Progress', style: TextStyle(fontSize: 11, color: AppColors.accent)),
-    );
-  }
-
-  Widget _projectChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: widget.project!.color.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(widget.project!.name, style: TextStyle(fontSize: 11, color: AppColors.text)),
-    );
-  }
-
-  Widget _deadlineChip() {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final date = widget.task.deadline!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColors.textSecondary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.timer_outlined, size: 10, color: AppColors.textSecondary),
-          const SizedBox(width: 4),
-          Text(
-            'Due: ${months[date.month - 1]} ${date.day}',
-            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _overdueChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
-      child: const Text('Overdue', style: TextStyle(fontSize: 11, color: AppColors.error)),
     );
   }
 
