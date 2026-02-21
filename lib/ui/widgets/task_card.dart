@@ -131,60 +131,63 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    PriorityIndicator(priority: widget.task.priority),
-                    const SizedBox(width: 8),
-                    Align(child: _statusIndicator()),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.task.title,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              decoration: (!widget.selectionMode && showDone) ? TextDecoration.lineThrough : null,
-                              color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
-                            ),
-                          ),
-                          if (widget.task.description != null && widget.task.description!.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                widget.task.description!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              child: Stack(
+                children: [
+                  Positioned(left: 0, top: 0, bottom: 0, child: PriorityIndicator(priority: widget.task.priority)),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 14), // indicator width (6) + gap (8)
+                    child: Row(
+                      children: [
+                        _statusIndicator(),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.task.title,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: (!widget.selectionMode && showDone) ? TextDecoration.lineThrough : null,
+                                  color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
+                                ),
                               ),
-                            ),
-                          if (widget.project != null ||
-                              widget.isOverdue ||
-                              widget.task.status.isInProgress ||
-                              widget.task.deadline != null) ...[
-                            const SizedBox(height: 4),
-                            Wrap(
-                              spacing: 4,
-                              runSpacing: 4,
-                              children: [
-                                if (widget.isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
-                                if (widget.task.status.isInProgress && !_isPending) StatusChip(),
-                                if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
-                                if (widget.project != null) ProjectChip(project: widget.project),
-                                if (widget.project != null) ..._getLabels(context),
+                              if (widget.task.description != null && widget.task.description!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    widget.task.description!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                  ),
+                                ),
+                              if (widget.project != null ||
+                                  widget.isOverdue ||
+                                  widget.task.status.isInProgress ||
+                                  widget.task.deadline != null) ...[
+                                const SizedBox(height: 4),
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: [
+                                    if (widget.isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
+                                    if (widget.task.status.isInProgress && !_isPending) StatusChip(),
+                                    if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
+                                    if (widget.project != null) ProjectChip(project: widget.project),
+                                    if (widget.project != null) ..._getLabels(context),
+                                  ],
+                                ),
                               ],
-                            ),
-                          ],
-                        ],
-                      ),
+                            ],
+                          ),
+                        ),
+                        if (widget.trailing != null) widget.trailing!,
+                      ],
                     ),
-                    if (widget.trailing != null) Align(child: widget.trailing!),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
