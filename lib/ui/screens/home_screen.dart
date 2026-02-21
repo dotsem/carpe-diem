@@ -14,7 +14,7 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
-import 'package:carpe_diem/ui/widgets/task_card.dart';
+import 'package:carpe_diem/ui/widgets/task_list_view.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -194,90 +194,32 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        return _listLayout(provider, projectProvider, overdue, allTasks);
+        return TaskListView(
+          tasks: allTasks,
+          overdueTasks: _isToday ? overdue : [],
+          onContextMenu: (ctx, task, pos, box) => showTaskCardContextMenu(ctx, task, pos, box),
+          trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
+          emptyPlaceholder: _buildEmptyState(),
+        );
       },
     );
   }
 
-  Widget _listLayout(TaskProvider provider, ProjectProvider projectProvider, List<Task> overdue, List<Task> allTasks) {
-    final inProgressTasks = allTasks.where((t) => t.status.isInProgress).toList();
-    final todoTasks = allTasks.where((t) => t.status.isTodo).toList();
-    final completedTasks = allTasks.where((t) => t.isCompleted).toList();
-
-    if (overdue.isEmpty && inProgressTasks.isEmpty && todoTasks.isEmpty && completedTasks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
-            const SizedBox(height: 16),
-            Text(
-              _isToday ? 'No tasks for today' : 'No tasks scheduled',
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            TextButton(onPressed: () => _showAddTask(context), child: const Text('Add your first task')),
-          ],
-        ),
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
-      children: [
-        if (inProgressTasks.isNotEmpty) ...[
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
+          const SizedBox(height: 16),
           Text(
-            'In Progress',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(color: AppColors.accent, fontWeight: FontWeight.w600),
+            _isToday ? 'No tasks for today' : 'No tasks scheduled',
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
           ),
           const SizedBox(height: 8),
-          ...inProgressTasks.map((task) => _buildTaskCard(task, projectProvider, provider)),
-          const SizedBox(height: 20),
+          TextButton(onPressed: () => _showAddTask(context), child: const Text('Add your first task')),
         ],
-        if (overdue.isNotEmpty && _isToday) ...[
-          Text(
-            'Overdue',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(color: AppColors.error, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          ...overdue.map((task) => _buildTaskCard(task, projectProvider, provider, isOverdue: true)),
-          const SizedBox(height: 20),
-        ],
-        if (todoTasks.isNotEmpty) ...[
-          if (inProgressTasks.isNotEmpty || (overdue.isNotEmpty && _isToday))
-            Text('Todo', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-          if (inProgressTasks.isNotEmpty || (overdue.isNotEmpty && _isToday)) const SizedBox(height: 8),
-          ...todoTasks.map((task) => _buildTaskCard(task, projectProvider, provider)),
-        ],
-        if (completedTasks.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Text(
-            'Done',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          ...completedTasks.map((task) => _buildTaskCard(task, projectProvider, provider)),
-        ],
-      ],
-    );
-  }
-
-  TaskCard _buildTaskCard(Task task, ProjectProvider projectProvider, TaskProvider provider, {bool isOverdue = false}) {
-    return TaskCard(
-      key: ValueKey(task.id),
-      task: task,
-      project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
-      isOverdue: isOverdue,
-      onToggle: () => provider.toggleComplete(task),
-      onTap: () {},
-      onContextMenu: (localPosition, renderBox) => showTaskCardContextMenu(context, task, localPosition, renderBox),
-      trailing: _taskTrailing(context, task),
+      ),
     );
   }
 

@@ -10,7 +10,9 @@ import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
-import 'package:carpe_diem/ui/widgets/task_card.dart';
+import 'package:carpe_diem/ui/widgets/task_list_view.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
+import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -73,22 +75,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : _tasks.isEmpty
-                    ? const Center(
-                        child: Text("No tasks in this project", style: TextStyle(color: AppColors.textSecondary)),
-                      )
-                    : ListView.separated(
+                    : TaskListView(
+                        tasks: _tasks,
                         padding: const EdgeInsets.all(24),
-                        itemCount: _tasks.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final task = _tasks[index];
-                          return TaskCard(
-                            task: task,
-                            onToggle: () => context.read<TaskProvider>().toggleComplete(task),
-                            onTap: () {},
-                          );
-                        },
+                        onContextMenu: (ctx, task, pos, box) => showTaskCardContextMenu(ctx, task, pos, box),
+                        trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
+                        emptyPlaceholder: const Center(
+                          child: Text("No tasks in this project", style: TextStyle(color: AppColors.textSecondary)),
+                        ),
                       ),
               ),
             ],
@@ -139,8 +133,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ),
                 if (project.description?.isNotEmpty == true) ...[
                   const SizedBox(height: 16),
+                  // TODO: add expand button
                   Text(
                     project.description!,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
                   ),
                 ],
@@ -157,5 +154,31 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final labels = project.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
 
     return labels.map((label) => LabelChip(label: label, verticalPadding: 1)).toList();
+  }
+
+  Widget _taskTrailing(BuildContext context, Task task) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.edit, size: 18),
+          color: AppColors.textSecondary,
+          onPressed: () => _showEditTask(context, task),
+        ),
+      ],
+    );
+  }
+
+  void _showEditTask(BuildContext context, Task task) {
+    showDialog(
+      context: context,
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: context.read<TaskProvider>()),
+          ChangeNotifierProvider.value(value: context.read<ProjectProvider>()),
+        ],
+        child: EditTaskDialog(task: task),
+      ),
+    );
   }
 }

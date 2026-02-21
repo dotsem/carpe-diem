@@ -1,4 +1,5 @@
 import 'package:carpe_diem/providers/task_provider.dart';
+import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
 import 'package:flutter/material.dart';
@@ -124,12 +125,9 @@ class _KanbanColumn extends StatelessWidget {
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: titleColor),
                       ),
                       const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: titleColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                      SmallChip(
+                        borderRadius: 10,
+                        color: titleColor.withValues(alpha: 0.15),
                         child: Text(
                           '${tasks.length}',
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: titleColor),
