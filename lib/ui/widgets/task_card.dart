@@ -2,6 +2,7 @@ import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/chip.dart';
 import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
+import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -130,57 +131,60 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  _priorityIndicator(),
-                  const SizedBox(width: 8),
-                  _statusIndicator(),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.task.title,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            decoration: (!widget.selectionMode && showDone) ? TextDecoration.lineThrough : null,
-                            color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
-                          ),
-                        ),
-                        if (widget.task.description != null && widget.task.description!.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              widget.task.description!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PriorityIndicator(priority: widget.task.priority),
+                    const SizedBox(width: 8),
+                    Align(child: _statusIndicator()),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.task.title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              decoration: (!widget.selectionMode && showDone) ? TextDecoration.lineThrough : null,
+                              color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
                             ),
                           ),
-                        if (widget.project != null ||
-                            widget.isOverdue ||
-                            widget.task.status.isInProgress ||
-                            widget.task.deadline != null) ...[
-                          const SizedBox(height: 4),
-                          Wrap(
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: [
-                              if (widget.isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
-                              if (widget.task.status.isInProgress && !_isPending) StatusChip(),
-                              if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
-                              if (widget.project != null) ProjectChip(project: widget.project),
-                              if (widget.project != null) ..._getLabels(context),
-                            ],
-                          ),
+                          if (widget.task.description != null && widget.task.description!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                widget.task.description!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                              ),
+                            ),
+                          if (widget.project != null ||
+                              widget.isOverdue ||
+                              widget.task.status.isInProgress ||
+                              widget.task.deadline != null) ...[
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: [
+                                if (widget.isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
+                                if (widget.task.status.isInProgress && !_isPending) StatusChip(),
+                                if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
+                                if (widget.project != null) ProjectChip(project: widget.project),
+                                if (widget.project != null) ..._getLabels(context),
+                              ],
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                  if (widget.trailing != null) widget.trailing!,
-                ],
+                    if (widget.trailing != null) Align(child: widget.trailing!),
+                  ],
+                ),
               ),
             ),
           ),
@@ -215,14 +219,6 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       value: task.isCompleted || _isPending,
       onChanged: (_) => _handleToggle(),
       fillColor: _isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
-    );
-  }
-
-  Widget _priorityIndicator() {
-    return Container(
-      width: 6,
-      height: 40,
-      decoration: BoxDecoration(color: widget.task.priority.color, borderRadius: BorderRadius.circular(2)),
     );
   }
 

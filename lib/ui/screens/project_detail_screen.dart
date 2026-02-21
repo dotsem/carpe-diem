@@ -1,3 +1,8 @@
+import 'package:carpe_diem/data/models/label.dart';
+import 'package:carpe_diem/providers/label_provider.dart';
+import 'package:carpe_diem/ui/widgets/chip/chip.dart';
+import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
+import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -96,35 +101,61 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   Widget _buildHeader(Project project) {
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: project.color),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  project.name,
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
+          Positioned(left: 0, top: 0, bottom: 0, child: PriorityIndicator(priority: project.priority)),
+          Padding(
+            padding: const EdgeInsets.only(left: 22), // width of indicator (6) + spacing (16)
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: project.color),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          project.name,
+                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
+                        ),
+                      ),
+                      // Could add edit buttons here in the future
+                    ],
+                  ),
                 ),
-              ),
-              // Could add edit buttons here in the future
-            ],
-          ),
-          if (project.description?.isNotEmpty == true) ...[
-            const SizedBox(height: 16),
-            Text(
-              project.description!,
-              style: const TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: [
+                    if (project.deadline != null) DeadlineChip(deadline: project.deadline!),
+                    ..._getLabels(context, project),
+                  ],
+                ),
+                if (project.description?.isNotEmpty == true) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    project.description!,
+                    style: const TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
+  }
+
+  List<Widget> _getLabels(BuildContext context, Project project) {
+    final labelProvider = context.watch<LabelProvider>();
+    final labels = project.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
+
+    return labels.map((label) => LabelChip(label: label, verticalPadding: 1)).toList();
   }
 }
