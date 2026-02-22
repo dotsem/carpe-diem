@@ -2,6 +2,7 @@ import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/chip.dart';
 import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/backlog_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,6 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_list_view.dart';
-import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
@@ -81,7 +81,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     : TaskListView(
                         tasks: _tasks,
                         padding: const EdgeInsets.all(24),
-                        onContextMenu: (ctx, task, pos, box) => showTaskCardContextMenu(ctx, task, pos, box),
+                        onContextMenu: (ctx, task, pos, box) => showBacklogContextMenu(ctx, task, pos, box),
                         trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
                         emptyPlaceholder: const Center(
                           child: Text("No tasks in this project", style: TextStyle(color: AppColors.textSecondary)),
@@ -185,26 +185,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          icon: const Icon(Icons.edit, size: 18),
-          color: AppColors.textSecondary,
-          onPressed: () => _showEditTask(context, task),
+        Builder(
+          builder: (buttonContext) {
+            return IconButton(
+              icon: const Icon(Icons.more_vert, size: 18),
+              color: AppColors.textSecondary,
+              onPressed: () {
+                final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
+                const localPosition = Offset.zero;
+                showBacklogContextMenu(context, task, localPosition, renderBox);
+              },
+            );
+          },
         ),
       ],
     );
-  }
-
-  void _showEditTask(BuildContext context, Task task) {
-    showDialog(
-      context: context,
-      builder: (_) => MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: context.read<TaskProvider>()),
-          ChangeNotifierProvider.value(value: context.read<ProjectProvider>()),
-        ],
-        child: EditTaskDialog(task: task),
-      ),
-    ).then((_) => _loadTasks());
   }
 
   void _showEditProject(BuildContext context, Project project) {

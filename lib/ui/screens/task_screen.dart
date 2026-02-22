@@ -1,10 +1,9 @@
 import 'package:carpe_diem/data/models/task.dart';
-import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
-import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/import_from_md_dialog.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/backlog_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -145,7 +144,8 @@ class _TaskScreenState extends State<TaskScreen> {
                 project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
                 onToggle: () => provider.toggleComplete(task),
                 onTap: () {},
-                onContextMenu: (localPosition, renderBox) => _showContextMenu(context, task, localPosition, renderBox),
+                onContextMenu: (localPosition, renderBox) =>
+                    showBacklogContextMenu(context, task, localPosition, renderBox),
                 trailing: _taskTrailing(context, task),
               ),
             ),
@@ -165,7 +165,7 @@ class _TaskScreenState extends State<TaskScreen> {
                   onToggle: () => provider.toggleComplete(task),
                   onTap: () {},
                   onContextMenu: (localPosition, renderBox) =>
-                      _showContextMenu(context, task, localPosition, renderBox),
+                      showBacklogContextMenu(context, task, localPosition, renderBox),
                   trailing: _taskTrailing(context, task),
                 ),
               ),
@@ -176,101 +176,22 @@ class _TaskScreenState extends State<TaskScreen> {
     );
   }
 
-  void _showContextMenu(BuildContext context, Task task, Offset localPosition, RenderBox renderBox) {
-    final provider = context.read<TaskProvider>();
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    final Offset position = renderBox.localToGlobal(localPosition, ancestor: overlay);
-
-    final items = <PopupMenuEntry<void>>[];
-
-    if (task.status.isTodo) {
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.inProgress),
-          child: const ListTile(leading: Icon(Icons.play_arrow), title: Text('Start (In Progress)'), dense: true),
-        ),
-      );
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.done),
-          child: const ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Mark as Done'), dense: true),
-        ),
-      );
-    }
-
-    if (task.status.isInProgress) {
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.todo),
-          child: const ListTile(leading: Icon(Icons.undo), title: Text('Back to Todo'), dense: true),
-        ),
-      );
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.done),
-          child: const ListTile(leading: Icon(Icons.check_circle_outline), title: Text('Mark as Done'), dense: true),
-        ),
-      );
-    }
-
-    if (task.status.isDone) {
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.todo),
-          child: const ListTile(leading: Icon(Icons.undo), title: Text('Back to Todo'), dense: true),
-        ),
-      );
-      items.add(
-        PopupMenuItem(
-          onTap: () => provider.updateTaskStatus(task, TaskStatus.inProgress),
-          child: const ListTile(leading: Icon(Icons.play_arrow), title: Text('Back to In Progress'), dense: true),
-        ),
-      );
-    }
-
-    items.addAll([
-      PopupMenuItem(
-        onTap: () => provider.scheduleTasksForToday([task.id]),
-        child: const ListTile(leading: Icon(Icons.today), title: Text('Schedule for Today'), dense: true),
-      ),
-      PopupMenuItem(
-        onTap: () => provider.scheduleTasksForTomorrow([task.id]),
-        child: const ListTile(
-          leading: Icon(Icons.next_plan_outlined),
-          title: Text('Schedule for Tomorrow'),
-          dense: true,
-        ),
-      ),
-      PopupMenuItem(
-        onTap: () => _showEditTask(context, task),
-        child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
-      ),
-      PopupMenuItem(
-        onTap: () => provider.deleteTask(task),
-        child: const ListTile(
-          leading: Icon(Icons.delete, color: AppColors.error),
-          title: Text('Delete', style: TextStyle(color: AppColors.error)),
-          dense: true,
-        ),
-      ),
-    ]);
-
-    showMenu(
-      context: context,
-      position: RelativeRect.fromRect(Rect.fromLTWH(position.dx, position.dy, 0, 0), Offset.zero & overlay.size),
-      items: items,
-    );
-  }
-
   Widget _taskTrailing(BuildContext context, Task task) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          icon: const Icon(Icons.edit, size: 18),
-          color: AppColors.textSecondary,
-          onPressed: () => _showEditTask(context, task),
+        Builder(
+          builder: (buttonContext) {
+            return IconButton(
+              icon: const Icon(Icons.more_vert, size: 18),
+              color: AppColors.textSecondary,
+              onPressed: () {
+                final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
+                const localPosition = Offset.zero;
+                showBacklogContextMenu(context, task, localPosition, renderBox);
+              },
+            );
+          },
         ),
       ],
     );
@@ -282,19 +203,6 @@ class _TaskScreenState extends State<TaskScreen> {
       builder: (_) => ChangeNotifierProvider.value(
         value: context.read<TaskProvider>(),
         child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const AddTaskDialog()),
-      ),
-    );
-  }
-
-  void _showEditTask(BuildContext context, Task task) {
-    showDialog(
-      context: context,
-      builder: (_) => ChangeNotifierProvider.value(
-        value: context.read<TaskProvider>(),
-        child: ChangeNotifierProvider.value(
-          value: context.read<ProjectProvider>(),
-          child: EditTaskDialog(task: task),
-        ),
       ),
     );
   }
