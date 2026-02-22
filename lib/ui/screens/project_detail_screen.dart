@@ -12,7 +12,6 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_list_view.dart';
-import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
@@ -34,6 +33,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   void initState() {
     super.initState();
     _loadTasks();
+    context.read<TaskProvider>().addListener(_onTasksChanged);
+  }
+
+  @override
+  void dispose() {
+    context.read<TaskProvider>().removeListener(_onTasksChanged);
+    super.dispose();
   }
 
   @override
@@ -44,8 +50,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
-  Future<void> _loadTasks() async {
-    setState(() => _isLoading = true);
+  void _onTasksChanged() {
+    if (mounted) {
+      _loadTasks(showLoading: false);
+    }
+  }
+
+  Future<void> _loadTasks({bool showLoading = true}) async {
+    if (showLoading && mounted) {
+      setState(() => _isLoading = true);
+    }
     final taskProvider = context.read<TaskProvider>();
     final tasks = await taskProvider.getTasksForProject(widget.projectId);
     if (mounted) {
@@ -240,6 +254,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ],
         child: AddTaskDialog(initialProjectId: widget.projectId),
       ),
-    ).then((_) => _loadTasks());
+    );
   }
 }
