@@ -154,9 +154,23 @@ class TaskProvider extends ChangeNotifier {
   Future<void> scheduleTasksForDate(List<String> taskIds, DateTime date) async {
     final normalizedDate = _normalizeDate(date);
     for (final id in taskIds) {
-      final task = _tasks.firstWhere((t) => t.id == id, orElse: () => _unscheduledTasks.firstWhere((t) => t.id == id));
-      final updated = task.copyWith(scheduledDate: normalizedDate);
-      await _repo.update(updated);
+      Task? task;
+      try {
+        task = _tasks.firstWhere(
+          (t) => t.id == id,
+          orElse: () => _overdueTasks.firstWhere(
+            (t) => t.id == id,
+            orElse: () => _unscheduledTasks.firstWhere((t) => t.id == id),
+          ),
+        );
+      } catch (_) {
+        task = await _repo.getById(id);
+      }
+
+      if (task != null) {
+        final updated = task.copyWith(scheduledDate: normalizedDate);
+        await _repo.update(updated);
+      }
     }
     await _refreshAll();
   }

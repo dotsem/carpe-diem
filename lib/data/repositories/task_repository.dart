@@ -12,6 +12,13 @@ class TaskRepository {
     return maps.map(Task.fromMap).toList();
   }
 
+  Future<Task?> getById(String id) async {
+    final db = await _db;
+    final maps = await db.query('tasks', where: 'id = ?', whereArgs: [id]);
+    if (maps.isEmpty) return null;
+    return Task.fromMap(maps.first);
+  }
+
   Future<List<Task>> getByDate(DateTime date) async {
     final db = await _db;
     final startOfDay = DateTime(date.year, date.month, date.day);
