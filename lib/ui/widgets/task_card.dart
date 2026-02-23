@@ -19,6 +19,7 @@ class TaskCard extends StatefulWidget {
   final bool selectionMode;
   final bool isSelected;
   final bool useTimer;
+  final bool showScheduleDate;
   final void Function(Offset localPosition, RenderBox renderBox)? onContextMenu;
 
   const TaskCard({
@@ -32,6 +33,7 @@ class TaskCard extends StatefulWidget {
     this.selectionMode = false,
     this.isSelected = false,
     this.useTimer = true,
+    this.showScheduleDate = false,
     this.onContextMenu,
   });
 
@@ -99,6 +101,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final bool showDone = widget.task.isCompleted || _isPending;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
     return AnimatedBuilder(
       animation: _controller,
@@ -166,7 +170,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                               if (widget.project != null ||
                                   widget.isOverdue ||
                                   widget.task.status.isInProgress ||
-                                  widget.task.deadline != null) ...[
+                                  widget.task.deadline != null ||
+                                  (widget.showScheduleDate && widget.task.scheduledDate != null)) ...[
                                 const SizedBox(height: 4),
                                 Wrap(
                                   spacing: 4,
@@ -175,6 +180,12 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                     if (widget.isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
                                     if (widget.task.status.isInProgress && !_isPending) StatusChip(),
                                     if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
+                                    if (widget.showScheduleDate &&
+                                        widget.task.scheduledDate != null &&
+                                        ((widget.task.scheduledDate!.isBefore(today) && !widget.task.isCompleted) ||
+                                            widget.task.scheduledDate!.isAtSameMomentAs(today) ||
+                                            widget.task.scheduledDate!.isAfter(today)))
+                                      ScheduledChip(scheduledDate: widget.task.scheduledDate!),
                                     if (widget.project != null) ProjectChip(project: widget.project),
                                     if (widget.project != null) ..._getLabels(context),
                                   ],

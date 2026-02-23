@@ -100,6 +100,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         emptyPlaceholder: const Center(
                           child: Text("No tasks in this project", style: TextStyle(color: AppColors.textSecondary)),
                         ),
+                        showScheduleDate: true,
                       ),
               ),
             ],

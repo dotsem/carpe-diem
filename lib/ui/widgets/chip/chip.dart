@@ -4,6 +4,8 @@ import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
 import 'package:flutter/material.dart';
 
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 class OverdueChip extends StatelessWidget {
   const OverdueChip({super.key});
 
@@ -54,8 +56,6 @@ class DeadlineChip extends StatelessWidget {
 
   const DeadlineChip({super.key, required this.deadline});
 
-  static const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
   @override
   Widget build(BuildContext context) {
     return SmallChip(
@@ -68,6 +68,30 @@ class DeadlineChip extends StatelessWidget {
           Text(
             'Due: ${months[deadline.month - 1]} ${deadline.day}',
             style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ScheduledChip extends StatelessWidget {
+  final DateTime scheduledDate;
+
+  const ScheduledChip({super.key, required this.scheduledDate});
+
+  @override
+  Widget build(BuildContext context) {
+    return SmallChip(
+      color: AppColors.info.withValues(alpha: 0.15),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.calendar_today_outlined, size: 10, color: AppColors.info),
+          const SizedBox(width: 4),
+          Text(
+            'Scheduled: ${months[scheduledDate.month - 1]} ${scheduledDate.day}',
+            style: const TextStyle(fontSize: 11, color: AppColors.info),
           ),
         ],
       ),
