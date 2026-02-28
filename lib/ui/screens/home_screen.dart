@@ -5,7 +5,6 @@ import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
-import 'package:carpe_diem/ui/dialogs/pick_tasks_from_backlog_dialog.dart';
 import 'package:carpe_diem/ui/widgets/kanban_board.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -154,12 +153,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => provider.toggleLayoutMode(),
             icon: Icon(provider.layoutMode == TaskLayout.list ? Icons.view_kanban : Icons.view_list),
             tooltip: provider.layoutMode == TaskLayout.list ? 'Kanban view' : 'List view',
-          ),
-          const SizedBox(width: 8),
-          FilledButton.icon(
-            onPressed: () => _showPickTasksFromBacklog(context),
-            icon: const Icon(Icons.inbox_rounded),
-            label: const Text('Pick Tasks from Backlog'),
           ),
           const SizedBox(width: 8),
           FilledButton.icon(
@@ -328,10 +321,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  void _showPickTasksFromBacklog(BuildContext context) {
-    showDialog(context: context, builder: (_) => PickTaskFromBacklogDialog());
   }
 
   void _showFilterDialog(BuildContext context) async {
