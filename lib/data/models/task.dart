@@ -12,6 +12,7 @@ class Task {
   final DateTime? deadline;
   final DateTime createdAt;
   final DateTime? completedAt;
+  final String? blockedById;
 
   bool get isCompleted => status.isDone;
 
@@ -26,6 +27,7 @@ class Task {
     this.deadline,
     required this.createdAt,
     this.completedAt,
+    this.blockedById,
   });
 
   Map<String, dynamic> toMap() => {
@@ -40,6 +42,7 @@ class Task {
     'deadline': deadline?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
     'completedAt': completedAt?.toIso8601String(),
+    'blockedById': blockedById,
   };
 
   factory Task.fromMap(Map<String, dynamic> map) => Task(
@@ -53,6 +56,7 @@ class Task {
     deadline: map['deadline'] != null ? DateTime.parse(map['deadline'] as String) : null,
     createdAt: DateTime.parse(map['createdAt'] as String),
     completedAt: map['completedAt'] != null ? DateTime.parse(map['completedAt'] as String) : null,
+    blockedById: map['blockedById'] as String?,
   );
 
   Task copyWith({
@@ -66,6 +70,8 @@ class Task {
     DateTime? deadline,
     bool clearDeadline = false,
     DateTime? completedAt,
+    String? blockedById,
+    bool clearBlockedBy = false,
   }) => Task(
     id: id,
     title: title ?? this.title,
@@ -79,5 +85,6 @@ class Task {
     completedAt: status == TaskStatus.done
         ? (completedAt ?? DateTime.now())
         : (status != null && !status.isDone ? null : this.completedAt),
+    blockedById: clearBlockedBy ? null : (blockedById ?? this.blockedById),
   );
 }
