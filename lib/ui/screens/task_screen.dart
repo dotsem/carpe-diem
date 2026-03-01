@@ -37,6 +37,8 @@ class _TaskScreenState extends State<TaskScreen> {
   final FocusNode _searchFocusNode = FocusNode();
   String _searchQuery = '';
 
+  final List<String> _selectedTaskIds = [];
+
   @override
   void initState() {
     super.initState();
@@ -119,7 +121,23 @@ class _TaskScreenState extends State<TaskScreen> {
             ],
           ),
           const Spacer(),
-          FilledButton.icon(onPressed: () => _showImportFromMD(context), label: const Text('Import from MD')),
+          if (_selectedTaskIds.isNotEmpty) ...[
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: AppColors.text),
+              onPressed: () {
+                context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds);
+                setState(() => _selectedTaskIds.clear());
+              },
+              label: const Text('Plan tasks for today'),
+              icon: const Icon(Icons.calendar_today_rounded),
+            ),
+            const SizedBox(width: 8),
+          ],
+          FilledButton.icon(
+            onPressed: () => _showImportFromMD(context),
+            label: const Text('Import from MD'),
+            icon: const Icon(Icons.download_rounded),
+          ),
           const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => _showAddTask(context),
@@ -179,7 +197,19 @@ class _TaskScreenState extends State<TaskScreen> {
                 autofocus: entry.key == 0,
                 task: entry.value,
                 project: entry.value.projectId != null ? projectProvider.getById(entry.value.projectId!) : null,
-                onToggle: () => provider.toggleComplete(entry.value),
+                isChecked: _selectedTaskIds.contains(entry.value.id),
+                onToggle: (value) {
+                  if (value != null) {
+                    // should never be null
+                    setState(() {
+                      if (value) {
+                        _selectedTaskIds.add(entry.value.id);
+                      } else {
+                        _selectedTaskIds.remove(entry.value.id);
+                      }
+                    });
+                  }
+                },
                 onTap: () {},
                 onContextMenu: (localPosition, renderBox) =>
                     showBacklogContextMenu(context, entry.value, localPosition, renderBox),
@@ -199,7 +229,7 @@ class _TaskScreenState extends State<TaskScreen> {
                 (task) => TaskCard(
                   task: task,
                   project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
-                  onToggle: () => provider.toggleComplete(task),
+                  onToggle: (_) {},
                   onTap: () {},
                   onContextMenu: (localPosition, renderBox) =>
                       showBacklogContextMenu(context, task, localPosition, renderBox),

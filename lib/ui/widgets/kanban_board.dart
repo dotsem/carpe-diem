@@ -225,7 +225,7 @@ class _KanbanCard extends StatelessWidget {
       project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
       isOverdue: isOverdue,
       useTimer: false,
-      onToggle: () => provider.toggleComplete(task),
+      onToggle: (_) => provider.toggleComplete(task),
       onTap: () => onEdit(task),
       onContextMenu: (localPosition, renderBox) => showTaskCardContextMenu(context, task, localPosition, renderBox),
     );

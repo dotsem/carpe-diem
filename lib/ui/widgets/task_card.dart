@@ -12,15 +12,16 @@ import 'package:carpe_diem/data/models/project.dart';
 class TaskCard extends StatefulWidget {
   final Task task;
   final Project? project;
-  final VoidCallback onToggle;
+  final ValueChanged<bool?> onToggle;
   final VoidCallback onTap;
   final Widget? trailing;
   final bool isOverdue;
   final bool selectionMode;
-  final bool isSelected;
+  final bool? isChecked;
   final bool useTimer;
   final bool showScheduleDate;
   final bool autofocus;
+  final Widget? leading;
   final void Function(Offset localPosition, RenderBox renderBox)? onContextMenu;
 
   const TaskCard({
@@ -32,10 +33,11 @@ class TaskCard extends StatefulWidget {
     this.trailing,
     this.isOverdue = false,
     this.selectionMode = false,
-    this.isSelected = false,
+    this.isChecked,
     this.useTimer = true,
     this.showScheduleDate = false,
     this.autofocus = false,
+    this.leading,
     this.onContextMenu,
   });
 
@@ -65,17 +67,17 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  void _handleToggle() {
-    if (widget.selectionMode) {
-      widget.onToggle();
+  void _handleToggle(bool? value) {
+    if (widget.isChecked != null || widget.selectionMode) {
+      widget.onToggle(value);
       return;
     }
 
     if (widget.task.status.isDone) {
-      widget.onToggle();
+      widget.onToggle(value);
     } else if (widget.task.status.isInProgress) {
       if (!widget.useTimer) {
-        widget.onToggle();
+        widget.onToggle(value);
         return;
       }
 
@@ -89,7 +91,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       }
     } else {
       // Todo -> immediately move to in progress
-      widget.onToggle();
+      widget.onToggle(value);
     }
   }
 
@@ -97,13 +99,13 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     if (mounted) {
       setState(() => _isPending = false);
       _controller.reset();
-      widget.onToggle();
+      widget.onToggle(true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool showDone = widget.task.isCompleted || _isPending;
+    final bool showDone = widget.isChecked == null && (widget.task.isCompleted || _isPending);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -148,7 +150,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                     padding: const EdgeInsets.only(left: 14), // indicator width (6) + gap (8)
                     child: Row(
                       children: [
-                        _statusIndicator(),
+                        widget.leading ?? _statusIndicator(),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
@@ -214,14 +216,16 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   }
 
   Widget _statusIndicator() {
-    if (widget.selectionMode) {
-      return Checkbox(value: widget.isSelected, onChanged: (_) => _handleToggle());
+    final bool effectiveIsChecked = widget.isChecked ?? (widget.task.isCompleted || _isPending);
+
+    if (widget.isChecked != null || widget.selectionMode) {
+      return Checkbox(value: effectiveIsChecked, onChanged: (value) => _handleToggle(value));
     }
 
     final task = widget.task;
     if (task.status.isInProgress) {
       return GestureDetector(
-        onTap: _handleToggle,
+        onTap: () => _handleToggle(null),
         child: Container(
           width: 20,
           height: 20,
@@ -236,8 +240,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     }
 
     return Checkbox(
-      value: task.isCompleted || _isPending,
-      onChanged: (_) => _handleToggle(),
+      value: effectiveIsChecked,
+      onChanged: (value) => _handleToggle(value),
       fillColor: _isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
     );
   }

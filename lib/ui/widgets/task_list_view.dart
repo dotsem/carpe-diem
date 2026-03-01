@@ -140,7 +140,7 @@ class TaskListView extends StatelessWidget {
       project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
       isOverdue: taskIsOverdue,
       autofocus: autofocus,
-      onToggle: () => taskProvider.toggleComplete(task),
+      onToggle: (_) => taskProvider.toggleComplete(task),
       onTap: () {},
       showScheduleDate: showScheduleDate,
       onContextMenu: onContextMenu != null ? (pos, box) => onContextMenu!(context, task, pos, box) : null,
