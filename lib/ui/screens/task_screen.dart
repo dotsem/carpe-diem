@@ -126,8 +126,9 @@ class _TaskScreenState extends State<TaskScreen> {
             FilledButton.icon(
               style: FilledButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: AppColors.text),
               onPressed: () {
-                context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds);
-                setState(() => _selectedTaskIds.clear());
+                context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
+                  setState(() => _selectedTaskIds.clear());
+                });
               },
               label: const Text('Plan tasks for today'),
               icon: const Icon(Icons.calendar_today_rounded),
