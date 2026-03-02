@@ -11,6 +11,7 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
+import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
 import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
 import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
@@ -214,18 +215,7 @@ class _TaskScreenState extends State<TaskScreen> {
             trailing: _taskTrailing(context, t.task),
           );
 
-          if (t.depth == 0) return card;
-          return Padding(
-            padding: EdgeInsets.only(left: t.depth * 8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(Icons.subdirectory_arrow_right, size: 16, color: AppColors.textSecondary.withAlpha(100)),
-                const SizedBox(width: 4),
-                Expanded(child: card),
-              ],
-            ),
-          );
+          return TaskHierarchyIndicator(depth: t.depth, child: card);
         }
 
         final activeHierarchical = TaskHierarchyUtils.buildHierarchy(activeTasks);
@@ -255,18 +245,7 @@ class _TaskScreenState extends State<TaskScreen> {
                   trailing: _taskTrailing(context, t.task),
                 );
 
-                if (t.depth == 0) return card;
-                return Padding(
-                  padding: EdgeInsets.only(left: t.depth * 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.subdirectory_arrow_right, size: 16, color: AppColors.textSecondary.withAlpha(100)),
-                      const SizedBox(width: 4),
-                      Expanded(child: card),
-                    ],
-                  ),
-                );
+                return TaskHierarchyIndicator(depth: t.depth, child: card);
               }),
             ],
           ],

@@ -2,6 +2,7 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
+import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -229,19 +230,8 @@ class _KanbanCard extends StatelessWidget {
     bool isOverdue = false,
   }) {
     final card = _buildTaskCard(context, task, projectProvider, provider, isOverdue: isOverdue);
-    if (depth == 0) return card;
 
-    return Padding(
-      padding: EdgeInsets.only(left: depth * 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(Icons.subdirectory_arrow_right, size: 16, color: AppColors.textSecondary.withAlpha(100)),
-          const SizedBox(width: 4),
-          Expanded(child: card),
-        ],
-      ),
-    );
+    return TaskHierarchyIndicator(depth: depth, child: card);
   }
 
   TaskCard _buildTaskCard(

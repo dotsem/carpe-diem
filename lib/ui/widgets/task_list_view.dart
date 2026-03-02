@@ -6,6 +6,7 @@ import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
 import 'package:provider/provider.dart';
 
 class TaskListView extends StatelessWidget {
@@ -162,19 +163,7 @@ class TaskListView extends StatelessWidget {
       trailing: trailingBuilder?.call(context, task),
     );
 
-    if (depth == 0) return card;
-
-    return Padding(
-      padding: EdgeInsets.only(left: depth * 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(Icons.subdirectory_arrow_right, size: 16, color: AppColors.textSecondary.withAlpha(100)),
-          const SizedBox(width: 4),
-          Expanded(child: card),
-        ],
-      ),
-    );
+    return TaskHierarchyIndicator(depth: depth, child: card);
   }
 
   Widget _buildEmptyState(BuildContext context) {
