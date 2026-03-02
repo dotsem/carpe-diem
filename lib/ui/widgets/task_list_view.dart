@@ -1,10 +1,12 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/data/models/task.dart';
+import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
 import 'package:provider/provider.dart';
 
 class TaskListView extends StatelessWidget {
@@ -39,7 +41,6 @@ class TaskListView extends StatelessWidget {
 
     bool isOverdue(Task t) => t.scheduledDate != null && t.scheduledDate!.isBefore(today) && !t.isCompleted;
 
-    // Use a Map to deduplicate tasks by ID
     final allTasksMap = <String, Task>{};
     for (final t in tasks) {
       allTasksMap[t.id] = t;
@@ -69,10 +70,24 @@ class TaskListView extends StatelessWidget {
     }
 
     bool isFirstTask = true;
-    Widget buildCard(Task task, bool taskIsOverdue) {
+    Widget buildCard(Task task, bool taskIsOverdue, {int depth = 0}) {
       final autofocus = isFirstTask;
       isFirstTask = false;
-      return _buildTaskCard(context, task, projectProvider, taskProvider, taskIsOverdue, showScheduleDate, autofocus);
+      return _buildTaskCard(
+        context,
+        task,
+        projectProvider,
+        taskProvider,
+        taskIsOverdue,
+        showScheduleDate,
+        autofocus,
+        depth: depth,
+      );
+    }
+
+    List<Widget> buildHierarchy(List<Task> categoryTasks, bool Function(Task) overdueFn) {
+      final flattened = TaskHierarchyUtils.buildHierarchy(categoryTasks);
+      return flattened.map((t) => buildCard(t.task, overdueFn(t.task), depth: t.depth)).toList();
     }
 
     return ListView(
@@ -81,25 +96,25 @@ class TaskListView extends StatelessWidget {
         if (inProgressCategory.isNotEmpty) ...[
           _buildHeader(context, 'In Progress', color: AppColors.accent, amount: inProgressCategory.length),
           const SizedBox(height: 8),
-          ...inProgressCategory.map((task) => buildCard(task, isOverdue(task))),
+          ...buildHierarchy(inProgressCategory, isOverdue),
           const SizedBox(height: 20),
         ],
         if (overdueCategory.isNotEmpty) ...[
           _buildHeader(context, 'Overdue', color: AppColors.error, amount: overdueCategory.length),
           const SizedBox(height: 8),
-          ...overdueCategory.map((task) => buildCard(task, true)),
+          ...buildHierarchy(overdueCategory, (_) => true),
           const SizedBox(height: 20),
         ],
         if (todoCategory.isNotEmpty) ...[
           _buildHeader(context, 'Todo', amount: todoCategory.length, color: AppColors.textSecondary),
           const SizedBox(height: 8),
-          ...todoCategory.map((task) => buildCard(task, false)),
+          ...buildHierarchy(todoCategory, (_) => false),
         ],
         if (doneCategory.isNotEmpty) ...[
           const SizedBox(height: 20),
           _buildHeader(context, 'Done', color: AppColors.textSecondary, amount: doneCategory.length),
           const SizedBox(height: 8),
-          ...doneCategory.map((task) => buildCard(task, false)),
+          ...buildHierarchy(doneCategory, (_) => false),
         ],
       ],
     );
@@ -132,9 +147,10 @@ class TaskListView extends StatelessWidget {
     TaskProvider taskProvider,
     bool taskIsOverdue,
     bool showScheduleDate,
-    bool autofocus,
-  ) {
-    return TaskCard(
+    bool autofocus, {
+    int depth = 0,
+  }) {
+    final card = TaskCard(
       key: ValueKey(task.id),
       task: task,
       project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
@@ -146,6 +162,8 @@ class TaskListView extends StatelessWidget {
       onContextMenu: onContextMenu != null ? (pos, box) => onContextMenu!(context, task, pos, box) : null,
       trailing: trailingBuilder?.call(context, task),
     );
+
+    return TaskHierarchyIndicator(depth: depth, child: card);
   }
 
   Widget _buildEmptyState(BuildContext context) {

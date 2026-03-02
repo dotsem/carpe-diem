@@ -71,7 +71,9 @@ class DatabaseHelper {
         deadline TEXT,
         createdAt TEXT NOT NULL,
         completedAt TEXT,
-        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
+        blockedById TEXT,
+        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL,
+        FOREIGN KEY (blockedById) REFERENCES tasks(id) ON DELETE SET NULL
       )
     ''');
 
@@ -95,6 +97,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 8) {
       await _migrateToV8(db);
+    }
+    if (oldVersion < 9) {
+      await _migrateToV9(db);
     }
   }
 
@@ -136,6 +141,13 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> taskColumns = await db.rawQuery('PRAGMA table_info(tasks)');
     if (!taskColumns.any((c) => c['name'] == 'deadline')) {
       await db.execute('ALTER TABLE tasks ADD COLUMN deadline TEXT');
+    }
+  }
+
+  static Future<void> _migrateToV9(Database db) async {
+    final List<Map<String, dynamic>> columns = await db.rawQuery('PRAGMA table_info(tasks)');
+    if (!columns.any((c) => c['name'] == 'blockedById')) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN blockedById TEXT REFERENCES tasks(id) ON DELETE SET NULL');
     }
   }
 }

@@ -11,6 +11,8 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
+import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
+import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
 import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
@@ -125,8 +127,9 @@ class _TaskScreenState extends State<TaskScreen> {
             FilledButton.icon(
               style: FilledButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: AppColors.text),
               onPressed: () {
-                context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds);
-                setState(() => _selectedTaskIds.clear());
+                context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
+                  setState(() => _selectedTaskIds.clear());
+                });
               },
               label: const Text('Plan tasks for today'),
               icon: const Icon(Icons.calendar_today_rounded),
@@ -189,33 +192,39 @@ class _TaskScreenState extends State<TaskScreen> {
           );
         }
 
+        Widget buildCard(TaskWithDepth t, {bool autofocus = false}) {
+          final card = TaskCard(
+            autofocus: autofocus,
+            task: t.task,
+            project: t.task.projectId != null ? projectProvider.getById(t.task.projectId!) : null,
+            isChecked: _selectedTaskIds.contains(t.task.id),
+            onToggle: (value) {
+              if (value != null) {
+                setState(() {
+                  if (value) {
+                    _selectedTaskIds.add(t.task.id);
+                  } else {
+                    _selectedTaskIds.remove(t.task.id);
+                  }
+                });
+              }
+            },
+            onTap: () {},
+            onContextMenu: (localPosition, renderBox) =>
+                showBacklogContextMenu(context, t.task, localPosition, renderBox),
+            trailing: _taskTrailing(context, t.task),
+          );
+
+          return TaskHierarchyIndicator(depth: t.depth, child: card);
+        }
+
+        final activeHierarchical = TaskHierarchyUtils.buildHierarchy(activeTasks);
+        final completedHierarchical = TaskHierarchyUtils.buildHierarchy(completedTasks);
+
         return ListView(
           padding: const EdgeInsets.fromLTRB(32, 16, 32, 32),
           children: [
-            ...activeTasks.asMap().entries.map(
-              (entry) => TaskCard(
-                autofocus: entry.key == 0,
-                task: entry.value,
-                project: entry.value.projectId != null ? projectProvider.getById(entry.value.projectId!) : null,
-                isChecked: _selectedTaskIds.contains(entry.value.id),
-                onToggle: (value) {
-                  if (value != null) {
-                    // should never be null
-                    setState(() {
-                      if (value) {
-                        _selectedTaskIds.add(entry.value.id);
-                      } else {
-                        _selectedTaskIds.remove(entry.value.id);
-                      }
-                    });
-                  }
-                },
-                onTap: () {},
-                onContextMenu: (localPosition, renderBox) =>
-                    showBacklogContextMenu(context, entry.value, localPosition, renderBox),
-                trailing: _taskTrailing(context, entry.value),
-              ),
-            ),
+            ...activeHierarchical.asMap().entries.map((entry) => buildCard(entry.value, autofocus: entry.key == 0)),
             if (completedTasks.isNotEmpty) ...[
               const SizedBox(height: 20),
               Text(
@@ -225,17 +234,19 @@ class _TaskScreenState extends State<TaskScreen> {
                 ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 8),
-              ...completedTasks.map(
-                (task) => TaskCard(
-                  task: task,
-                  project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
+              ...completedHierarchical.map((t) {
+                final card = TaskCard(
+                  task: t.task,
+                  project: t.task.projectId != null ? projectProvider.getById(t.task.projectId!) : null,
                   onToggle: (_) {},
                   onTap: () {},
                   onContextMenu: (localPosition, renderBox) =>
-                      showBacklogContextMenu(context, task, localPosition, renderBox),
-                  trailing: _taskTrailing(context, task),
-                ),
-              ),
+                      showBacklogContextMenu(context, t.task, localPosition, renderBox),
+                  trailing: _taskTrailing(context, t.task),
+                );
+
+                return TaskHierarchyIndicator(depth: t.depth, child: card);
+              }),
             ],
           ],
         );

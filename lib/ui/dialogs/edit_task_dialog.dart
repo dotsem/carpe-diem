@@ -5,6 +5,7 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
+import 'package:carpe_diem/ui/widgets/blocker_picker.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:carpe_diem/ui/widgets/project_picker.dart';
@@ -27,6 +28,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   DateTime? _scheduledDate;
   DateTime? _deadline;
   String? _selectedProjectId;
+  String? _blockedById;
+  List<Task> _projectTasks = [];
 
   @override
   void initState() {
@@ -37,6 +40,20 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     _scheduledDate = widget.task.scheduledDate;
     _deadline = widget.task.deadline;
     _selectedProjectId = widget.task.projectId;
+    _blockedById = widget.task.blockedById;
+    if (_selectedProjectId != null) _loadProjectTasks();
+  }
+
+  Future<void> _loadProjectTasks() async {
+    if (_selectedProjectId == null) {
+      setState(() {
+        _projectTasks = [];
+        _blockedById = null;
+      });
+      return;
+    }
+    final tasks = await context.read<TaskProvider>().getTasksForProject(_selectedProjectId!);
+    setState(() => _projectTasks = tasks);
   }
 
   DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
@@ -85,11 +102,23 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                 child: ProjectPicker(
                   projects: projects,
                   selectedProjectId: _selectedProjectId,
-                  onChanged: (id) => setState(() => _selectedProjectId = id),
+                  onChanged: (id) {
+                    setState(() => _selectedProjectId = id);
+                    _loadProjectTasks();
+                  },
                 ),
               ),
             ],
           ),
+          if (_selectedProjectId != null) ...[
+            const SizedBox(height: 12),
+            BlockerPicker(
+              availableTasks: _projectTasks,
+              selectedBlockerId: _blockedById,
+              currentTaskId: widget.task.id,
+              onChanged: (id) => setState(() => _blockedById = id),
+            ),
+          ],
           const SizedBox(height: 12),
           DatePickerButton(
             label: 'Deadline (Optional)',
@@ -139,6 +168,9 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
         clearScheduledDate: _scheduledDate == null,
         deadline: _deadline,
         clearDeadline: _deadline == null,
+        blockedById: _blockedById,
+        clearBlockedBy: _blockedById == null,
+        projectId: _selectedProjectId,
       ),
     );
     Navigator.of(context).pop();
