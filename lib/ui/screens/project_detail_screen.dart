@@ -28,17 +28,25 @@ class ProjectDetailScreen extends StatefulWidget {
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _isLoading = true;
   List<Task> _tasks = [];
+  late TaskProvider _taskProvider;
 
   @override
   void initState() {
     super.initState();
     _loadTasks();
-    context.read<TaskProvider>().addListener(_onTasksChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _taskProvider = context.read<TaskProvider>();
+    _taskProvider.removeListener(_onTasksChanged);
+    _taskProvider.addListener(_onTasksChanged);
   }
 
   @override
   void dispose() {
-    context.read<TaskProvider>().removeListener(_onTasksChanged);
+    _taskProvider.removeListener(_onTasksChanged);
     super.dispose();
   }
 
@@ -60,8 +68,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     if (showLoading && mounted) {
       setState(() => _isLoading = true);
     }
-    final taskProvider = context.read<TaskProvider>();
-    final tasks = await taskProvider.getTasksForProject(widget.projectId);
+    final tasks = await _taskProvider.getTasksForProject(widget.projectId);
     if (mounted) {
       setState(() {
         _tasks = tasks;

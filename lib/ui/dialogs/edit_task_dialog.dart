@@ -170,6 +170,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
         clearDeadline: _deadline == null,
         blockedById: _blockedById,
         clearBlockedBy: _blockedById == null,
+        projectId: _selectedProjectId,
       ),
     );
     Navigator.of(context).pop();
