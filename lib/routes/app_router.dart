@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carpe_diem/ui/screens/home_screen.dart';
 import 'package:carpe_diem/ui/screens/projects_screen.dart';
-import 'package:carpe_diem/ui/screens/task_screen.dart';
+import 'package:carpe_diem/ui/screens/backlog_screen.dart';
 import 'package:carpe_diem/ui/screens/project_detail_screen.dart';
 import 'package:carpe_diem/ui/shell/app_shell.dart';
 
@@ -34,7 +34,7 @@ final appRouter = GoRouter(
         ),
         GoRoute(
           path: '/tasks',
-          pageBuilder: (context, state) => const NoTransitionPage(child: TaskScreen()),
+          pageBuilder: (context, state) => const NoTransitionPage(child: BacklogScreen()),
         ),
       ],
     ),

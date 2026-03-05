@@ -26,14 +26,14 @@ class _UnfocusSearchIntent extends Intent {
   const _UnfocusSearchIntent();
 }
 
-class TaskScreen extends StatefulWidget {
-  const TaskScreen({super.key});
+class BacklogScreen extends StatefulWidget {
+  const BacklogScreen({super.key});
 
   @override
-  State<TaskScreen> createState() => _TaskScreenState();
+  State<BacklogScreen> createState() => _BacklogScreenState();
 }
 
-class _TaskScreenState extends State<TaskScreen> {
+class _BacklogScreenState extends State<BacklogScreen> {
   TaskFilter _filter = const TaskFilter();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
