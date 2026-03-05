@@ -33,6 +33,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _taskProvider = context.read<TaskProvider>();
     _loadTasks();
   }
 
