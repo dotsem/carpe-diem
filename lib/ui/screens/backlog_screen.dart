@@ -3,6 +3,7 @@ import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/import_from_md_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/bulk_edit_tasks_dialog.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/backlog_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:flutter/material.dart';
@@ -133,6 +134,21 @@ class _BacklogScreenState extends State<BacklogScreen> {
               },
               label: const Text('Plan tasks for today'),
               icon: const Icon(Icons.calendar_today_rounded),
+            ),
+            const SizedBox(width: 8),
+            // TODO: hide behind context menu
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.info, foregroundColor: AppColors.text),
+              onPressed: () => _showBulkEdit(context),
+              label: const Text('Bulk Edit'),
+              icon: const Icon(Icons.edit_rounded),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+              onPressed: () => _showBulkDeleteConfirm(context),
+              label: const Text('Bulk Delete'),
+              icon: const Icon(Icons.delete_rounded),
             ),
             const SizedBox(width: 8),
           ],
@@ -303,5 +319,65 @@ class _BacklogScreenState extends State<BacklogScreen> {
     if (result != null) {
       setState(() => _filter = result);
     }
+  }
+
+  void _showBulkEdit(BuildContext context) async {
+    final result = await showDialog<BulkEditResult>(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<TaskProvider>(),
+        child: ChangeNotifierProvider.value(
+          value: context.read<ProjectProvider>(),
+          child: BulkEditTasksDialog(taskIds: _selectedTaskIds),
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      await context.read<TaskProvider>().bulkUpdateTasks(
+        taskIds: _selectedTaskIds,
+        priority: result.priority,
+        updatePriority: result.updatePriority,
+        scheduledDate: result.scheduledDate,
+        updateScheduledDate: result.updateScheduledDate,
+        clearScheduledDate: result.clearScheduledDate,
+        projectId: result.projectId,
+        updateProjectId: result.updateProjectId,
+        clearProjectId: result.clearProjectId,
+        deadline: result.deadline,
+        updateDeadline: result.updateDeadline,
+        clearDeadline: result.clearDeadline,
+        blockedById: result.blockedById,
+        updateBlockedById: result.updateBlockedById,
+        clearBlockedById: result.clearBlockedById,
+      );
+      setState(() => _selectedTaskIds.clear());
+    }
+  }
+
+  void _showBulkDeleteConfirm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
+        backgroundColor: AppColors.surfaceLight,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge,
+        contentTextStyle: Theme.of(context).textTheme.bodyMedium,
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+            onPressed: () {
+              context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds).then((_) {
+                setState(() => _selectedTaskIds.clear());
+                Navigator.of(ctx).pop();
+              });
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 }

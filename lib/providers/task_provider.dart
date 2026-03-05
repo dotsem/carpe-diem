@@ -163,6 +163,62 @@ class TaskProvider extends ChangeNotifier {
     return _repo.getByLabel(labelId);
   }
 
+  Future<void> bulkUpdateTasks({
+    required List<String> taskIds,
+    Priority? priority,
+    bool updatePriority = false,
+    DateTime? scheduledDate,
+    bool updateScheduledDate = false,
+    bool clearScheduledDate = false,
+    String? projectId,
+    bool updateProjectId = false,
+    bool clearProjectId = false,
+    DateTime? deadline,
+    bool updateDeadline = false,
+    bool clearDeadline = false,
+    String? blockedById,
+    bool updateBlockedById = false,
+    bool clearBlockedById = false,
+  }) async {
+    for (final id in taskIds) {
+      Task? task;
+      try {
+        task = _tasks.firstWhere(
+          (t) => t.id == id,
+          orElse: () => _overdueTasks.firstWhere(
+            (t) => t.id == id,
+            orElse: () => _unscheduledTasks.firstWhere((t) => t.id == id),
+          ),
+        );
+      } catch (_) {
+        task = await _repo.getById(id);
+      }
+
+      if (task != null) {
+        final updated = task.copyWith(
+          priority: updatePriority ? priority : null,
+          scheduledDate: updateScheduledDate ? scheduledDate : null,
+          clearScheduledDate: clearScheduledDate,
+          projectId: updateProjectId ? projectId : null,
+          clearProjectId: clearProjectId,
+          deadline: updateDeadline ? deadline : null,
+          clearDeadline: clearDeadline,
+          blockedById: updateBlockedById ? blockedById : null,
+          clearBlockedBy: clearBlockedById,
+        );
+        await _repo.update(updated);
+      }
+    }
+    await _refreshAll();
+  }
+
+  Future<void> bulkDeleteTasks(List<String> taskIds) async {
+    for (final id in taskIds) {
+      await _repo.delete(id);
+    }
+    await _refreshAll();
+  }
+
   Future<void> _refreshAll() async {
     await loadTasksForDate(_currentDate, silent: true);
     await loadUnscheduledTasks(silent: true);
