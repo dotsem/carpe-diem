@@ -36,9 +36,10 @@ class TaskFilter {
     }
 
     if (hasLabelFilter) {
-      if (inheritedLabelIds.isEmpty) return false;
-      // Check if any of the task's inherited labels are in the filter
-      if (!inheritedLabelIds.any((id) => labelIds.contains(id))) {
+      final combinedLabelIds = {...task.labelIds, ...inheritedLabelIds};
+      if (combinedLabelIds.isEmpty) return false;
+      // Check if any of the task's combined labels are in the filter
+      if (!combinedLabelIds.any((id) => labelIds.contains(id))) {
         return false;
       }
     }

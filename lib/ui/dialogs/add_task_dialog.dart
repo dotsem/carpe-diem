@@ -10,6 +10,7 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
+import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -31,25 +32,33 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   DateTime? _deadline;
   String? _blockedById;
   List<Task> _projectTasks = [];
+  List<String> _selectedLabelIds = [];
+  List<String> _inheritedLabelIds = [];
 
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.initialDate;
     _selectedProjectId = widget.initialProjectId;
-    if (_selectedProjectId != null) _loadProjectTasks();
+    if (_selectedProjectId != null) _loadProjectDetails();
   }
 
-  Future<void> _loadProjectTasks() async {
+  Future<void> _loadProjectDetails() async {
     if (_selectedProjectId == null) {
       setState(() {
         _projectTasks = [];
         _blockedById = null;
+        _inheritedLabelIds = [];
       });
       return;
     }
     final tasks = await context.read<TaskProvider>().getTasksForProject(_selectedProjectId!);
-    setState(() => _projectTasks = tasks);
+    if (!mounted) return;
+    final project = context.read<ProjectProvider>().getById(_selectedProjectId!);
+    setState(() {
+      _projectTasks = tasks;
+      _inheritedLabelIds = project?.labelIds ?? [];
+    });
   }
 
   @override
@@ -107,7 +116,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   selectedProjectId: _selectedProjectId,
                   onChanged: (id) {
                     setState(() => _selectedProjectId = id);
-                    _loadProjectTasks();
+                    _loadProjectDetails();
                   },
                 ),
               ),
@@ -121,6 +130,14 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               onChanged: (id) => setState(() => _blockedById = id),
             ),
           ],
+          const SizedBox(height: 16),
+          Text('Labels', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          LabelPicker(
+            selectedLabelIds: _selectedLabelIds,
+            inheritedLabelIds: _inheritedLabelIds,
+            onSelected: (ids) => setState(() => _selectedLabelIds = ids),
+          ),
           const SizedBox(height: 12),
           DatePickerButton(
             label: 'Deadline',
@@ -154,6 +171,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       priority: _priority,
       deadline: _deadline,
       blockedById: _blockedById,
+      labelIds: _selectedLabelIds,
     );
     Navigator.of(context).pop();
   }

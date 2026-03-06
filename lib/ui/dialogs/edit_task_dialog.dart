@@ -7,6 +7,7 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:carpe_diem/ui/widgets/blocker_picker.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
+import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:carpe_diem/ui/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   String? _selectedProjectId;
   String? _blockedById;
   List<Task> _projectTasks = [];
+  List<String> _selectedLabelIds = [];
+  List<String> _inheritedLabelIds = [];
 
   @override
   void initState() {
@@ -41,19 +44,26 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     _deadline = widget.task.deadline;
     _selectedProjectId = widget.task.projectId;
     _blockedById = widget.task.blockedById;
-    if (_selectedProjectId != null) _loadProjectTasks();
+    _selectedLabelIds = List.from(widget.task.labelIds);
+    if (_selectedProjectId != null) _loadProjectDetails();
   }
 
-  Future<void> _loadProjectTasks() async {
+  Future<void> _loadProjectDetails() async {
     if (_selectedProjectId == null) {
       setState(() {
         _projectTasks = [];
         _blockedById = null;
+        _inheritedLabelIds = [];
       });
       return;
     }
     final tasks = await context.read<TaskProvider>().getTasksForProject(_selectedProjectId!);
-    setState(() => _projectTasks = tasks);
+    if (!mounted) return;
+    final project = context.read<ProjectProvider>().getById(_selectedProjectId!);
+    setState(() {
+      _projectTasks = tasks;
+      _inheritedLabelIds = project?.labelIds ?? [];
+    });
   }
 
   DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
@@ -104,7 +114,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                   selectedProjectId: _selectedProjectId,
                   onChanged: (id) {
                     setState(() => _selectedProjectId = id);
-                    _loadProjectTasks();
+                    _loadProjectDetails();
                   },
                 ),
               ),
@@ -119,6 +129,14 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
               onChanged: (id) => setState(() => _blockedById = id),
             ),
           ],
+          const SizedBox(height: 16),
+          Text('Labels', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          LabelPicker(
+            selectedLabelIds: _selectedLabelIds,
+            inheritedLabelIds: _inheritedLabelIds,
+            onSelected: (ids) => setState(() => _selectedLabelIds = ids),
+          ),
           const SizedBox(height: 12),
           DatePickerButton(
             label: 'Deadline (Optional)',
@@ -171,6 +189,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
         blockedById: _blockedById,
         clearBlockedBy: _blockedById == null,
         projectId: _selectedProjectId,
+        labelIds: _selectedLabelIds,
       ),
     );
     Navigator.of(context).pop();

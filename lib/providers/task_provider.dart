@@ -83,6 +83,7 @@ class TaskProvider extends ChangeNotifier {
     Priority priority = Priority.none,
     DateTime? deadline,
     String? blockedById,
+    List<String> labelIds = const [],
   }) async {
     final task = Task(
       id: _uuid.v4(),
@@ -94,6 +95,7 @@ class TaskProvider extends ChangeNotifier {
       deadline: deadline != null ? _normalizeDate(deadline) : null,
       createdAt: DateTime.now(),
       blockedById: blockedById,
+      labelIds: labelIds,
     );
     await _repo.insert(task);
     await loadTasksForDate(_currentDate);

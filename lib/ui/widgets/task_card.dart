@@ -195,7 +195,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                             widget.task.scheduledDate!.isAfter(today)))
                                       ScheduledChip(scheduledDate: widget.task.scheduledDate!),
                                     if (widget.project != null) ProjectChip(project: widget.project),
-                                    if (widget.project != null) ..._getLabels(context),
+                                    ..._getLabels(context),
                                   ],
                                 ),
                               ],
@@ -248,7 +248,12 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
 
   List<Widget> _getLabels(BuildContext context) {
     final labelProvider = context.watch<LabelProvider>();
-    final labels = widget.project!.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
+    final Set<String> allLabelIds = {...widget.task.labelIds};
+    if (widget.project != null) {
+      allLabelIds.addAll(widget.project!.labelIds);
+    }
+
+    final labels = allLabelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
 
     return labels.map((label) => LabelChip(label: label, verticalPadding: 1)).toList();
   }

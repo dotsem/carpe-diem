@@ -59,6 +59,16 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      CREATE TABLE task_labels (
+        taskId TEXT NOT NULL,
+        labelId TEXT NOT NULL,
+        PRIMARY KEY (taskId, labelId),
+        FOREIGN KEY (taskId) REFERENCES tasks(id) ON DELETE CASCADE,
+        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE tasks (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
@@ -100,6 +110,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 9) {
       await _migrateToV9(db);
+    }
+    if (oldVersion < 10) {
+      await _migrateToV10(db);
     }
   }
 
@@ -149,5 +162,17 @@ class DatabaseHelper {
     if (!columns.any((c) => c['name'] == 'blockedById')) {
       await db.execute('ALTER TABLE tasks ADD COLUMN blockedById TEXT REFERENCES tasks(id) ON DELETE SET NULL');
     }
+  }
+
+  static Future<void> _migrateToV10(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS task_labels (
+        taskId TEXT NOT NULL,
+        labelId TEXT NOT NULL,
+        PRIMARY KEY (taskId, labelId),
+        FOREIGN KEY (taskId) REFERENCES tasks(id) ON DELETE CASCADE,
+        FOREIGN KEY (labelId) REFERENCES labels(id) ON DELETE CASCADE
+      )
+    ''');
   }
 }

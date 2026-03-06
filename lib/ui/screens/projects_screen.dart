@@ -1,6 +1,4 @@
-import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
-import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/widgets/project_card.dart';
@@ -110,16 +108,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       context: context,
       builder: (_) =>
           ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const AddProjectDialog()),
-    );
-  }
-
-  void _showEditProject(BuildContext context, Project project) {
-    showDialog(
-      context: context,
-      builder: (_) => ChangeNotifierProvider.value(
-        value: context.read<ProjectProvider>(),
-        child: EditProjectDialog(project: project),
-      ),
     );
   }
 

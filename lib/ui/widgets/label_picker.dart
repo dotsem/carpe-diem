@@ -7,10 +7,17 @@ import 'package:carpe_diem/providers/label_provider.dart';
 
 class LabelPicker extends StatelessWidget {
   final List<String> selectedLabelIds;
+  final List<String> inheritedLabelIds;
   final ValueChanged<List<String>> onSelected;
   final bool allowAdd;
 
-  const LabelPicker({super.key, required this.selectedLabelIds, required this.onSelected, this.allowAdd = true});
+  const LabelPicker({
+    super.key,
+    required this.selectedLabelIds,
+    this.inheritedLabelIds = const [],
+    required this.onSelected,
+    this.allowAdd = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,30 @@ class LabelPicker extends StatelessWidget {
           runSpacing: 8,
           children: [
             ...provider.labels.map((label) {
-              final isSelected = selectedLabelIds.contains(label.id);
+              final isInherited = inheritedLabelIds.contains(label.id);
+              final isSelected = selectedLabelIds.contains(label.id) || isInherited;
+
+              Widget chip = FilterChip(
+                label: Text(label.name),
+                selected: isSelected,
+                onSelected: isInherited
+                    ? null
+                    : (selected) {
+                        final newIds = List<String>.from(selectedLabelIds);
+                        if (selected) {
+                          newIds.add(label.id);
+                        } else {
+                          newIds.remove(label.id);
+                        }
+                        onSelected(newIds);
+                      },
+                avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
+                backgroundColor: AppColors.surfaceLight,
+                selectedColor: isInherited ? label.color.withAlpha(100) : label.color.withAlpha(200),
+                checkmarkColor: Colors.white,
+                labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
+              );
+
               return Builder(
                 builder: (context) => GestureDetector(
                   onSecondaryTapDown: (details) {
@@ -32,24 +62,7 @@ class LabelPicker extends StatelessWidget {
                       context.findRenderObject() as RenderBox,
                     );
                   },
-                  child: FilterChip(
-                    label: Text(label.name),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      final newIds = List<String>.from(selectedLabelIds);
-                      if (selected) {
-                        newIds.add(label.id);
-                      } else {
-                        newIds.remove(label.id);
-                      }
-                      onSelected(newIds);
-                    },
-                    avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
-                    backgroundColor: AppColors.surfaceLight,
-                    selectedColor: label.color.withAlpha(200),
-                    checkmarkColor: Colors.white,
-                    labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
-                  ),
+                  child: isInherited ? Tooltip(message: 'Inherited from project', child: chip) : chip,
                 ),
               );
             }),

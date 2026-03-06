@@ -17,7 +17,6 @@ import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
 import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
-import 'package:flutter/services.dart';
 
 class _FocusSearchIntent extends Intent {
   const _FocusSearchIntent();
@@ -361,7 +360,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
       ),
     );
 
-    if (result != null && mounted) {
+    if (result != null && context.mounted) {
       await context.read<TaskProvider>().bulkUpdateTasks(
         taskIds: _selectedTaskIds,
         priority: result.priority,
@@ -396,11 +395,13 @@ class _BacklogScreenState extends State<BacklogScreen> {
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
-            onPressed: () {
-              context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds).then((_) {
-                setState(() => _selectedTaskIds.clear());
+            onPressed: () async {
+              await context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds);
+              if (!mounted) return;
+              setState(() => _selectedTaskIds.clear());
+              if (ctx.mounted) {
                 Navigator.of(ctx).pop();
-              });
+              }
             },
             child: const Text('Delete'),
           ),
