@@ -1,6 +1,7 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
+import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -115,10 +116,8 @@ void showBacklogContextMenu(
       child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
     ),
     PopupMenuItem(
-      onTap: () {
-        provider.deleteTask(task);
-        onAction?.call();
-      },
+      onTap: () => _showDeleteTask(context, task, provider, onAction),
+
       child: const ListTile(
         leading: Icon(Icons.delete, color: AppColors.error),
         title: Text('Delete', style: TextStyle(color: AppColors.error)),
@@ -143,6 +142,20 @@ void _showEditTask(BuildContext context, Task task) {
         value: context.read<ProjectProvider>(),
         child: EditTaskDialog(task: task),
       ),
+    ),
+  );
+}
+
+void _showDeleteTask(BuildContext context, Task task, TaskProvider provider, VoidCallback? onAction) {
+  showDialog(
+    context: context,
+    builder: (_) => DeleteDialog(
+      title: "Delete Task",
+      message: "Are you sure you want to delete this task?",
+      onConfirm: () {
+        provider.deleteTask(task);
+        onAction?.call();
+      },
     ),
   );
 }

@@ -2,6 +2,7 @@ import 'package:carpe_diem/core/utils/date_time_utils.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
+import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
@@ -96,7 +97,7 @@ void showTaskCardContextMenu(BuildContext context, Task task, Offset localPositi
       child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
     ),
     PopupMenuItem(
-      onTap: () => provider.deleteTask(task),
+      onTap: () => _showDeleteTask(context, task, provider),
       child: const ListTile(
         leading: Icon(Icons.delete, color: AppColors.error),
         title: Text('Delete', style: TextStyle(color: AppColors.error)),
@@ -121,6 +122,17 @@ void _showEditTask(BuildContext context, Task task) {
         value: context.read<ProjectProvider>(),
         child: EditTaskDialog(task: task),
       ),
+    ),
+  );
+}
+
+void _showDeleteTask(BuildContext context, Task task, TaskProvider provider) {
+  showDialog(
+    context: context,
+    builder: (_) => DeleteDialog(
+      title: "Delete Task",
+      message: "Are you sure you want to delete this task?",
+      onConfirm: () => provider.deleteTask(task),
     ),
   );
 }
