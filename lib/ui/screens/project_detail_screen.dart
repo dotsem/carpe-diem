@@ -3,6 +3,7 @@ import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/chip.dart';
 import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/backlog_context_menu.dart';
+import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
@@ -117,7 +118,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     : TaskListView(
                         tasks: _tasks,
                         padding: const EdgeInsets.all(24),
-                        onContextMenu: (ctx, task, pos, box) => showBacklogContextMenu(ctx, task, pos, box),
+                        onContextMenu: (ctx, task, pos, box) {
+                          if (task.scheduledDate != null) {
+                            showTaskCardContextMenu(ctx, task, pos, box);
+                          } else {
+                            showBacklogContextMenu(ctx, task, pos, box);
+                          }
+                        },
                         trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
                         emptyPlaceholder: const Center(
                           child: Text("No tasks in this project", style: TextStyle(color: AppColors.textSecondary)),
