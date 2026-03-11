@@ -27,6 +27,10 @@ class _UnfocusSearchIntent extends Intent {
   const _UnfocusSearchIntent();
 }
 
+class _NewTaskIntent extends Intent {
+  const _NewTaskIntent();
+}
+
 class BacklogScreen extends StatefulWidget {
   const BacklogScreen({super.key});
 
@@ -67,6 +71,8 @@ class _BacklogScreenState extends State<BacklogScreen> {
       shortcuts: {
         const CharacterActivator('/'): const _FocusSearchIntent(),
         const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
+        const CharacterActivator('n'): const _NewTaskIntent(),
+        const CharacterActivator('N'): const _NewTaskIntent(),
       },
       child: Actions(
         actions: {
@@ -83,6 +89,9 @@ class _BacklogScreenState extends State<BacklogScreen> {
               return null;
             },
           ),
+          _NewTaskIntent: NonTypingAction<_NewTaskIntent>((_) {
+            _showAddTask(context);
+          }),
         },
         child: Focus(
           focusNode: _mainFocusNode,
