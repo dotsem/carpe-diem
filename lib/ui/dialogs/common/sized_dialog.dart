@@ -39,11 +39,11 @@ class SizedDialog extends StatefulWidget {
 }
 
 class _SizedDialogState extends State<SizedDialog> {
-  final FocusNode _focusNode = FocusNode(debugLabel: 'SizedDialogFocus');
+  final FocusScopeNode _focusScopeNode = FocusScopeNode(debugLabel: 'SizedDialogScope');
 
   @override
   void dispose() {
-    _focusNode.dispose();
+    _focusScopeNode.dispose();
     super.dispose();
   }
 
@@ -59,7 +59,11 @@ class _SizedDialogState extends State<SizedDialog> {
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       content: widget.onSubmit != null
-          ? GestureDetector(onTap: () => _focusNode.requestFocus(), behavior: HitTestBehavior.opaque, child: content)
+          ? GestureDetector(
+              onTap: () => _focusScopeNode.requestFocus(),
+              behavior: HitTestBehavior.opaque,
+              child: content,
+            )
           : content,
     );
 
@@ -72,7 +76,7 @@ class _SizedDialogState extends State<SizedDialog> {
       },
       child: Actions(
         actions: {_SubmitIntent: _SubmitAction(widget.onSubmit!)},
-        child: Focus(focusNode: _focusNode, autofocus: true, child: dialog),
+        child: FocusScope(node: _focusScopeNode, autofocus: true, child: dialog),
       ),
     );
   }
