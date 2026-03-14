@@ -10,7 +10,7 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
 import 'package:provider/provider.dart';
 
-class TaskListView extends StatelessWidget {
+class TaskListView extends StatefulWidget {
   final List<Task> tasks;
   final List<Task> overdueTasks;
   final Widget Function(BuildContext, Task)? trailingBuilder;
@@ -35,6 +35,13 @@ class TaskListView extends StatelessWidget {
   }) : padding = padding ?? const EdgeInsets.symmetric(vertical: 16);
 
   @override
+  State<TaskListView> createState() => _TaskListViewState();
+}
+
+class _TaskListViewState extends State<TaskListView> {
+  bool _isDoneExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -50,17 +57,17 @@ class TaskListView extends StatelessWidget {
     }
 
     final allTasksMap = <String, Task>{};
-    for (final t in tasks) {
+    for (final t in widget.tasks) {
       allTasksMap[t.id] = t;
     }
-    for (final t in overdueTasks) {
+    for (final t in widget.overdueTasks) {
       allTasksMap[t.id] = t;
     }
 
     var allTasks = allTasksMap.values.toList();
-    if (searchQuery != null && searchQuery!.isNotEmpty) {
+    if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
       allTasks = FuzzySearchUtils.search<Task>(
-        query: searchQuery!,
+        query: widget.searchQuery!,
         items: allTasks,
         itemToString: (t) => '${t.title} ${t.description ?? ''}',
       );
@@ -82,27 +89,27 @@ class TaskListView extends StatelessWidget {
     final doneCategory = allTasks.where((t) => t.status.isDone).toList();
 
     if (inProgressCategory.isEmpty && overdueCategory.isEmpty && todoCategory.isEmpty && doneCategory.isEmpty) {
-      return _buildEmptyState(context);
+      return widget._buildEmptyState(context);
     }
 
     bool isFirstTask = true;
     Widget buildCard(Task task, bool taskIsOverdue, {int depth = 0}) {
       final autofocus = isFirstTask;
       isFirstTask = false;
-      return _buildTaskCard(
+      return widget._buildTaskCard(
         context,
         task,
         projectProvider,
         taskProvider,
         taskIsOverdue,
-        showScheduleDate,
+        widget.showScheduleDate,
         autofocus,
         depth: depth,
       );
     }
 
     List<Widget> buildHierarchy(List<Task> categoryTasks, bool Function(Task) overdueFn) {
-      if (searchQuery != null && searchQuery!.isNotEmpty) {
+      if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
         return categoryTasks.map((t) => buildCard(t, overdueFn(t))).toList();
       }
       final flattened = TaskHierarchyUtils.buildHierarchy(categoryTasks);
@@ -110,37 +117,63 @@ class TaskListView extends StatelessWidget {
     }
 
     return ListView(
-      padding: padding,
+      padding: widget.padding,
       children: [
         if (inProgressCategory.isNotEmpty) ...[
-          _buildHeader(context, 'In Progress', color: AppColors.accent, amount: inProgressCategory.length),
+          widget._buildHeader(context, 'In Progress', color: AppColors.accent, amount: inProgressCategory.length),
           const SizedBox(height: 8),
           ...buildHierarchy(inProgressCategory, isOverdue),
           const SizedBox(height: 20),
         ],
         if (overdueCategory.isNotEmpty) ...[
-          _buildHeader(context, 'Overdue', color: AppColors.error, amount: overdueCategory.length),
+          widget._buildHeader(context, 'Overdue', color: AppColors.error, amount: overdueCategory.length),
           const SizedBox(height: 8),
           ...buildHierarchy(overdueCategory, (_) => true),
           const SizedBox(height: 20),
         ],
         if (todoCategory.isNotEmpty) ...[
-          _buildHeader(context, 'Todo', amount: todoCategory.length, color: AppColors.textSecondary),
+          widget._buildHeader(context, 'Todo', amount: todoCategory.length, color: AppColors.textSecondary),
           const SizedBox(height: 8),
           ...buildHierarchy(todoCategory, (_) => false),
         ],
         if (doneCategory.isNotEmpty) ...[
           const SizedBox(height: 20),
-          _buildHeader(context, 'Done', color: AppColors.textSecondary, amount: doneCategory.length),
+          widget._buildHeader(
+            context,
+            'Done',
+            color: AppColors.textSecondary,
+            amount: doneCategory.length,
+            onTap: () => setState(() => _isDoneExpanded = !_isDoneExpanded),
+            trailing: AnimatedRotation(
+              duration: const Duration(milliseconds: 200),
+              turns: _isDoneExpanded ? 0.5 : 0,
+              child: const Icon(Icons.expand_more, color: AppColors.textSecondary, size: 20),
+            ),
+          ),
           const SizedBox(height: 8),
-          ...buildHierarchy(doneCategory, (_) => false),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: _isDoneExpanded
+                ? Column(children: buildHierarchy(doneCategory, (_) => false))
+                : const SizedBox(width: double.infinity),
+          ),
         ],
       ],
     );
   }
+}
 
-  Widget _buildHeader(BuildContext context, String title, {Color? color, int? amount}) {
-    return Row(
+extension TaskListViewPrivate on TaskListView {
+  Widget _buildHeader(
+    BuildContext context,
+    String title, {
+    Color? color,
+    int? amount,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    Widget content = Row(
       children: [
         Text(
           title,
@@ -155,8 +188,18 @@ class TaskListView extends StatelessWidget {
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
           ),
         ),
+        if (trailing != null) ...[const Spacer(), trailing],
       ],
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: content),
+      );
+    }
+    return content;
   }
 
   Widget _buildTaskCard(
