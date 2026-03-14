@@ -9,6 +9,7 @@ import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/routes/app_router.dart';
+import 'package:toastification/toastification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,13 +37,15 @@ class CarpeDiemApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => ProjectProvider()..loadProjects()),
       ],
-      child: MaterialApp.router(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
-        routerConfig: appRouter,
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        supportedLocales: [const Locale('en', 'US'), const Locale('en', 'GB')],
+      child: ToastificationWrapper(
+        child: MaterialApp.router(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.dark,
+          routerConfig: appRouter,
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          supportedLocales: [const Locale('en', 'US'), const Locale('en', 'GB')],
+        ),
       ),
     );
   }

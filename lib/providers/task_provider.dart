@@ -7,6 +7,7 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/repositories/task_repository.dart';
+import 'package:carpe_diem/core/utils/toast_utils.dart';
 
 class TaskProvider extends ChangeNotifier {
   final TaskRepository _repo = TaskRepository();
@@ -101,12 +102,14 @@ class TaskProvider extends ChangeNotifier {
     await _repo.insert(task);
     await loadTasksForDate(_currentDate);
     await loadUnscheduledTasks();
+    ToastUtils.showSuccess('Task "$title" created');
   }
 
   Future<void> updateTaskStatus(Task task, TaskStatus status) async {
     final updated = task.copyWith(status: status);
     await _repo.update(updated);
     await _refreshAll();
+    ToastUtils.showSuccess('Task status updated to ${status.name}');
   }
 
   Future<void> startTask(Task task) async {
@@ -141,11 +144,13 @@ class TaskProvider extends ChangeNotifier {
   Future<void> updateTask(Task task) async {
     await _repo.update(task);
     await _refreshAll();
+    ToastUtils.showSuccess('Task "${task.title}" updated');
   }
 
   Future<void> deleteTask(Task task) async {
     await _repo.delete(task.id);
     await _refreshAll();
+    ToastUtils.showSuccess('Task "${task.title}" deleted');
   }
 
   Future<void> rescheduleOverdue(Task task, DateTime newDate) async {
@@ -213,6 +218,7 @@ class TaskProvider extends ChangeNotifier {
       }
     }
     await _refreshAll();
+    ToastUtils.showSuccess("Updated ${taskIds.length} tasks");
   }
 
   Future<void> bulkDeleteTasks(List<String> taskIds) async {
@@ -220,6 +226,7 @@ class TaskProvider extends ChangeNotifier {
       await _repo.delete(id);
     }
     await _refreshAll();
+    ToastUtils.showSuccess('Deleted ${taskIds.length} tasks');
   }
 
   Future<void> _refreshAll() async {
@@ -227,7 +234,7 @@ class TaskProvider extends ChangeNotifier {
     await loadUnscheduledTasks(silent: true);
   }
 
-  Future<void> scheduleTasksForDate(List<String> taskIds, DateTime date) async {
+  Future<void> _scheduleTasksForDate(List<String> taskIds, DateTime date) async {
     final normalizedDate = _normalizeDate(date);
     for (final id in taskIds) {
       Task? task;
@@ -252,16 +259,19 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> scheduleTasksForToday(List<String> taskIds) async {
-    await scheduleTasksForDate(taskIds, DateTime.now());
+    await _scheduleTasksForDate(taskIds, DateTime.now());
+    ToastUtils.showSuccess('Tasks scheduled for today');
   }
 
   Future<void> scheduleTasksForTomorrow(List<String> taskIds) async {
-    await scheduleTasksForDate(taskIds, DateTime.now().add(const Duration(days: 1)));
+    await _scheduleTasksForDate(taskIds, DateTime.now().add(const Duration(days: 1)));
+    ToastUtils.showSuccess('Tasks scheduled for tomorrow');
   }
 
   Future<void> scheduleTasksForNextWorkDay(List<String> taskIds) async {
     DateTime nextMonday = DateTime.now().next(DateTime.monday);
-    await scheduleTasksForDate(taskIds, nextMonday);
+    await _scheduleTasksForDate(taskIds, nextMonday);
+    ToastUtils.showSuccess('Tasks scheduled for next workday');
   }
 
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
@@ -270,6 +280,7 @@ class TaskProvider extends ChangeNotifier {
       await _repo.insert(task.copyWith(projectId: projectId));
     }
     await _refreshAll();
+    ToastUtils.showSuccess('Imported ${tasks.length} tasks from markdown');
   }
 
   List<Task> _parseMarkdown(String markdown) {
