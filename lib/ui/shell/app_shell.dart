@@ -1,3 +1,4 @@
+import 'package:carpe_diem/ui/dialogs/add_project_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
@@ -161,24 +162,31 @@ class _SideNav extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: Consumer<ProjectProvider>(
-              builder: (context, projectProvider, child) {
-                final projects = List.of(projectProvider.projects)
-                  ..sort((a, b) {
-                    final pComp = b.priority.index.compareTo(a.priority.index);
-                    if (pComp != 0) return pComp;
-                    return a.name.compareTo(b.name);
-                  });
+          Consumer<ProjectProvider>(
+            builder: (context, projectProvider, child) {
+              final projects = List.of(projectProvider.projects)
+                ..sort((a, b) {
+                  final pComp = b.priority.index.compareTo(a.priority.index);
+                  if (pComp != 0) return pComp;
+                  return a.name.compareTo(b.name);
+                });
 
-                final groups = <Priority, List<Project>>{};
-                for (final project in projects) {
-                  groups.putIfAbsent(project.priority, () => []).add(project);
-                }
+              final groups = <Priority, List<Project>>{};
+              for (final project in projects) {
+                groups.putIfAbsent(project.priority, () => []).add(project);
+              }
 
-                final priorities = groups.keys.toList()..sort((a, b) => b.index.compareTo(a.index));
+              final priorities = groups.keys.toList()..sort((a, b) => b.index.compareTo(a.index));
 
-                return ListView.builder(
+              if (projects.isEmpty) {
+                return ElevatedButton(
+                  onPressed: () => showDialog(context: context, builder: (context) => const AddProjectDialog()),
+                  child: Text('Create a project'),
+                );
+              }
+
+              return Expanded(
+                child: ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemCount: priorities.length,
                   itemBuilder: (context, pIndex) {
@@ -220,9 +228,9 @@ class _SideNav extends StatelessWidget {
                       ),
                     );
                   },
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),
