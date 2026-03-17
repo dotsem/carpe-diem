@@ -3,20 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 class ToastUtils {
+  static const alignment = Alignment.topLeft;
+  static final borderRadius = BorderRadius.circular(12);
+  static const showProgressBar = false;
+  static const applyBlurEffect = true;
+  static const dragToClose = true;
+  static const autoCloseDuration = Duration(seconds: 3);
+  static const style = ToastificationStyle.minimal;
+
   static void showSuccess(String message, {BuildContext? context}) {
     toastification.show(
       context: context,
       title: Text(message),
-      autoCloseDuration: const Duration(seconds: 3),
+      autoCloseDuration: autoCloseDuration,
       type: ToastificationType.success,
-      style: ToastificationStyle.minimal,
-      alignment: Alignment.bottomRight,
+      style: style,
+      alignment: alignment,
       backgroundColor: AppColors.surface,
       foregroundColor: AppColors.text,
       primaryColor: AppColors.accent,
-      borderRadius: BorderRadius.circular(12),
-      showProgressBar: false,
-      applyBlurEffect: true,
+      borderRadius: borderRadius,
+      showProgressBar: showProgressBar,
+      applyBlurEffect: applyBlurEffect,
+      dragToClose: dragToClose,
     );
   }
 
@@ -24,16 +33,17 @@ class ToastUtils {
     toastification.show(
       context: context,
       title: Text(message),
-      autoCloseDuration: const Duration(seconds: 3),
+      autoCloseDuration: autoCloseDuration,
       type: ToastificationType.info,
-      style: ToastificationStyle.minimal,
-      alignment: Alignment.bottomRight,
+      style: style,
+      alignment: alignment,
       backgroundColor: AppColors.surface,
       foregroundColor: AppColors.text,
       primaryColor: AppColors.info,
-      borderRadius: BorderRadius.circular(12),
-      showProgressBar: false,
-      applyBlurEffect: true,
+      borderRadius: borderRadius,
+      showProgressBar: showProgressBar,
+      applyBlurEffect: applyBlurEffect,
+      dragToClose: dragToClose,
     );
   }
 
@@ -41,16 +51,17 @@ class ToastUtils {
     toastification.show(
       context: context,
       title: Text(message),
-      autoCloseDuration: const Duration(seconds: 3),
+      autoCloseDuration: autoCloseDuration,
       type: ToastificationType.warning,
-      style: ToastificationStyle.minimal,
-      alignment: Alignment.bottomRight,
+      style: style,
+      alignment: alignment,
       backgroundColor: AppColors.surface,
       foregroundColor: AppColors.text,
       primaryColor: AppColors.priorityMedium,
-      borderRadius: BorderRadius.circular(12),
-      showProgressBar: false,
-      applyBlurEffect: true,
+      borderRadius: borderRadius,
+      showProgressBar: showProgressBar,
+      applyBlurEffect: applyBlurEffect,
+      dragToClose: dragToClose,
     );
   }
 }
