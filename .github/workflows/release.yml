@@ -2,10 +2,14 @@ name: Release
 
 on:
     release:
-        types: [created, published]
+        types: [created, published, edited]
     push:
         tags:
             - "v*"
+    workflow_dispatch:
+
+permissions:
+    contents: write
 
 jobs:
     build:
