@@ -57,6 +57,11 @@ class ProjectProvider extends ChangeNotifier {
     await loadProjects();
   }
 
+  Future<void> toggleProjectActive(Project project) async {
+    final updated = project.copyWith(isActive: !project.isActive);
+    await updateProject(updated);
+  }
+
   Project? getById(String id) {
     try {
       return _projects.firstWhere((p) => p.id == id);

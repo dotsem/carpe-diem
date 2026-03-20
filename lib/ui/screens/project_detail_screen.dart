@@ -124,8 +124,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             const CharacterActivator('/'): const _FocusSearchIntent(),
             const CharacterActivator('s'): const _FocusSearchIntent(),
             const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
-            const CharacterActivator('n'): const _NewTaskIntent(),
-            const CharacterActivator('N'): const _NewTaskIntent(),
+            if (project.isActive) const CharacterActivator('n'): const _NewTaskIntent(),
+            if (project.isActive) const CharacterActivator('N'): const _NewTaskIntent(),
           },
           child: Actions(
             actions: {
@@ -141,9 +141,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   return null;
                 },
               ),
-              _NewTaskIntent: NonTypingAction<_NewTaskIntent>((_) {
-                _showAddTask(context);
-              }),
+              if (project.isActive)
+                _NewTaskIntent: NonTypingAction<_NewTaskIntent>((_) {
+                  _showAddTask(context);
+                }),
             },
             child: Focus(
               focusNode: _mainFocusNode,
@@ -200,25 +201,29 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                 });
                               },
                               onEdit: (task) => _showEditTask(context, task),
+                              isReadOnly: !project.isActive,
+                              initialDoneExpanded: !project.isActive,
                             ),
                     ),
                   ],
                 ),
-                floatingActionButton: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black, blurRadius: 15, spreadRadius: 2, offset: const Offset(0, 4)),
-                    ],
-                  ),
-                  child: FloatingActionButton(
-                    onPressed: () => _showAddTask(context),
-                    backgroundColor: project.color,
-                    elevation: 0,
-                    highlightElevation: 0,
-                    child: const Icon(Icons.add, color: Colors.white),
-                  ),
-                ),
+                floatingActionButton: project.isActive
+                    ? Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black, blurRadius: 15, spreadRadius: 2, offset: const Offset(0, 4)),
+                          ],
+                        ),
+                        child: FloatingActionButton(
+                          onPressed: () => _showAddTask(context),
+                          backgroundColor: project.color,
+                          elevation: 0,
+                          highlightElevation: 0,
+                          child: const Icon(Icons.add, color: Colors.white),
+                        ),
+                      )
+                    : null,
               ),
             ),
           ),

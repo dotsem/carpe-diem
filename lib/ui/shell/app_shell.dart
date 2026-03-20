@@ -164,7 +164,7 @@ class _SideNav extends StatelessWidget {
           ),
           Consumer<ProjectProvider>(
             builder: (context, projectProvider, child) {
-              final projects = List.of(projectProvider.projects)
+              final projects = projectProvider.projects.where((p) => p.isActive).toList()
                 ..sort((a, b) {
                   final pComp = b.priority.index.compareTo(a.priority.index);
                   if (pComp != 0) return pComp;

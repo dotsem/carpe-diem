@@ -68,9 +68,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final projects = provider.projects.where((p) => _filter.applyToProject(p)).toList();
+        final filteredProjects = provider.projects.where((p) => _filter.applyToProject(p)).toList();
+        final activeProjects = filteredProjects.where((p) => p.isActive).toList();
+        final inactiveProjects = filteredProjects.where((p) => !p.isActive).toList();
 
-        if (projects.isEmpty) {
+        if (filteredProjects.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -94,13 +96,34 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           child: ListView(
             scrollDirection: Axis.vertical,
             children: [
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: projects
-                    .map((p) => ProjectCard(project: p, onTap: () => context.go('/projects/${p.id}')))
-                    .toList(),
-              ),
+              if (activeProjects.isNotEmpty)
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: activeProjects
+                      .map((p) => ProjectCard(project: p, onTap: () => context.go('/projects/${p.id}')))
+                      .toList(),
+                ),
+              if (inactiveProjects.isNotEmpty) ...[
+                const SizedBox(height: 48),
+                Text(
+                  'ARCHIVED',
+                  style: TextStyle(
+                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: inactiveProjects
+                      .map((p) => ProjectCard(project: p, onTap: () => context.go('/projects/${p.id}')))
+                      .toList(),
+                ),
+              ],
             ],
           ),
         );

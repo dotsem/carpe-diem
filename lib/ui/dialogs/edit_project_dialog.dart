@@ -27,6 +27,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   late Priority _priority;
   List<String> _selectedLabelIds = [];
   DateTime? _deadline;
+  late bool _isActive;
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     _priority = widget.project.priority;
     _selectedLabelIds = List<String>.from(widget.project.labelIds);
     _deadline = widget.project.deadline;
+    _isActive = widget.project.isActive;
   }
 
   @override
@@ -91,6 +93,8 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             onChanged: (d) => setState(() => _deadline = d),
             firstDate: widget.project.createdAt,
           ),
+          const SizedBox(height: 16),
+          _ActiveToggle(isActive: _isActive, onChanged: (v) => setState(() => _isActive = v)),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -140,8 +144,44 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
       deadline: _deadline,
       createdAt: widget.project.createdAt,
       updatedAt: DateTime.now(),
+      isActive: _isActive,
     );
     context.read<ProjectProvider>().updateProject(project);
     Navigator.of(context).pop();
+  }
+}
+
+class _ActiveToggle extends StatelessWidget {
+  final bool isActive;
+  final ValueChanged<bool> onChanged;
+
+  const _ActiveToggle({required this.isActive, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onChanged(!isActive),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Project status', style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text(
+                    isActive ? 'Tasks can be added to this project' : 'Project is archived. Tasks cannot be added.',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Switch(value: isActive, onChanged: onChanged),
+          ],
+        ),
+      ),
+    );
   }
 }

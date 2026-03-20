@@ -36,7 +36,8 @@ class DatabaseHelper {
         color INTEGER NOT NULL,
         priority INTEGER NOT NULL DEFAULT 0,
         deadline TEXT,
-        createdAt TEXT NOT NULL
+        createdAt TEXT NOT NULL,
+        isActive INTEGER NOT NULL DEFAULT 1
       )
     ''');
 
@@ -96,6 +97,8 @@ class DatabaseHelper {
   }
 
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // migrate from old version to new version here
+    if (oldVersion < 11) {
+      await db.execute('ALTER TABLE projects ADD COLUMN isActive INTEGER NOT NULL DEFAULT 1');
+    }
   }
 }

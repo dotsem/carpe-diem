@@ -36,19 +36,29 @@ class TaskListView extends StatefulWidget {
     this.selectedTaskIds = const {},
     this.onSelectedChanged,
     this.onEdit,
+    this.initialDoneExpanded = false,
+    this.isReadOnly = false,
   }) : padding = padding ?? const EdgeInsets.symmetric(vertical: 16);
 
   final Set<String> selectedTaskIds;
   final bool selectionMode;
   final ValueChanged<Task>? onSelectedChanged;
   final ValueChanged<Task>? onEdit;
+  final bool initialDoneExpanded;
+  final bool isReadOnly;
 
   @override
   State<TaskListView> createState() => _TaskListViewState();
 }
 
 class _TaskListViewState extends State<TaskListView> {
-  bool _isDoneExpanded = false;
+  late bool _isDoneExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDoneExpanded = widget.initialDoneExpanded;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -227,13 +237,22 @@ extension TaskListViewPrivate on TaskListView {
       project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
       isOverdue: taskIsOverdue,
       autofocus: autofocus,
-      onToggle: selectionMode ? (value) => onSelectedChanged?.call(task) : (_) => taskProvider.toggleComplete(task),
+      onToggle: isReadOnly
+          ? (_) {}
+          : selectionMode
+          ? (value) => onSelectedChanged?.call(task)
+          : (_) => taskProvider.toggleComplete(task),
       isChecked: selectionMode ? selectedTaskIds.contains(task.id) : null,
       selectionMode: selectionMode,
-      onTap: () => onEdit?.call(task),
+      onTap: isReadOnly ? () {} : () => onEdit?.call(task),
       showScheduleDate: showScheduleDate,
-      onContextMenu: onContextMenu != null ? (pos, box) => onContextMenu!(context, task, pos, box) : null,
-      trailing: trailingBuilder?.call(context, task),
+      onContextMenu: isReadOnly
+          ? null
+          : onContextMenu != null
+          ? (pos, box) => onContextMenu!(context, task, pos, box)
+          : null,
+      leading: isReadOnly ? const SizedBox.shrink() : null,
+      trailing: isReadOnly ? const SizedBox.shrink() : trailingBuilder?.call(context, task),
     );
 
     return TaskHierarchyIndicator(depth: depth, child: card);

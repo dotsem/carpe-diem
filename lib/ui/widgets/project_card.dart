@@ -14,75 +14,86 @@ class ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 240,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: project.priority.color),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(color: project.color, shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        project.name,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
+    return Opacity(
+      opacity: project.isActive ? 1.0 : 0.6,
+      child: SizedBox(
+        width: 240,
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: project.isActive ? project.priority.color : AppColors.textSecondary.withValues(alpha: 0.3),
+            ),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(color: project.color, shape: BoxShape.circle),
                       ),
-                    ),
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(color: AppColors.surfaceLight, shape: BoxShape.circle),
-                      child: Icon(
-                        project.priority.icon,
-                        size: 16,
-                        color: project.priority.color,
-                        semanticLabel: project.priority.name,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          project.name,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(color: AppColors.surfaceLight, shape: BoxShape.circle),
+                        child: Icon(
+                          project.priority.icon,
+                          size: 16,
+                          color: project.priority.color,
+                          semanticLabel: project.priority.name,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (project.description != null && project.description!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      project.description!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ],
-                ),
-                if (project.description != null && project.description!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    project.description!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  if (project.deadline != null) ...[
+                    const SizedBox(height: 8),
+                    _DeadlineRow(deadline: project.deadline!),
+                  ],
+                  const SizedBox(height: 12),
+                  Consumer<LabelProvider>(
+                    builder: (context, labelProvider, _) {
+                      final labels = project.labelIds
+                          .map((id) => labelProvider.getById(id))
+                          .whereType<Label>()
+                          .toList();
+                      if (labels.isEmpty) return const SizedBox.shrink();
+
+                      return Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: labels.map((label) {
+                          return LabelChip(label: label);
+                        }).toList(),
+                      );
+                    },
                   ),
                 ],
-                if (project.deadline != null) ...[const SizedBox(height: 8), _DeadlineRow(deadline: project.deadline!)],
-                const SizedBox(height: 12),
-                Consumer<LabelProvider>(
-                  builder: (context, labelProvider, _) {
-                    final labels = project.labelIds.map((id) => labelProvider.getById(id)).whereType<Label>().toList();
-                    if (labels.isEmpty) return const SizedBox.shrink();
-
-                    return Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: labels.map((label) {
-                        return LabelChip(label: label);
-                      }).toList(),
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ),
