@@ -71,6 +71,10 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.surfaceLight, thickness: 1),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(4)),
+        textStyle: const TextStyle(color: AppColors.textSecondary),
+      ),
     );
   }
 }

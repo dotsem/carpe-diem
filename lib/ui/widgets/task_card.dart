@@ -218,10 +218,14 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   }
 
   Widget _statusIndicator() {
-    final bool effectiveIsChecked = widget.isChecked ?? (widget.task.isCompleted || _isPending);
+    final bool effectiveIsChecked = widget.isChecked ?? widget.task.isCompleted;
 
-    if (widget.isChecked != null || widget.selectionMode) {
-      return Checkbox(value: effectiveIsChecked, onChanged: (value) => _handleToggle(value));
+    if (widget.selectionMode) {
+      return Checkbox(
+        value: widget.isChecked ?? false,
+        onChanged: (value) => widget.onToggle(value),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      );
     }
 
     final task = widget.task;
@@ -229,14 +233,30 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       return GestureDetector(
         onTap: () => _handleToggle(null),
         child: Container(
-          width: 20,
-          height: 20,
+          width: 24,
+          height: 24,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: _isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
             border: Border.all(color: AppColors.accent, width: 2),
           ),
-          child: _isPending ? const Icon(Icons.close, size: 12, color: AppColors.accent) : null,
+          child: _isPending ? const Icon(Icons.close, size: 14, color: AppColors.accent) : null,
+        ),
+      );
+    }
+
+    if (task.status.isTodo) {
+      return GestureDetector(
+        onTap: () => _handleToggle(null),
+        child: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.success.withValues(alpha: 0.1),
+            border: Border.all(color: AppColors.success, width: 2),
+          ),
+          child: const Icon(Icons.play_arrow_rounded, size: 16, color: AppColors.success),
         ),
       );
     }
@@ -245,6 +265,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       value: effectiveIsChecked,
       onChanged: (value) => _handleToggle(value),
       fillColor: _isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     );
   }
 

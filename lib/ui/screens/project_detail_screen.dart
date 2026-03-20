@@ -5,6 +5,9 @@ import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:go_router/go_router.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/backlog_context_menu.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
+import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/bulk_edit_tasks_dialog.dart';
+import 'package:carpe_diem/ui/widgets/bulk_action_menu.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +54,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _isLoading = true;
   List<Task> _tasks = [];
   late TaskProvider _taskProvider;
+  final List<String> _selectedTaskIds = [];
 
   @override
   void initState() {
@@ -184,6 +188,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                               ),
                               searchQuery: _searchQuery,
                               showScheduleDate: true,
+                              selectionMode: true,
+                              selectedTaskIds: _selectedTaskIds.toSet(),
+                              onSelectedChanged: (task) {
+                                setState(() {
+                                  if (_selectedTaskIds.contains(task.id)) {
+                                    _selectedTaskIds.remove(task.id);
+                                  } else {
+                                    _selectedTaskIds.add(task.id);
+                                  }
+                                });
+                              },
+                              onEdit: (task) => _showEditTask(context, task),
                             ),
                     ),
                   ],
@@ -248,6 +264,47 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         onPressed: () => _showDeleteProject(context, project),
                         tooltip: 'Delete Project',
                       ),
+                      const SizedBox(width: 8),
+                      if (_selectedTaskIds.isNotEmpty) ...[
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.success,
+                            foregroundColor: AppColors.text,
+                          ),
+                          onPressed: () {
+                            context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
+                              setState(() => _selectedTaskIds.clear());
+                            });
+                          },
+                          label: const Text('Plan for today'),
+                          icon: const Icon(Icons.calendar_today_rounded),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      BulkActionMenu(
+                        options: [
+                          BulkActionOption(
+                            value: 'edit',
+                            icon: Icons.edit_rounded,
+                            label: 'Bulk Edit',
+                            enabled: _selectedTaskIds.length >= 2,
+                          ),
+                          BulkActionOption(
+                            value: 'delete',
+                            icon: Icons.delete_rounded,
+                            label: 'Bulk Delete',
+                            enabled: _selectedTaskIds.length >= 2,
+                            isDestructive: true,
+                          ),
+                        ],
+                        onOptionSelected: (value) {
+                          if (value == 'edit') {
+                            _showBulkEdit(context);
+                          } else if (value == 'delete') {
+                            _showBulkDeleteConfirm(context);
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -296,12 +353,89 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
                 const localPosition = Offset.zero;
-                showBacklogContextMenu(context, task, localPosition, renderBox);
+                if (task.scheduledDate != null) {
+                  showTaskCardContextMenu(context, task, localPosition, renderBox);
+                } else {
+                  showBacklogContextMenu(context, task, localPosition, renderBox);
+                }
               },
             );
           },
         ),
       ],
+    );
+  }
+
+  void _showEditTask(BuildContext context, Task task) {
+    showDialog(
+      context: context,
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: context.read<TaskProvider>()),
+          ChangeNotifierProvider.value(value: context.read<ProjectProvider>()),
+        ],
+        child: EditTaskDialog(task: task),
+      ),
+    );
+  }
+
+  void _showBulkEdit(BuildContext context) async {
+    final result = await showDialog<BulkEditResult>(
+      context: context,
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: context.read<TaskProvider>()),
+          ChangeNotifierProvider.value(value: context.read<ProjectProvider>()),
+        ],
+        child: BulkEditTasksDialog(taskIds: _selectedTaskIds),
+      ),
+    );
+
+    if (result != null && context.mounted) {
+      await context.read<TaskProvider>().bulkUpdateTasks(
+        taskIds: _selectedTaskIds,
+        priority: result.priority,
+        updatePriority: result.updatePriority,
+        scheduledDate: result.scheduledDate,
+        updateScheduledDate: result.updateScheduledDate,
+        clearScheduledDate: result.clearScheduledDate,
+        projectId: result.projectId,
+        updateProjectId: result.updateProjectId,
+        clearProjectId: result.clearProjectId,
+        deadline: result.deadline,
+        updateDeadline: result.updateDeadline,
+        clearDeadline: result.clearDeadline,
+        blockedById: result.blockedById,
+        updateBlockedById: result.updateBlockedById,
+        clearBlockedById: result.clearBlockedById,
+      );
+      setState(() => _selectedTaskIds.clear());
+    }
+  }
+
+  void _showBulkDeleteConfirm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
+        backgroundColor: AppColors.surfaceLight,
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+            onPressed: () async {
+              await context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds);
+              if (!mounted) return;
+              setState(() => _selectedTaskIds.clear());
+              if (ctx.mounted) {
+                Navigator.of(ctx).pop();
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 

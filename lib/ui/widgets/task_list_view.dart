@@ -32,7 +32,16 @@ class TaskListView extends StatefulWidget {
     this.emptyPlaceholder,
     this.showScheduleDate = false,
     this.searchQuery,
+    this.selectionMode = false,
+    this.selectedTaskIds = const {},
+    this.onSelectedChanged,
+    this.onEdit,
   }) : padding = padding ?? const EdgeInsets.symmetric(vertical: 16);
+
+  final Set<String> selectedTaskIds;
+  final bool selectionMode;
+  final ValueChanged<Task>? onSelectedChanged;
+  final ValueChanged<Task>? onEdit;
 
   @override
   State<TaskListView> createState() => _TaskListViewState();
@@ -218,8 +227,18 @@ extension TaskListViewPrivate on TaskListView {
       project: task.projectId != null ? projectProvider.getById(task.projectId!) : null,
       isOverdue: taskIsOverdue,
       autofocus: autofocus,
-      onToggle: (_) => taskProvider.toggleComplete(task),
-      onTap: () {},
+      onToggle: this.selectionMode
+          ? (value) => this.onSelectedChanged?.call(task)
+          : (_) => taskProvider.toggleComplete(task),
+      isChecked: this.selectionMode ? this.selectedTaskIds.contains(task.id) : null,
+      selectionMode: this.selectionMode,
+      onTap: () {
+        if (this.selectionMode) {
+          this.onSelectedChanged?.call(task);
+        } else {
+          this.onEdit?.call(task);
+        }
+      },
       showScheduleDate: showScheduleDate,
       onContextMenu: onContextMenu != null ? (pos, box) => onContextMenu!(context, task, pos, box) : null,
       trailing: trailingBuilder?.call(context, task),

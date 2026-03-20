@@ -260,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
           overdueTasks: _isToday ? overdue : [],
           onContextMenu: (ctx, task, pos, box) => showTaskCardContextMenu(ctx, task, pos, box),
           trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
+          onEdit: (task) => _showEditTask(context, task),
           emptyPlaceholder: _buildEmptyState(),
         );
       },
@@ -288,10 +289,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          icon: const Icon(Icons.edit, size: 18),
-          color: AppColors.textSecondary,
-          onPressed: () => _showEditTask(context, task),
+        Builder(
+          builder: (buttonContext) {
+            return IconButton(
+              icon: const Icon(Icons.more_vert, size: 18),
+              color: AppColors.textSecondary,
+              onPressed: () {
+                final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
+                const localPosition = Offset.zero;
+                showTaskCardContextMenu(context, task, localPosition, renderBox);
+              },
+            );
+          },
         ),
       ],
     );
