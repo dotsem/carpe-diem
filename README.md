@@ -75,10 +75,8 @@ Import tasks from markdown files and automatically assign them to a project.
 
 ## First release
 
-When will the first release be?
-
-The first release is planned soon.
-I'm currently working on some small tweaks and improvements to finalize the app for the first release.
+First release is out (v0.1.0)
+New changes will be released soon!
 
 ## More features?
 
