@@ -4,4 +4,5 @@ class AppConstants {
   static const String dbName = 'carpe_diem.db';
   static const int dbVersion = 11;
   static const int firstDayOfWeek = DateTime.monday;
+  static const int taskCompletionDelaySeconds = 5;
 }

@@ -1,4 +1,6 @@
+import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/label.dart';
+import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/chip.dart';
 import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
@@ -47,18 +49,27 @@ class TaskCard extends StatefulWidget {
 
 class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  bool _isPending = false;
   bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 5));
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _completeTask();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: AppConstants.taskCompletionDelaySeconds),
+    );
+    _checkPending();
+  }
+
+  void _checkPending() {
+    final provider = context.read<TaskProvider>();
+    if (provider.isTaskPending(widget.task.id)) {
+      final progress = provider.getPendingProgress(widget.task.id);
+      if (progress < 1.0) {
+        _controller.value = progress;
+        _controller.forward();
       }
-    });
+    }
   }
 
   @override
@@ -73,21 +84,19 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       return;
     }
 
+    final provider = context.read<TaskProvider>();
+
     if (widget.task.status.isDone) {
       widget.onToggle(value);
     } else if (widget.task.status.isInProgress) {
-      if (!widget.useTimer) {
-        widget.onToggle(value);
-        return;
-      }
+      final isNowPending = !provider.isTaskPending(widget.task.id);
+      provider.toggleComplete(widget.task, useTimer: widget.useTimer);
 
-      // In progress -> start 5s timer to complete
-      if (_isPending) {
-        _controller.reset();
-        setState(() => _isPending = false);
-      } else {
-        setState(() => _isPending = true);
+      if (isNowPending && widget.useTimer) {
+        _controller.value = 0;
         _controller.forward();
+      } else {
+        _controller.reset();
       }
     } else {
       // Todo -> immediately move to in progress
@@ -95,17 +104,21 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     }
   }
 
-  void _completeTask() {
-    if (mounted) {
-      setState(() => _isPending = false);
-      _controller.reset();
-      widget.onToggle(true);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final bool showDone = widget.isChecked == null && (widget.task.isCompleted || _isPending);
+    final provider = context.watch<TaskProvider>();
+    final isPending = provider.isTaskPending(widget.task.id);
+    final bool showDone = widget.isChecked == null && (widget.task.isCompleted || isPending);
+
+    // Sync animation if needed (e.g. after page swap)
+    if (isPending && !_controller.isAnimating && _controller.value < 1.0) {
+      final progress = provider.getPendingProgress(widget.task.id);
+      _controller.value = progress;
+      _controller.forward();
+    } else if (!isPending && (_controller.isAnimating || _controller.value > 0)) {
+      _controller.reset();
+    }
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final isOverdue = widget.task.deadline != null ? widget.task.deadline!.isBefore(today) : widget.isOverdue;
@@ -114,7 +127,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          foregroundPainter: _isPending
+          foregroundPainter: isPending
               ? _ProgressPainter(progress: _controller.value, color: AppColors.accent, width: 3.0, borderRadius: 12.0)
               : null,
           child: child,
@@ -187,8 +200,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   spacing: 4,
                                   runSpacing: 4,
                                   children: [
-                                    if (isOverdue && !widget.task.isCompleted && !_isPending) OverdueChip(),
-                                    if (widget.task.status.isInProgress && !_isPending) StatusChip(),
+                                    if (isOverdue && !widget.task.isCompleted && !isPending) OverdueChip(),
+                                    if (widget.task.status.isInProgress && !isPending) StatusChip(),
                                     if (widget.task.deadline != null) DeadlineChip(deadline: widget.task.deadline!),
                                     if (widget.showScheduleDate &&
                                         widget.task.scheduledDate != null &&
@@ -228,8 +241,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       );
     }
 
-    final task = widget.task;
-    if (task.status.isInProgress) {
+    final provider = context.read<TaskProvider>();
+    final isPending = provider.isTaskPending(widget.task.id);
+
+    if (widget.task.status.isInProgress) {
       return GestureDetector(
         onTap: () => _handleToggle(null),
         child: Container(
@@ -237,15 +252,15 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
           height: 24,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: _isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
+            color: isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
             border: Border.all(color: AppColors.accent, width: 2),
           ),
-          child: _isPending ? const Icon(Icons.close, size: 14, color: AppColors.accent) : null,
+          child: isPending ? const Icon(Icons.close, size: 14, color: AppColors.accent) : null,
         ),
       );
     }
 
-    if (task.status.isTodo) {
+    if (widget.task.status.isTodo) {
       return GestureDetector(
         onTap: () => _handleToggle(null),
         child: Container(
@@ -264,7 +279,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     return Checkbox(
       value: effectiveIsChecked,
       onChanged: (value) => _handleToggle(value),
-      fillColor: _isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
+      fillColor: isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     );
   }

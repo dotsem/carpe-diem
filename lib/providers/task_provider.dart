@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/utils/date_time_utils.dart';
 import 'package:carpe_diem/data/models/task_layout.dart';
 import 'package:carpe_diem/providers/settings_provider.dart';
@@ -25,6 +27,9 @@ class TaskProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  final Map<String, DateTime> _pendingCompletions = {};
+  final Map<String, Timer> _completionTimers = {};
 
   List<Task> _tasks = [];
   List<Task> _overdueTasks = [];
@@ -127,18 +132,54 @@ class TaskProvider extends ChangeNotifier {
     await _refreshAll();
   }
 
-  Future<void> toggleComplete(Task task) async {
+  Future<void> toggleComplete(Task task, {bool useTimer = false}) async {
+    if (_pendingCompletions.containsKey(task.id)) {
+      _cancelPending(task.id);
+      return;
+    }
+
     switch (task.status) {
       case TaskStatus.todo:
         await startTask(task);
         break;
       case TaskStatus.inProgress:
-        await completeTask(task);
+        if (useTimer) {
+          _startPending(task);
+        } else {
+          await completeTask(task);
+        }
         break;
       case TaskStatus.done:
         await updateTaskStatus(task, TaskStatus.todo);
         break;
     }
+  }
+
+  void _startPending(Task task) {
+    _pendingCompletions[task.id] = DateTime.now();
+    _completionTimers[task.id] = Timer(const Duration(seconds: AppConstants.taskCompletionDelaySeconds), () {
+      _pendingCompletions.remove(task.id);
+      _completionTimers.remove(task.id);
+      completeTask(task);
+    });
+    notifyListeners();
+  }
+
+  void _cancelPending(String taskId) {
+    _completionTimers[taskId]?.cancel();
+    _completionTimers.remove(taskId);
+    _pendingCompletions.remove(taskId);
+    notifyListeners();
+  }
+
+  bool isTaskPending(String taskId) => _pendingCompletions.containsKey(taskId);
+
+  double getPendingProgress(String taskId) {
+    final startTime = _pendingCompletions[taskId];
+    if (startTime == null) return 0.0;
+    final elapsed = DateTime.now().difference(startTime).inMilliseconds;
+    final total = AppConstants.taskCompletionDelaySeconds * 1000;
+    return (elapsed / total).clamp(0.0, 1.0);
   }
 
   Future<void> updateTask(Task task) async {
@@ -307,6 +348,14 @@ class TaskProvider extends ChangeNotifier {
       }
     }
     return tasks;
+  }
+
+  @override
+  void dispose() {
+    for (final timer in _completionTimers.values) {
+      timer.cancel();
+    }
+    super.dispose();
   }
 
   DateTime _normalizeDate(DateTime date) => DateTime(date.year, date.month, date.day);
