@@ -44,7 +44,8 @@ class CarpeDiemApp extends StatelessWidget {
           theme: AppTheme.dark,
           routerConfig: appRouter,
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          supportedLocales: [const Locale('en', 'US'), const Locale('en', 'GB')],
+          supportedLocales: const [Locale('en', 'US'), Locale('en', 'GB')],
+          locale: AppConstants.firstDayOfWeek == DateTime.monday ? const Locale('en', 'GB') : const Locale('en', 'US'),
         ),
       ),
     );

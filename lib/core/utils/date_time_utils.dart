@@ -1,3 +1,5 @@
+import 'package:carpe_diem/core/constants/app_constants.dart';
+
 /*
 Returns true if the date is Friday, Saturday, or Sunday.
 */
@@ -20,4 +22,13 @@ extension DateTimeExtension on DateTime {
       return add(Duration(days: (day - weekday) % DateTime.daysPerWeek));
     }
   }
+
+  DateTime get startOfNextWeek => next(AppConstants.firstDayOfWeek);
+
+  DateTime get startOfWeek {
+    int dayOffset = (weekday - AppConstants.firstDayOfWeek) % DateTime.daysPerWeek;
+    return DateTime(year, month, day).subtract(Duration(days: dayOffset));
+  }
+
+  bool get isStartOfWeek => weekday == AppConstants.firstDayOfWeek;
 }
