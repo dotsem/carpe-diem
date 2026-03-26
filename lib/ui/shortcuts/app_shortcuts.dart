@@ -15,6 +15,10 @@ class NavigateToProjectsIntent extends Intent {
   const NavigateToProjectsIntent();
 }
 
+class NavigateToHistoryIntent extends Intent {
+  const NavigateToHistoryIntent();
+}
+
 class ToggleHelpIntent extends Intent {
   const ToggleHelpIntent();
 }
@@ -47,6 +51,7 @@ const globalShortcutEntries = [
   ShortcutEntry(key: 'T', description: 'Go to Today', category: 'Navigation'),
   ShortcutEntry(key: 'B', description: 'Go to Backlog', category: 'Navigation'),
   ShortcutEntry(key: 'P', description: 'Go to Projects', category: 'Navigation'),
+  ShortcutEntry(key: 'H', description: 'Go to History', category: 'Navigation'),
   ShortcutEntry(key: 'j', description: 'Move Focus Down', category: 'Navigation'),
   ShortcutEntry(key: 'k', description: 'Move Focus Up', category: 'Navigation'),
   ShortcutEntry(key: '?', description: 'Toggle shortcut help', category: 'Global'),
@@ -183,6 +188,7 @@ class GlobalShortcutsState extends State<GlobalShortcuts> {
           const CharacterActivator('t'): const NavigateToTodayIntent(),
           const CharacterActivator('b'): const NavigateToBacklogIntent(),
           const CharacterActivator('p'): const NavigateToProjectsIntent(),
+          const CharacterActivator('H'): const NavigateToHistoryIntent(),
           const CharacterActivator('?'): const ToggleHelpIntent(),
           const SingleActivator(LogicalKeyboardKey.escape): const CloseHelpIntent(),
           const CharacterActivator('j'): const MoveNextIntent(),
@@ -211,6 +217,10 @@ class GlobalShortcutsState extends State<GlobalShortcuts> {
             NavigateToProjectsIntent: NonTypingAction<NavigateToProjectsIntent>((intent) {
               debugPrint('Shortcut: NavigateToProjects');
               context.go('/projects');
+            }),
+            NavigateToHistoryIntent: NonTypingAction<NavigateToHistoryIntent>((intent) {
+              debugPrint('Shortcut: NavigateToHistory');
+              context.go('/history');
             }),
             ToggleHelpIntent: NonTypingAction<ToggleHelpIntent>((intent) {
               debugPrint('Shortcut: ToggleHelp');
