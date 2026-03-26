@@ -9,7 +9,6 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 class KanbanBoard extends StatefulWidget {

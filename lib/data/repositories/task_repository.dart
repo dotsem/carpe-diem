@@ -153,6 +153,41 @@ class TaskRepository {
     await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<List<Task>> getCompletedInRange(DateTime start, DateTime end) async {
+    final db = await _db;
+    final startStr = start.toIso8601String();
+    final endStr = end.toIso8601String();
+
+    final maps = await db.query(
+      'tasks',
+      where: 'status = ? AND completedAt >= ? AND completedAt <= ?',
+      whereArgs: [TaskStatus.done.index, startStr, endStr],
+      orderBy: 'completedAt DESC',
+    );
+
+    List<Task> tasks = [];
+    for (final map in maps) {
+      final id = map['id'] as String;
+      final labelIds = await _getLabelIds(id);
+      tasks.add(Task.fromMap(map, labelIds: labelIds));
+    }
+    return tasks;
+  }
+
+  Future<DateTime?> getFirstCompletedDate() async {
+    final db = await _db;
+    final maps = await db.query(
+      'tasks',
+      where: 'status = ? AND completedAt IS NOT NULL',
+      whereArgs: [TaskStatus.done.index],
+      orderBy: 'completedAt ASC',
+      limit: 1,
+    );
+
+    if (maps.isEmpty) return null;
+    return DateTime.parse(maps.first['completedAt'] as String);
+  }
+
   Future<List<String>> _getLabelIds(String taskId) async {
     final db = await _db;
     final maps = await db.query('task_labels', where: 'taskId = ?', columns: ['labelId'], whereArgs: [taskId]);

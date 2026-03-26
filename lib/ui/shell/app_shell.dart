@@ -140,6 +140,13 @@ class _SideNav extends StatelessWidget {
             onTap: () => _navigateTo(context, '/tasks'),
           ),
           _NavItem(
+            icon: Icons.history_rounded,
+            label: 'History',
+            shortcutHint: 'H',
+            isSelected: currentPath == '/history',
+            onTap: () => _navigateTo(context, '/history'),
+          ),
+          _NavItem(
             icon: Icons.folder_rounded,
             label: 'All Projects',
             shortcutHint: 'P',

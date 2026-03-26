@@ -20,6 +20,7 @@ class TaskCard extends StatefulWidget {
   final bool? isChecked;
   final bool useTimer;
   final bool showScheduleDate;
+  final bool showStrikeThroughOnCompleted;
   final bool autofocus;
   final Widget? leading;
   final void Function(Offset localPosition, RenderBox renderBox)? onContextMenu;
@@ -33,6 +34,7 @@ class TaskCard extends StatefulWidget {
     this.trailing,
     this.isOverdue = false,
     this.selectionMode = false,
+    this.showStrikeThroughOnCompleted = true,
     this.isChecked,
     this.useTimer = true,
     this.showScheduleDate = false,
@@ -162,7 +164,9 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
-                                  decoration: (!widget.selectionMode && showDone) ? TextDecoration.lineThrough : null,
+                                  decoration: (!widget.selectionMode && showDone && widget.showStrikeThroughOnCompleted)
+                                      ? TextDecoration.lineThrough
+                                      : null,
                                   color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
                                 ),
                               ),

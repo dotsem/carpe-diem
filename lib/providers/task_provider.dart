@@ -274,6 +274,18 @@ class TaskProvider extends ChangeNotifier {
     ToastUtils.showSuccess('Tasks scheduled for next workday');
   }
 
+  Future<List<Task>> getCompletedTasks(DateTime start, DateTime end) async {
+    return _repo.getCompletedInRange(start, end);
+  }
+
+  Future<DateTime> getFirstTaskDate() async {
+    final firstCompleted = await _repo.getFirstCompletedDate();
+    if (firstCompleted != null) return firstCompleted;
+
+    // Fallback to today if no tasks are completed
+    return DateTime.now();
+  }
+
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
     final tasks = _parseMarkdown(markdown);
     for (final task in tasks) {
