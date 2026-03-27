@@ -28,6 +28,18 @@ class TaskRepository {
     return Task.fromMap(maps.first, labelIds: labelIds);
   }
 
+  Future<List<Task>> getByBlockedBy(String taskId) async {
+    final db = await _db;
+    final maps = await db.query('tasks', where: 'blockedById = ?', whereArgs: [taskId]);
+    List<Task> tasks = [];
+    for (final map in maps) {
+      final id = map['id'] as String;
+      final labelIds = await _getLabelIds(id);
+      tasks.add(Task.fromMap(map, labelIds: labelIds));
+    }
+    return tasks;
+  }
+
   Future<List<Task>> getByDate(DateTime date) async {
     final db = await _db;
     final startOfDay = DateTime(date.year, date.month, date.day);
