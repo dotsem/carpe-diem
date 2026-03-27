@@ -5,4 +5,5 @@ class AppConstants {
   static const int dbVersion = 11;
   static const int firstDayOfWeek = DateTime.monday;
   static const int taskCompletionDelaySeconds = 5;
+  static const bool inheritParentDeadline = true;
 }

@@ -127,7 +127,19 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
               availableTasks: _projectTasks,
               selectedBlockerId: _blockedById,
               currentTaskId: widget.task.id,
-              onChanged: (id) => setState(() => _blockedById = id),
+              onChanged: (id) {
+                setState(() {
+                  _blockedById = id;
+                  if (AppConstants.inheritParentDeadline && id != null) {
+                    final blocker = _projectTasks.where((t) => t.id == id).firstOrNull;
+                    if (blocker?.deadline != null) {
+                      if (_deadline == null || _deadline!.isBefore(blocker!.deadline!)) {
+                        _deadline = blocker!.deadline;
+                      }
+                    }
+                  }
+                });
+              },
             ),
           ],
           const SizedBox(height: 16),
@@ -143,7 +155,13 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
             label: 'Deadline (Optional)',
             date: _deadline,
             onChanged: (d) => setState(() => _deadline = d),
-            firstDate: widget.task.createdAt,
+            firstDate: () {
+              if (AppConstants.inheritParentDeadline && _blockedById != null) {
+                final blocker = _projectTasks.where((t) => t.id == _blockedById).firstOrNull;
+                if (blocker?.deadline != null) return blocker!.deadline!;
+              }
+              return widget.task.createdAt;
+            }(),
           ),
           const SizedBox(height: 24),
           Row(

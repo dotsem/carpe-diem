@@ -128,7 +128,19 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             BlockerPicker(
               availableTasks: _projectTasks,
               selectedBlockerId: _blockedById,
-              onChanged: (id) => setState(() => _blockedById = id),
+              onChanged: (id) {
+                setState(() {
+                  _blockedById = id;
+                  if (AppConstants.inheritParentDeadline && id != null) {
+                    final blocker = _projectTasks.where((t) => t.id == id).firstOrNull;
+                    if (blocker?.deadline != null) {
+                      if (_deadline == null || _deadline!.isBefore(blocker!.deadline!)) {
+                        _deadline = blocker!.deadline;
+                      }
+                    }
+                  }
+                });
+              },
             ),
           ],
           const SizedBox(height: 16),
@@ -143,7 +155,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
           DatePickerButton(
             label: 'Deadline',
             date: _deadline,
-            firstDate: DateTime.now(),
+            firstDate: () {
+              if (AppConstants.inheritParentDeadline && _blockedById != null) {
+                final blocker = _projectTasks.where((t) => t.id == _blockedById).firstOrNull;
+                if (blocker?.deadline != null) return blocker!.deadline!;
+              }
+              return DateTime.now();
+            }(),
             onChanged: (d) => setState(() => _deadline = d),
           ),
           const SizedBox(height: 24),
