@@ -92,8 +92,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     _mainFocusNode.dispose();
-    _firstItemFocusNode.dispose();
-    for (final node in _itemFocusNodes.values) {
+
+    final uniqueNodes = {..._itemFocusNodes.values, _firstItemFocusNode};
+    for (final node in uniqueNodes) {
       node.dispose();
     }
     super.dispose();
