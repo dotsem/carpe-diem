@@ -1,11 +1,13 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:carpe_diem/ui/widgets/multi_priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/multi_project_picker.dart';
 import 'package:flutter/material.dart';
 
+// TODO: refactor this code
 class FilterDialog extends StatefulWidget {
   final TaskFilter initialFilter;
   final bool showProjectFilter;
@@ -39,61 +41,62 @@ class _FilterDialogState extends State<FilterDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Filter Tasks'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.showPriorityFilter) ...[
-                _sectionHeader('Priority'),
-                MultiPriorityPicker(selected: _priorities, onChanged: (values) => setState(() => _priorities = values)),
-                const SizedBox(height: 16),
-              ],
-              if (widget.showProjectFilter) ...[
-                _sectionHeader('Project'),
-                MultiProjectPicker(selected: _projectIds, onChanged: (values) => setState(() => _projectIds = values)),
-                const SizedBox(height: 16),
-              ],
-              if (widget.showLabelFilter) ...[
-                _sectionHeader('Labels'),
-                LabelPicker(
-                  selectedLabelIds: _labelIds.toList(),
-                  onSelected: (values) => setState(() => _labelIds = Set.from(values)),
-                  allowAdd: false,
+    return SizedDialog(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.showPriorityFilter) ...[
+              _sectionHeader('Priority'),
+              MultiPriorityPicker(selected: _priorities, onChanged: (values) => setState(() => _priorities = values)),
+              const SizedBox(height: 16),
+            ],
+            if (widget.showProjectFilter) ...[
+              _sectionHeader('Project'),
+              MultiProjectPicker(selected: _projectIds, onChanged: (values) => setState(() => _projectIds = values)),
+              const SizedBox(height: 16),
+            ],
+            if (widget.showLabelFilter) ...[
+              _sectionHeader('Labels'),
+              LabelPicker(
+                selectedLabelIds: _labelIds.toList(),
+                onSelected: (values) => setState(() => _labelIds = Set.from(values)),
+                allowAdd: false,
+              ),
+            ],
+
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _priorities.clear();
+                      _projectIds.clear();
+                      _labelIds.clear();
+                    });
+                  },
+                  child: const Text('Clear All'),
+                ),
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                FilledButton(
+                  onPressed: () {
+                    final filter = widget.initialFilter.copyWith(
+                      priorities: _priorities,
+                      projectIds: _projectIds,
+                      labelIds: _labelIds,
+                    );
+                    Navigator.pop(context, filter);
+                  },
+                  child: const Text('Apply'),
                 ),
               ],
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            setState(() {
-              _priorities.clear();
-              _projectIds.clear();
-              _labelIds.clear();
-            });
-          },
-          child: const Text('Clear All'),
-        ),
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(
-          onPressed: () {
-            final filter = widget.initialFilter.copyWith(
-              priorities: _priorities,
-              projectIds: _projectIds,
-              labelIds: _labelIds,
-            );
-            Navigator.pop(context, filter);
-          },
-          child: const Text('Apply'),
-        ),
-      ],
     );
   }
 
