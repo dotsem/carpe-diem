@@ -22,8 +22,8 @@ import 'package:carpe_diem/ui/dialogs/edit_project_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:flutter/services.dart';
-import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 import 'package:carpe_diem/core/utils/toast_utils.dart';
+import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 
 class _NewTaskIntent extends Intent {
   const _NewTaskIntent();
@@ -55,12 +55,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   List<Task> _tasks = [];
   late TaskProvider _taskProvider;
   final List<String> _selectedTaskIds = [];
+  final FocusNode _firstItemFocusNode = FocusNode(debugLabel: 'ProjectDetailFirstItem');
 
   @override
   void initState() {
     super.initState();
     _taskProvider = context.read<TaskProvider>();
     _loadTasks();
+
+    _searchFocusNode.onKeyEvent = (node, event) {
+      if (event is KeyDownEvent) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowDown || event.logicalKey == LogicalKeyboardKey.enter) {
+          if (_tasks.isNotEmpty) {
+            _firstItemFocusNode.requestFocus();
+            return KeyEventResult.handled;
+          }
+        }
+      }
+      return KeyEventResult.ignored;
+    };
   }
 
   @override
@@ -77,6 +90,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     _mainFocusNode.dispose();
+    _firstItemFocusNode.dispose();
     super.dispose();
   }
 
@@ -135,7 +149,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 onInvoke: (intent) {
                   if (_searchFocusNode.hasFocus) {
                     _searchFocusNode.unfocus();
-                    _mainFocusNode.requestFocus();
+                    if (_tasks.isNotEmpty) {
+                      _firstItemFocusNode.requestFocus();
+                    } else {
+                      _mainFocusNode.requestFocus();
+                    }
                   }
                   return null;
                 },
@@ -162,7 +180,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         controller: _searchController,
                         focusNode: _searchFocusNode,
                         hintText: 'Search backlog tasks... (Press / to focus)',
-                        onChanged: (value) => setState(() => _searchQuery = value),
+                        onChanged: (value) => setState(() {
+                          _searchQuery = value;
+                        }),
+                        onSubmitted: (_) {
+                          if (_tasks.isNotEmpty) {
+                            _firstItemFocusNode.requestFocus();
+                          }
+                        },
                       ),
                     ),
                     const Divider(color: AppColors.surfaceLight, height: 1),
@@ -187,6 +212,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                 ),
                               ),
                               searchQuery: _searchQuery,
+                              firstNode: _firstItemFocusNode,
                               showScheduleDate: true,
                               selectionMode: true,
                               selectedTaskIds: _selectedTaskIds.toSet(),
