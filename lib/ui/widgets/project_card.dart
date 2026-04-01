@@ -44,7 +44,12 @@ class _ProjectCardState extends State<ProjectCard> {
               child: InkWell(
                 focusNode: widget.focusNode,
                 onTap: widget.onTap,
-                onFocusChange: (focused) => setState(() => _isFocused = focused),
+                onFocusChange: (focused) {
+                  if (focused && mounted) {
+                    Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 200), alignment: 0.5);
+                  }
+                  setState(() => _isFocused = focused);
+                },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.all(20),

@@ -84,10 +84,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
     if (currentIndex == -1) {
       final targetIndex = delta > 0 ? 0 : _orderedItemIds.length - 1;
-      _itemFocusNodes[_orderedItemIds[targetIndex]]?.requestFocus();
+      final id = _orderedItemIds[targetIndex];
+      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'Project_$id'));
+      node.requestFocus();
     } else {
       final nextIndex = (currentIndex + delta).clamp(0, _orderedItemIds.length - 1);
-      _itemFocusNodes[_orderedItemIds[nextIndex]]?.requestFocus();
+      final id = _orderedItemIds[nextIndex];
+      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'Project_$id'));
+      node.requestFocus();
     }
   }
 
@@ -97,6 +101,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       shortcuts: {
         const CharacterActivator('/'): const _FocusSearchIntent(),
         const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
+        const CharacterActivator('j'): const MoveNextIntent(),
+        const CharacterActivator('k'): const MovePrevIntent(),
       },
       child: Actions(
         actions: {

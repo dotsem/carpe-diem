@@ -30,6 +30,8 @@ class TaskListView extends StatefulWidget {
   final bool initialDoneExpanded;
   final bool isReadOnly;
   final FocusNode? firstNode;
+  final Map<String, FocusNode>? itemFocusNodes;
+  final ValueChanged<List<String>>? onOrderedIdsChanged;
 
   const TaskListView({
     super.key,
@@ -49,6 +51,8 @@ class TaskListView extends StatefulWidget {
     this.initialDoneExpanded = false,
     this.isReadOnly = false,
     this.firstNode,
+    this.itemFocusNodes,
+    this.onOrderedIdsChanged,
   }) : padding = padding ?? const EdgeInsets.symmetric(vertical: 16);
 
   @override
@@ -57,7 +61,8 @@ class TaskListView extends StatefulWidget {
 
 class _TaskListViewState extends State<TaskListView> {
   late bool _isDoneExpanded;
-  final Map<String, FocusNode> _itemFocusNodes = {};
+  final Map<String, FocusNode> _localItemFocusNodes = {};
+  Map<String, FocusNode> get _itemFocusNodes => widget.itemFocusNodes ?? _localItemFocusNodes;
   final List<String> _orderedItemIds = [];
 
   @override
@@ -68,7 +73,7 @@ class _TaskListViewState extends State<TaskListView> {
 
   @override
   void dispose() {
-    for (final node in _itemFocusNodes.values) {
+    for (final node in _localItemFocusNodes.values) {
       if (node != widget.firstNode) {
         node.dispose();
       }
@@ -186,6 +191,12 @@ class _TaskListViewState extends State<TaskListView> {
       addTasksToOrder(doneCategory);
     }
 
+    if (widget.onOrderedIdsChanged != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onOrderedIdsChanged!(List.from(_orderedItemIds));
+      });
+    }
+
     int nodeIndex = 0;
     Widget buildNode(TaskHierarchyNode node, bool Function(Task) overdueFn) {
       if (node is TaskNode) {
@@ -194,6 +205,10 @@ class _TaskListViewState extends State<TaskListView> {
         final focusNode = (isFirst && widget.firstNode != null)
             ? widget.firstNode!
             : _itemFocusNodes.putIfAbsent(node.task.id, () => FocusNode(debugLabel: 'Task_${node.task.id}'));
+
+        if (isFirst && widget.firstNode != null) {
+          _itemFocusNodes[node.task.id] = widget.firstNode!;
+        }
 
         nodeIndex++;
         return widget._buildHierarchyNode(

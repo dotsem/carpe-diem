@@ -56,6 +56,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   late TaskProvider _taskProvider;
   final List<String> _selectedTaskIds = [];
   final FocusNode _firstItemFocusNode = FocusNode(debugLabel: 'ProjectDetailFirstItem');
+  final List<String> _orderedItemIds = [];
+  final Map<String, FocusNode> _itemFocusNodes = {};
 
   @override
   void initState() {
@@ -91,6 +93,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     _searchFocusNode.dispose();
     _mainFocusNode.dispose();
     _firstItemFocusNode.dispose();
+    for (final node in _itemFocusNodes.values) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -121,6 +126,34 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
+  void _moveFocus(int delta) {
+    if (_orderedItemIds.isEmpty) return;
+
+    int currentIndex = -1;
+    for (int j = 0; j < _orderedItemIds.length; j++) {
+      final node = (j == 0) ? _firstItemFocusNode : _itemFocusNodes[_orderedItemIds[j]];
+      if (node?.hasFocus ?? false) {
+        currentIndex = j;
+        break;
+      }
+    }
+
+    if (currentIndex == -1) {
+      final targetIndex = delta > 0 ? 0 : _orderedItemIds.length - 1;
+      final id = _orderedItemIds[targetIndex];
+      final node = _itemFocusNodes.putIfAbsent(
+        id,
+        () => (id == _orderedItemIds[0]) ? _firstItemFocusNode : FocusNode(debugLabel: 'ProjectTask_$id'),
+      );
+      node.requestFocus();
+    } else {
+      final nextIndex = (currentIndex + delta).clamp(0, _orderedItemIds.length - 1);
+      final id = _orderedItemIds[nextIndex];
+      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'ProjectTask_$id'));
+      node.requestFocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ProjectProvider>(
@@ -139,9 +172,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
             if (project.isActive) const CharacterActivator('n'): const _NewTaskIntent(),
             if (project.isActive) const CharacterActivator('N'): const _NewTaskIntent(),
+            const CharacterActivator('j'): const MoveNextIntent(),
+            const CharacterActivator('k'): const MovePrevIntent(),
           },
           child: Actions(
             actions: {
+              MoveNextIntent: NonTypingAction<MoveNextIntent>((_) {
+                _moveFocus(1);
+              }),
+              MovePrevIntent: NonTypingAction<MovePrevIntent>((_) {
+                _moveFocus(-1);
+              }),
               _FocusSearchIntent: NonTypingAction<_FocusSearchIntent>((_) {
                 _searchFocusNode.requestFocus();
               }),
@@ -211,6 +252,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                   style: TextStyle(color: AppColors.textSecondary),
                                 ),
                               ),
+                              onOrderedIdsChanged: (ids) {
+                                _orderedItemIds.clear();
+                                _orderedItemIds.addAll(ids);
+                              },
+                              itemFocusNodes: _itemFocusNodes,
                               searchQuery: _searchQuery,
                               firstNode: _firstItemFocusNode,
                               showScheduleDate: true,

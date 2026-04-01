@@ -112,7 +112,7 @@ class NonTypingAction<T extends Intent> extends Action<T> {
   @override
   Object? invoke(T intent) {
     onInvokeCallback(intent);
-    return null;
+    return intent;
   }
 }
 

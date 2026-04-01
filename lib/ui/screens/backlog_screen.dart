@@ -102,10 +102,14 @@ class _BacklogScreenState extends State<BacklogScreen> {
 
     if (currentIndex == -1) {
       final targetIndex = delta > 0 ? 0 : _orderedItemIds.length - 1;
-      _itemFocusNodes[_orderedItemIds[targetIndex]]?.requestFocus();
+      final id = _orderedItemIds[targetIndex];
+      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'BacklogTask_$id'));
+      node.requestFocus();
     } else {
       final nextIndex = (currentIndex + delta).clamp(0, _orderedItemIds.length - 1);
-      _itemFocusNodes[_orderedItemIds[nextIndex]]?.requestFocus();
+      final id = _orderedItemIds[nextIndex];
+      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'BacklogTask_$id'));
+      node.requestFocus();
     }
   }
 
@@ -117,6 +121,8 @@ class _BacklogScreenState extends State<BacklogScreen> {
         const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
         const CharacterActivator('n'): const _NewTaskIntent(),
         const CharacterActivator('N'): const _NewTaskIntent(),
+        const CharacterActivator('j'): const MoveNextIntent(),
+        const CharacterActivator('k'): const MovePrevIntent(),
       },
       child: Actions(
         actions: {
