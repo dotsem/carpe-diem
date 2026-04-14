@@ -125,15 +125,14 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
     final projects = context.read<ProjectProvider>().projects;
 
     return SizedDialog(
+      title: 'Bulk Edit ${widget.taskIds.length} Tasks',
       onSubmit: _submit,
+      submitText: 'Save',
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Bulk Edit ${widget.taskIds.length} Tasks', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 20),
-
             _buildFieldRow(
               'Priority',
               _enablePriority,
@@ -141,7 +140,6 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
               PriorityPicker(selected: _priority, onChanged: (p) => setState(() => _priority = p)),
             ),
             const SizedBox(height: 16),
-
             _buildFieldRow(
               'Schedule date',
               _enableScheduledDate,
@@ -154,7 +152,6 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
               ),
             ),
             const SizedBox(height: 16),
-
             _buildFieldRow(
               'Project',
               _enableProject,
@@ -174,7 +171,6 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
               ),
             ),
             const SizedBox(height: 16),
-
             if (_enableProject && _selectedProjectId != null) ...[
               _buildFieldRow(
                 'Blocked by',
@@ -188,7 +184,6 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
               ),
               const SizedBox(height: 16),
             ],
-
             _buildFieldRow(
               'Deadline',
               _enableDeadline,
@@ -199,16 +194,6 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
                 firstDate: DateTime.now(),
                 onChanged: (d) => setState(() => _deadline = d),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                const SizedBox(width: 12),
-                FilledButton(onPressed: _submit, child: const Text('Save')),
-              ],
             ),
           ],
         ),

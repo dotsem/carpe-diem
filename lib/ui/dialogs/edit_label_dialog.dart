@@ -2,6 +2,7 @@ import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/color_picker.dart';
+import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,9 +27,11 @@ class _EditLabelDialogState extends State<EditLabelDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Edit Label'),
-      content: Column(
+    return SizedDialog(
+      title: 'Edit Label',
+      onSubmit: _submit,
+      submitText: 'Save',
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
@@ -40,10 +43,6 @@ class _EditLabelDialogState extends State<EditLabelDialog> {
           ProjectColorPicker(selected: selectedColor, onChanged: (c) => setState(() => selectedColor = c)),
         ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(onPressed: _submit, child: const Text('Update')),
-      ],
     );
   }
 

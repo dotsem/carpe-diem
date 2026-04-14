@@ -22,35 +22,24 @@ class _ImportFromMDDialogState extends State<ImportFromMDDialog> {
 
     return SizedDialog(
       maxWidth: 800,
+      title: 'Import from Markdown',
       onSubmit: _submit,
+      submitText: 'Import',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Import from Markdown'),
-          const SizedBox(height: 16),
           ProjectPicker(
             projects: projects,
             selectedProjectId: _selectedProjectId,
             onChanged: (id) => setState(() => _selectedProjectId = id),
           ),
           const SizedBox(height: 16),
-
           TextField(
             maxLines: 10,
             minLines: 3,
             decoration: const InputDecoration(labelText: 'Markdown content'),
             controller: _controller,
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-              const SizedBox(width: 8),
-              FilledButton(onPressed: _submit, child: const Text('Import')),
-            ],
           ),
         ],
       ),

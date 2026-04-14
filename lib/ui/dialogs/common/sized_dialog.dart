@@ -20,18 +20,28 @@ class _SubmitAction extends Action<_SubmitIntent> {
 
 class SizedDialog extends StatefulWidget {
   final Widget child;
+  final String? title;
+  final List<Widget>? actions;
+  final VoidCallback? onSubmit;
+  final VoidCallback? onCancel;
+  final String submitText;
+  final ButtonStyle? submitStyle;
   final EdgeInsets? padding;
   final double maxWidth;
   final double? minWidth;
-  final VoidCallback? onSubmit;
 
   const SizedDialog({
     super.key,
     required this.child,
+    this.title,
+    this.actions,
+    this.onSubmit,
+    this.onCancel,
+    this.submitText = 'Confirm',
+    this.submitStyle,
     this.padding = const EdgeInsets.all(24),
     this.maxWidth = 640,
     this.minWidth,
-    this.onSubmit,
   });
 
   @override
@@ -55,6 +65,7 @@ class _SizedDialogState extends State<SizedDialog> {
     );
 
     final dialog = AlertDialog(
+      title: widget.title != null ? Text(widget.title!) : null,
       contentPadding: EdgeInsets.zero,
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -65,6 +76,26 @@ class _SizedDialogState extends State<SizedDialog> {
               child: content,
             )
           : content,
+      actions: (widget.actions != null || widget.onCancel != null || widget.onSubmit != null)
+          ? [
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Row(
+                  children: [
+                    if (widget.actions != null) ...widget.actions!,
+                    const Spacer(),
+                    TextButton(onPressed: widget.onCancel ?? () => Navigator.pop(context), child: const Text('Cancel')),
+                    const SizedBox(width: 12),
+                    FilledButton(
+                      onPressed: widget.onSubmit ?? () => Navigator.pop(context),
+                      style: widget.submitStyle,
+                      child: Text(widget.submitText),
+                    ),
+                  ],
+                ),
+              ),
+            ]
+          : null,
     );
 
     if (widget.onSubmit == null) return dialog;

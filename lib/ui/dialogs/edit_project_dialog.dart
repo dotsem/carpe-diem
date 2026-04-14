@@ -51,13 +51,35 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   @override
   Widget build(BuildContext context) {
     return SizedDialog(
+      title: 'Edit Project',
       onSubmit: _submit,
+      submitText: 'Save Changes',
+      actions: [
+        TextButton.icon(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (context) => DeleteDialog(
+              title: 'Delete Project',
+              message: 'Are you sure you want to delete this project?',
+              onConfirm: () async {
+                final provider = context.read<ProjectProvider>();
+                await provider.deleteProject(widget.project);
+                if (context.mounted) {
+                  Navigator.of(context).pop(); // Pop from edit dialog
+                  ToastUtils.showSuccess('Project "${widget.project.name}" deleted', context: context);
+                }
+              },
+            ),
+          ),
+          icon: const Icon(Icons.delete),
+          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+          label: const Text("Delete"),
+        ),
+      ],
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Edit Project', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 20),
           TextField(
             controller: _nameController,
             autofocus: true,
@@ -95,36 +117,6 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           ),
           const SizedBox(height: 16),
           _ActiveToggle(isActive: _isActive, onChanged: (v) => setState(() => _isActive = v)),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton.icon(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => DeleteDialog(
-                    title: 'Delete Project',
-                    message: 'Are you sure you want to delete this project?',
-                    onConfirm: () async {
-                      final provider = context.read<ProjectProvider>();
-                      await provider.deleteProject(widget.project);
-                      if (context.mounted) {
-                        Navigator.of(context).pop(); // Pop from edit dialog
-                        ToastUtils.showSuccess('Project "${widget.project.name}" deleted', context: context);
-                      }
-                    },
-                  ),
-                ),
-                icon: const Icon(Icons.delete),
-                style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
-                label: const Text("Delete"),
-              ),
-              const Spacer(),
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              const SizedBox(width: 12),
-              FilledButton(onPressed: _submit, child: const Text('Save Changes')),
-            ],
-          ),
         ],
       ),
     );

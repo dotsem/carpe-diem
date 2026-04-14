@@ -34,13 +34,13 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   @override
   Widget build(BuildContext context) {
     return SizedDialog(
+      title: 'New Project',
       onSubmit: _submit,
+      submitText: 'Create Project',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('New Project', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 20),
           TextField(
             controller: _nameController,
             autofocus: true,
@@ -71,15 +71,6 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           ),
           const SizedBox(height: 16),
           DatePickerButton(label: 'Deadline', date: _deadline, onChanged: (d) => setState(() => _deadline = d)),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              const SizedBox(width: 12),
-              FilledButton(onPressed: _submit, child: const Text('Create Project')),
-            ],
-          ),
         ],
       ),
     );

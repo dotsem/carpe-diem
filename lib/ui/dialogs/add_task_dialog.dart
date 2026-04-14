@@ -75,13 +75,14 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final projects = context.read<ProjectProvider>().projects;
 
     return SizedDialog(
+      title: 'New Task',
       onSubmit: _submit,
+      onCancel: () => Navigator.of(context).pop(),
+      submitText: 'Add Task',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('New Task', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 20),
           TextField(
             controller: _titleController,
             autofocus: true,
@@ -163,15 +164,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               return DateTime.now();
             }(),
             onChanged: (d) => setState(() => _deadline = d),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              const SizedBox(width: 12),
-              FilledButton(onPressed: _submit, child: const Text('Add Task')),
-            ],
           ),
         ],
       ),

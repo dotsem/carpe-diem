@@ -42,6 +42,29 @@ class _FilterDialogState extends State<FilterDialog> {
   @override
   Widget build(BuildContext context) {
     return SizedDialog(
+      title: 'Filter Tasks',
+      submitText: 'Apply',
+      onCancel: () => Navigator.pop(context),
+      onSubmit: () {
+        final filter = widget.initialFilter.copyWith(
+          priorities: _priorities,
+          projectIds: _projectIds,
+          labelIds: _labelIds,
+        );
+        Navigator.pop(context, filter);
+      },
+      actions: [
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _priorities.clear();
+              _projectIds.clear();
+              _labelIds.clear();
+            });
+          },
+          child: const Text('Clear All'),
+        ),
+      ],
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -65,35 +88,6 @@ class _FilterDialogState extends State<FilterDialog> {
                 allowAdd: false,
               ),
             ],
-
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _priorities.clear();
-                      _projectIds.clear();
-                      _labelIds.clear();
-                    });
-                  },
-                  child: const Text('Clear All'),
-                ),
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-                FilledButton(
-                  onPressed: () {
-                    final filter = widget.initialFilter.copyWith(
-                      priorities: _priorities,
-                      projectIds: _projectIds,
-                      labelIds: _labelIds,
-                    );
-                    Navigator.pop(context, filter);
-                  },
-                  child: const Text('Apply'),
-                ),
-              ],
-            ),
           ],
         ),
       ),

@@ -29,33 +29,16 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
   Widget build(BuildContext context) {
     return SizedDialog(
       onSubmit: _submit,
+      submitText: 'OK',
       padding: EdgeInsets.zero,
       child: SizedBox(
         width: 330,
         height: 480,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: CalendarDatePicker(
-                initialDate: _selectedDate,
-                firstDate: widget.firstDate,
-                lastDate: widget.lastDate,
-                onDateChanged: (date) => setState(() => _selectedDate = date),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                  const SizedBox(width: 8),
-                  TextButton(onPressed: _submit, child: const Text('OK')),
-                ],
-              ),
-            ),
-          ],
+        child: CalendarDatePicker(
+          initialDate: _selectedDate,
+          firstDate: widget.firstDate,
+          lastDate: widget.lastDate,
+          onDateChanged: (date) => setState(() => _selectedDate = date),
         ),
       ),
     );

@@ -73,13 +73,31 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     final projects = context.read<ProjectProvider>().projects;
 
     return SizedDialog(
+      title: 'Edit Task',
       onSubmit: _submit,
+      submitText: 'Save Changes',
+      actions: [
+        TextButton.icon(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (context) => DeleteDialog(
+              title: 'Delete Task',
+              message: 'Are you sure you want to delete this task?',
+              onConfirm: () {
+                Navigator.of(context).pop();
+                context.read<TaskProvider>().deleteTask(widget.task);
+              },
+            ),
+          ),
+          icon: const Icon(Icons.delete),
+          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+          label: const Text("Delete"),
+        ),
+      ],
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Edit Task', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 20),
           TextField(
             controller: _nameController,
             autofocus: true,
@@ -162,32 +180,6 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
               }
               return widget.task.createdAt;
             }(),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton.icon(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => DeleteDialog(
-                    title: 'Delete Task',
-                    message: 'Are you sure you want to delete this task?',
-                    onConfirm: () {
-                      Navigator.of(context).pop();
-                      context.read<TaskProvider>().deleteTask(widget.task);
-                    },
-                  ),
-                ),
-                icon: const Icon(Icons.delete),
-                style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
-                label: const Text("Delete"),
-              ),
-              const Spacer(),
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              const SizedBox(width: 12),
-              FilledButton(onPressed: _submit, child: const Text('Save Changes')),
-            ],
           ),
         ],
       ),

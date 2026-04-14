@@ -11,35 +11,14 @@ class DeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedDialog(
+      title: title,
+      submitText: 'Delete',
+      submitStyle: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
       onSubmit: () {
         Navigator.of(context).pop();
         onConfirm();
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 20),
-          Text(message, style: Theme.of(context).textTheme.bodyLarge),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              const SizedBox(width: 12),
-              FilledButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  onConfirm();
-                },
-                style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
-        ],
-      ),
+      child: Text(message, style: Theme.of(context).textTheme.bodyLarge),
     );
   }
 }
