@@ -12,6 +12,7 @@ class AppColors {
   static const error = Color.fromARGB(255, 238, 70, 101);
   static const success = Color(0xFF4CAF50);
   static const info = Color(0xFF2196F3);
+  static const warning = Color.fromARGB(255, 231, 209, 4);
 
   static const priorityUrgent = Color(0xFF8800FF);
   static const priorityHigh = Color(0xFFE53935);

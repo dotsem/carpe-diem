@@ -96,6 +96,15 @@ void showTaskCardContextMenu(BuildContext context, Task task, Offset localPositi
       onTap: () => _showEditTask(context, task),
       child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
     ),
+    if (task.scheduledDate != null)
+      PopupMenuItem(
+        onTap: () => provider.unScheduleTask(task),
+        child: const ListTile(
+          leading: Icon(Icons.remove_circle_outline, color: AppColors.warning),
+          title: Text('Unschedule', style: TextStyle(color: AppColors.warning)),
+          dense: true,
+        ),
+      ),
     PopupMenuItem(
       onTap: () => _showDeleteTask(context, task, provider),
       child: const ListTile(
