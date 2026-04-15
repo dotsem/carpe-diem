@@ -18,17 +18,12 @@ You are not limited to the day by day planning. You can plan max one week ahead.
 
 ## Main workflow
 
-<p align="center" style="font-size: 30px; font-style: italic">
-Gather tasks/ideas in the backlog
-<br>
-↓
-<br>
-Select tasks you want to work on today
-<br>
-↓
-<br>
-Complete or reschedule todays tasks
-</p>
+```mermaid
+flowchart TD
+  A(Gather tasks/ideas in the backlog) --> B(Select tasks you want to work on today)
+  B --> C(Complete or reschedule todays tasks)
+
+```
 
 ---
 
