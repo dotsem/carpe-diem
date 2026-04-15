@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
+import 'package:carpe_diem/providers/filter_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/widgets/bulk_action_menu.dart';
@@ -43,7 +44,6 @@ class BacklogScreen extends StatefulWidget {
 }
 
 class _BacklogScreenState extends State<BacklogScreen> {
-  TaskFilter _filter = const TaskFilter();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _mainFocusNode = FocusNode();
@@ -54,7 +54,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
   String _searchQuery = '';
   final List<String> _selectedTaskIds = [];
 
-  bool isFiltering() => _searchQuery != "" || !_filter.isEmpty;
+  bool isFiltering(TaskFilter filter) => _searchQuery != "" || !filter.isEmpty;
 
   @override
   void initState() {
@@ -123,6 +123,8 @@ class _BacklogScreenState extends State<BacklogScreen> {
         const CharacterActivator('N'): const _NewTaskIntent(),
         const CharacterActivator('j'): const MoveNextIntent(),
         const CharacterActivator('k'): const MovePrevIntent(),
+        const CharacterActivator('f'): const FilterIntent(),
+        const CharacterActivator('F'): const FilterIntent(),
       },
       child: Actions(
         actions: {
@@ -131,6 +133,9 @@ class _BacklogScreenState extends State<BacklogScreen> {
           }),
           MovePrevIntent: NonTypingAction<MovePrevIntent>((_) {
             _moveFocus(-1);
+          }),
+          FilterIntent: NonTypingAction<FilterIntent>((_) {
+            _showFilterDialog(context);
           }),
           _FocusSearchIntent: NonTypingAction<_FocusSearchIntent>((_) {
             _searchFocusNode.requestFocus();
@@ -160,10 +165,12 @@ class _BacklogScreenState extends State<BacklogScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _header(context),
-              FilterBar(
-                filter: _filter,
-                onFilterTap: () => _showFilterDialog(context),
-                onClearFilter: () => setState(() => _filter = const TaskFilter()),
+              Consumer<FilterProvider>(
+                builder: (context, filterProvider, _) => FilterBar(
+                  filter: filterProvider.filter,
+                  onFilterTap: () => _showFilterDialog(context),
+                  onClearFilter: () => filterProvider.clearFilter(),
+                ),
               ),
               const Divider(height: 1),
               Padding(
@@ -272,9 +279,10 @@ class _BacklogScreenState extends State<BacklogScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
+        final filter = context.watch<FilterProvider>().filter;
         var allTasks = provider.unscheduledTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
-          return _filter.applyToTask(t, project?.labelIds ?? []);
+          return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
         if (_searchQuery.isNotEmpty) {
@@ -292,7 +300,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
         if (activeTasks.isEmpty && completedTasks.isEmpty) {
           _orderedItemIds.clear();
           return Center(
-            child: isFiltering()
+            child: isFiltering(filter)
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -301,11 +309,13 @@ class _BacklogScreenState extends State<BacklogScreen> {
                       const Text('No items found'),
                       const SizedBox(height: 8),
                       TextButton(
-                        onPressed: () => setState(() {
-                          _searchQuery = "";
-                          _searchController.text = "";
-                          _filter = const TaskFilter();
-                        }),
+                        onPressed: () {
+                          setState(() {
+                            _searchQuery = "";
+                            _searchController.text = "";
+                          });
+                          context.read<FilterProvider>().clearFilter();
+                        },
                         child: const Text('Remove Filters'),
                       ),
                     ],
@@ -479,12 +489,13 @@ class _BacklogScreenState extends State<BacklogScreen> {
   }
 
   void _showFilterDialog(BuildContext context) async {
+    final filterProvider = context.read<FilterProvider>();
     final result = await showDialog<TaskFilter>(
       context: context,
-      builder: (_) => FilterDialog(initialFilter: _filter),
+      builder: (_) => FilterDialog(initialFilter: filterProvider.filter),
     );
     if (result != null) {
-      setState(() => _filter = result);
+      filterProvider.setFilter(result);
     }
   }
 

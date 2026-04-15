@@ -23,6 +23,10 @@ import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:carpe_diem/core/utils/toast_utils.dart';
+import 'package:carpe_diem/providers/filter_provider.dart';
+import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
+import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 
 class _NewTaskIntent extends Intent {
@@ -175,6 +179,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             if (project.isActive) const CharacterActivator('N'): const _NewTaskIntent(),
             const CharacterActivator('j'): const MoveNextIntent(),
             const CharacterActivator('k'): const MovePrevIntent(),
+            const CharacterActivator('f'): const FilterIntent(),
+            const CharacterActivator('F'): const FilterIntent(),
           },
           child: Actions(
             actions: {
@@ -204,6 +210,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 _NewTaskIntent: NonTypingAction<_NewTaskIntent>((_) {
                   _showAddTask(context);
                 }),
+              FilterIntent: NonTypingAction<FilterIntent>((_) {
+                _showFilterDialog(context);
+              }),
             },
             child: Focus(
               focusNode: _mainFocusNode,
@@ -232,49 +241,64 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         },
                       ),
                     ),
+                    Consumer<FilterProvider>(
+                      builder: (context, filterProvider, _) => FilterBar(
+                        filter: filterProvider.filter.limitTo(projects: false),
+                        onFilterTap: () => _showFilterDialog(context),
+                        onClearFilter: () => filterProvider.clearFilter(),
+                      ),
+                    ),
                     const Divider(color: AppColors.surfaceLight, height: 1),
                     Expanded(
                       child: _isLoading
                           ? const Center(child: CircularProgressIndicator())
-                          : TaskListView(
-                              tasks: _tasks,
-                              padding: const EdgeInsets.symmetric(vertical: 24),
-                              onContextMenu: (ctx, task, pos, box) {
-                                if (task.scheduledDate != null) {
-                                  showTaskCardContextMenu(ctx, task, pos, box);
-                                } else {
-                                  showBacklogContextMenu(ctx, task, pos, box);
-                                }
+                          : Builder(
+                              builder: (context) {
+                                final filter = context.watch<FilterProvider>().filter.limitTo(projects: false);
+                                final filteredTasks = _tasks
+                                    .where((t) => filter.applyToTask(t, project.labelIds))
+                                    .toList();
+                                return TaskListView(
+                                  tasks: filteredTasks,
+                                  padding: const EdgeInsets.symmetric(vertical: 24),
+                                  onContextMenu: (ctx, task, pos, box) {
+                                    if (task.scheduledDate != null) {
+                                      showTaskCardContextMenu(ctx, task, pos, box);
+                                    } else {
+                                      showBacklogContextMenu(ctx, task, pos, box);
+                                    }
+                                  },
+                                  trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
+                                  emptyPlaceholder: const Center(
+                                    child: Text(
+                                      "No tasks in this project",
+                                      style: TextStyle(color: AppColors.textSecondary),
+                                    ),
+                                  ),
+                                  onOrderedIdsChanged: (ids) {
+                                    _orderedItemIds.clear();
+                                    _orderedItemIds.addAll(ids);
+                                  },
+                                  itemFocusNodes: _itemFocusNodes,
+                                  searchQuery: _searchQuery,
+                                  firstNode: _firstItemFocusNode,
+                                  showScheduleDate: true,
+                                  selectionMode: true,
+                                  selectedTaskIds: _selectedTaskIds.toSet(),
+                                  onSelectedChanged: (task) {
+                                    setState(() {
+                                      if (_selectedTaskIds.contains(task.id)) {
+                                        _selectedTaskIds.remove(task.id);
+                                      } else {
+                                        _selectedTaskIds.add(task.id);
+                                      }
+                                    });
+                                  },
+                                  onEdit: (task) => _showEditTask(context, task),
+                                  isReadOnly: !project.isActive,
+                                  initialDoneExpanded: !project.isActive,
+                                );
                               },
-                              trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
-                              emptyPlaceholder: const Center(
-                                child: Text(
-                                  "No tasks in this project",
-                                  style: TextStyle(color: AppColors.textSecondary),
-                                ),
-                              ),
-                              onOrderedIdsChanged: (ids) {
-                                _orderedItemIds.clear();
-                                _orderedItemIds.addAll(ids);
-                              },
-                              itemFocusNodes: _itemFocusNodes,
-                              searchQuery: _searchQuery,
-                              firstNode: _firstItemFocusNode,
-                              showScheduleDate: true,
-                              selectionMode: true,
-                              selectedTaskIds: _selectedTaskIds.toSet(),
-                              onSelectedChanged: (task) {
-                                setState(() {
-                                  if (_selectedTaskIds.contains(task.id)) {
-                                    _selectedTaskIds.remove(task.id);
-                                  } else {
-                                    _selectedTaskIds.add(task.id);
-                                  }
-                                });
-                              },
-                              onEdit: (task) => _showEditTask(context, task),
-                              isReadOnly: !project.isActive,
-                              initialDoneExpanded: !project.isActive,
                             ),
                     ),
                   ],
@@ -562,5 +586,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         child: AddTaskDialog(initialProjectId: widget.projectId),
       ),
     );
+  }
+
+  void _showFilterDialog(BuildContext context) async {
+    final filterProvider = context.read<FilterProvider>();
+    final result = await showDialog<TaskFilter>(
+      context: context,
+      builder: (_) => FilterDialog(initialFilter: filterProvider.filter, showProjectFilter: false),
+    );
+    if (result != null) {
+      filterProvider.setFilter(result);
+    }
   }
 }

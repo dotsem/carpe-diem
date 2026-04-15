@@ -11,6 +11,7 @@ import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 import 'package:flutter/services.dart';
 import 'package:carpe_diem/ui/dialogs/add_project_dialog.dart';
+import 'package:carpe_diem/providers/filter_provider.dart';
 
 class _FocusSearchIntent extends Intent {
   const _FocusSearchIntent();
@@ -36,7 +37,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   final List<String> _orderedItemIds = [];
 
   String _searchQuery = '';
-  TaskFilter _filter = const TaskFilter();
 
   @override
   void initState() {
@@ -103,6 +103,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
         const CharacterActivator('j'): const MoveNextIntent(),
         const CharacterActivator('k'): const MovePrevIntent(),
+        const CharacterActivator('f'): const FilterIntent(),
+        const CharacterActivator('F'): const FilterIntent(),
       },
       child: Actions(
         actions: {
@@ -111,6 +113,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           }),
           MovePrevIntent: NonTypingAction<MovePrevIntent>((_) {
             _moveFocus(-1);
+          }),
+          FilterIntent: NonTypingAction<FilterIntent>((_) {
+            _showFilterDialog(context);
           }),
           _FocusSearchIntent: NonTypingAction<_FocusSearchIntent>((_) {
             _searchFocusNode.requestFocus();
@@ -153,10 +158,12 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   },
                 ),
               ),
-              FilterBar(
-                filter: _filter,
-                onFilterTap: () => _showFilterDialog(context),
-                onClearFilter: () => setState(() => _filter = const TaskFilter()),
+              Consumer<FilterProvider>(
+                builder: (context, filterProvider, _) => FilterBar(
+                  filter: filterProvider.filter.limitTo(projects: false),
+                  onFilterTap: () => _showFilterDialog(context),
+                  onClearFilter: () => filterProvider.clearFilter(),
+                ),
               ),
               const Divider(height: 1),
               Expanded(child: _projectGrid()),
@@ -197,7 +204,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           return p.name.toLowerCase().contains(query) || (p.description?.toLowerCase().contains(query) ?? false);
         }).toList();
 
-        final filteredProjects = filteredBySearch.where((p) => _filter.applyToProject(p)).toList();
+        final filter = context.watch<FilterProvider>().filter.limitTo(projects: false);
+        final filteredProjects = filteredBySearch.where((p) => filter.applyToProject(p)).toList();
         final activeProjects = filteredProjects.where((p) => p.isActive).toList();
         final inactiveProjects = filteredProjects.where((p) => !p.isActive).toList();
 
@@ -281,12 +289,13 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   void _showFilterDialog(BuildContext context) async {
+    final filterProvider = context.read<FilterProvider>();
     final result = await showDialog<TaskFilter>(
       context: context,
-      builder: (_) => FilterDialog(initialFilter: _filter, showProjectFilter: false),
+      builder: (_) => FilterDialog(initialFilter: filterProvider.filter, showProjectFilter: false),
     );
     if (result != null) {
-      setState(() => _filter = result);
+      filterProvider.setFilter(result);
     }
   }
 }

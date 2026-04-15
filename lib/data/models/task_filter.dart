@@ -64,4 +64,12 @@ class TaskFilter {
 
     return true;
   }
+
+  TaskFilter limitTo({bool priority = true, bool projects = true, bool labels = true}) {
+    return TaskFilter(
+      priorities: priority ? priorities : const {},
+      projectIds: projects ? projectIds : const {},
+      labelIds: labels ? labelIds : const {},
+    );
+  }
 }

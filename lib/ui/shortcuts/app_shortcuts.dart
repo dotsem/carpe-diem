@@ -31,6 +31,10 @@ class MovePrevIntent extends Intent {
   const MovePrevIntent();
 }
 
+class FilterIntent extends Intent {
+  const FilterIntent();
+}
+
 class ShortcutEntry {
   final String key;
   final String description;

@@ -14,6 +14,7 @@ import 'package:intl/intl.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
+import 'package:carpe_diem/providers/filter_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_list_view.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
@@ -35,10 +36,6 @@ class _ToggleLayoutIntent extends Intent {
   const _ToggleLayoutIntent();
 }
 
-class _FilterIntent extends Intent {
-  const _FilterIntent();
-}
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -48,7 +45,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late DateTime _selectedDate;
-  TaskFilter _filter = const TaskFilter();
   late Timer timer;
   final _dateFormat = DateFormat('EEEE, MMMM d');
   final List<String> _orderedItemIds = [];
@@ -131,12 +127,12 @@ class _HomeScreenState extends State<HomeScreen> {
         const CharacterActivator('l'): const _NextDayIntent(),
         const CharacterActivator('n'): const _NewTaskIntent(),
         const CharacterActivator('v'): const _ToggleLayoutIntent(),
-        const CharacterActivator('f'): const _FilterIntent(),
+        const CharacterActivator('f'): const FilterIntent(),
         const CharacterActivator('H'): const _PrevDayIntent(),
         const CharacterActivator('L'): const _NextDayIntent(),
         const CharacterActivator('N'): const _NewTaskIntent(),
         const CharacterActivator('V'): const _ToggleLayoutIntent(),
-        const CharacterActivator('F'): const _FilterIntent(),
+        const CharacterActivator('F'): const FilterIntent(),
         const CharacterActivator('j'): const MoveNextIntent(),
         const CharacterActivator('k'): const MovePrevIntent(),
       },
@@ -154,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _ToggleLayoutIntent: NonTypingAction<_ToggleLayoutIntent>((_) {
             context.read<TaskProvider>().toggleLayoutMode();
           }),
-          _FilterIntent: NonTypingAction<_FilterIntent>((_) {
+          FilterIntent: NonTypingAction<FilterIntent>((_) {
             _showFilterDialog(context);
           }),
           MoveNextIntent: NonTypingAction<MoveNextIntent>((_) {
@@ -172,10 +168,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _header(context),
               _daySelector(),
-              FilterBar(
-                filter: _filter,
-                onFilterTap: () => _showFilterDialog(context),
-                onClearFilter: () => setState(() => _filter = const TaskFilter()),
+              Consumer<FilterProvider>(
+                builder: (context, filterProvider, _) => FilterBar(
+                  filter: filterProvider.filter,
+                  onFilterTap: () => _showFilterDialog(context),
+                  onClearFilter: () => filterProvider.clearFilter(),
+                ),
               ),
               const Divider(height: 1),
               Expanded(child: _body()),
@@ -294,15 +292,16 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final projectProvider = context.read<ProjectProvider>();
+        final filter = context.watch<FilterProvider>().filter;
 
         final overdue = provider.overdueTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
-          return _filter.applyToTask(t, project?.labelIds ?? []);
+          return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
         final allTasks = provider.tasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
-          return _filter.applyToTask(t, project?.labelIds ?? []);
+          return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
         if (provider.layoutMode == TaskLayout.kanban) {
@@ -403,12 +402,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showFilterDialog(BuildContext context) async {
+    final filterProvider = context.read<FilterProvider>();
     final result = await showDialog<TaskFilter>(
       context: context,
-      builder: (_) => FilterDialog(initialFilter: _filter),
+      builder: (_) => FilterDialog(initialFilter: filterProvider.filter),
     );
     if (result != null) {
-      setState(() => _filter = result);
+      filterProvider.setFilter(result);
     }
   }
 }

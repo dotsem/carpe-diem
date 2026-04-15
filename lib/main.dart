@@ -7,6 +7,7 @@ import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
+import 'package:carpe_diem/providers/filter_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/routes/app_router.dart';
 import 'package:toastification/toastification.dart';
@@ -36,6 +37,7 @@ class CarpeDiemApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProvider(create: (_) => ProjectProvider()..loadProjects()),
+        ChangeNotifierProvider(create: (_) => FilterProvider()),
       ],
       child: ToastificationWrapper(
         child: MaterialApp.router(
