@@ -77,21 +77,35 @@ include(flutter/generated_plugins.cmake)
 
 # === Installation ===
 # By default, "installing" just makes a relocatable bundle in the build
-# directory.
+# directory. When CMAKE_INSTALL_PREFIX is explicitly set (e.g. -DCMAKE_INSTALL_PREFIX=/usr),
+# use an FHS-compliant layout with desktop integration.
 set(BUILD_BUNDLE_DIR "${PROJECT_BINARY_DIR}/bundle")
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
+  set(SYSTEM_INSTALL FALSE)
+else()
+  set(SYSTEM_INSTALL TRUE)
 endif()
 
-# Start with a clean build bundle directory every time.
-install(CODE "
-  file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
-  " COMPONENT Runtime)
+if(NOT SYSTEM_INSTALL)
+  # Start with a clean build bundle directory every time.
+  install(CODE "
+    file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
+    " COMPONENT Runtime)
+endif()
 
-set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
-set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+if(SYSTEM_INSTALL)
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/share/${BINARY_NAME}/data")
+  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
+else()
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}")
+  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
+  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
 
-install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
+install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
   COMPONENT Runtime)
 
 install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
@@ -127,11 +141,11 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
     COMPONENT Runtime)
 endif()
 
-# Install the .desktop file
-install(FILES "com.dotsem.carpe_diem.desktop" DESTINATION "share/applications"
-  COMPONENT Runtime)
-
-# Install the application icon.
-install(FILES "runner/resources/carpe_diem.png" DESTINATION "share/pixmaps"
-  RENAME "carpe_diem.png"
-  COMPONENT Runtime)
+# Desktop integration files are only useful for system-wide installs.
+if(SYSTEM_INSTALL)
+  install(FILES "com.dotsem.carpe_diem.desktop" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications"
+    COMPONENT Runtime)
+  install(FILES "runner/resources/carpe_diem.png" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pixmaps"
+    RENAME "carpe_diem.png"
+    COMPONENT Runtime)
+endif()
