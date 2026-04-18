@@ -148,7 +148,7 @@ void _showDeleteTask(BuildContext context, Task task, TaskProvider provider) {
 }
 
 void _unscheduleTask(BuildContext context, Task task, TaskProvider provider) {
-  if (task.status == TaskStatus.done) {
+  if (task.status.isDone) {
     showDialog(
       context: context,
       builder: (_) => WarningDialog(
@@ -158,7 +158,7 @@ void _unscheduleTask(BuildContext context, Task task, TaskProvider provider) {
         onConfirm: () => provider.unScheduleTask(task),
       ),
     );
-  } else if (task.status == TaskStatus.inProgress) {
+  } else if (task.status.isInProgress) {
     showDialog(
       context: context,
       builder: (_) => WarningDialog(
