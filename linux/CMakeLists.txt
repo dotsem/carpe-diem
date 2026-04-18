@@ -13,8 +13,27 @@ set(APPLICATION_ID "com.dotsem.carpe_diem")
 # versions of CMake.
 cmake_policy(SET CMP0063 NEW)
 
-# Load bundled libraries from the lib/ directory relative to the binary.
-set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
+# Determine installation mode.
+set(BUILD_BUNDLE_DIR "${PROJECT_BINARY_DIR}/bundle")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
+  set(SYSTEM_INSTALL FALSE)
+else()
+  set(SYSTEM_INSTALL TRUE)
+endif()
+
+# Set up installation paths and RPATH.
+if(SYSTEM_INSTALL)
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/share/${BINARY_NAME}/data")
+  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
+else()
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}")
+  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
+  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
+endif()
 
 # Root filesystem for cross-building.
 if(FLUTTER_TARGET_PLATFORM_SYSROOT)
@@ -76,33 +95,11 @@ include(flutter/generated_plugins.cmake)
 
 
 # === Installation ===
-# By default, "installing" just makes a relocatable bundle in the build
-# directory. When CMAKE_INSTALL_PREFIX is explicitly set (e.g. -DCMAKE_INSTALL_PREFIX=/usr),
-# use an FHS-compliant layout with desktop integration.
-set(BUILD_BUNDLE_DIR "${PROJECT_BINARY_DIR}/bundle")
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
-  set(SYSTEM_INSTALL FALSE)
-else()
-  set(SYSTEM_INSTALL TRUE)
-endif()
-
 if(NOT SYSTEM_INSTALL)
   # Start with a clean build bundle directory every time.
   install(CODE "
     file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
     " COMPONENT Runtime)
-endif()
-
-if(SYSTEM_INSTALL)
-  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
-  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/share/${BINARY_NAME}/data")
-  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
-else()
-  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}")
-  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
-  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
