@@ -3,6 +3,7 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
+import 'package:carpe_diem/ui/dialogs/common/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
@@ -98,7 +99,7 @@ void showTaskCardContextMenu(BuildContext context, Task task, Offset localPositi
     ),
     if (task.scheduledDate != null)
       PopupMenuItem(
-        onTap: () => provider.unScheduleTask(task),
+        onTap: () => _unscheduleTask(context, task, provider),
         child: const ListTile(
           leading: Icon(Icons.remove_circle_outline, color: AppColors.warning),
           title: Text('Unschedule', style: TextStyle(color: AppColors.warning)),
@@ -144,4 +145,30 @@ void _showDeleteTask(BuildContext context, Task task, TaskProvider provider) {
       onConfirm: () => provider.deleteTask(task),
     ),
   );
+}
+
+void _unscheduleTask(BuildContext context, Task task, TaskProvider provider) {
+  if (task.status == TaskStatus.done) {
+    showDialog(
+      context: context,
+      builder: (_) => WarningDialog(
+        title: "Unschedule Completed Task",
+        message: "This task is already completed. Are you sure you want to unschedule it?",
+        warningText: 'Unschedule',
+        onConfirm: () => provider.unScheduleTask(task),
+      ),
+    );
+  } else if (task.status == TaskStatus.inProgress) {
+    showDialog(
+      context: context,
+      builder: (_) => WarningDialog(
+        title: "Unschedule In Progress Task",
+        message: "This task is already in progress. Are you sure you want to unschedule it?",
+        warningText: 'Unschedule',
+        onConfirm: () => provider.unScheduleTask(task),
+      ),
+    );
+  } else {
+    provider.unScheduleTask(task);
+  }
 }

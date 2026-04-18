@@ -207,7 +207,7 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> unScheduleTask(Task task) async {
-    final updated = task.copyWith(clearScheduledDate: true);
+    final updated = task.copyWith(clearScheduledDate: true, status: TaskStatus.todo);
     await _repo.update(updated);
     await _refreshAll();
     ToastUtils.showSuccess('Task "${task.title}" unscheduled');
