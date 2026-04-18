@@ -128,7 +128,8 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
 endif()
 
 # Install the .desktop file
-install(FILES "com.dotsem.carpe_diem.desktop" DESTINATION "share/applications")
+install(FILES "com.dotsem.carpe_diem.desktop" DESTINATION "share/applications"
+  COMPONENT Runtime)
 
 # Install the application icon.
 install(FILES "runner/resources/carpe_diem.png" DESTINATION "share/pixmaps"
