@@ -54,7 +54,21 @@ static void my_application_activate(GApplication *application) {
 
   gtk_window_set_default_size(window, 1280, 720);
 
+  // Set the window icon.
   g_autoptr(FlDartProject) project = fl_dart_project_new();
+  const gchar *executable_dir = g_path_get_dirname(g_get_prgname());
+  g_autofree gchar *icon_path =
+      g_build_filename(executable_dir, "data", "carpe_diem.png", nullptr);
+  if (g_file_test(icon_path, G_FILE_TEST_EXISTS)) {
+    gtk_window_set_icon_from_file(window, icon_path, nullptr);
+  } else {
+    // Fallback for development/different build structures
+    g_autofree gchar *fallback_icon_path =
+        g_build_filename(executable_dir, "carpe_diem.png", nullptr);
+    if (g_file_test(fallback_icon_path, G_FILE_TEST_EXISTS)) {
+      gtk_window_set_icon_from_file(window, fallback_icon_path, nullptr);
+    }
+  }
   fl_dart_project_set_dart_entrypoint_arguments(
       project, self->dart_entrypoint_arguments);
 
