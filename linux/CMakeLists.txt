@@ -131,5 +131,6 @@ endif()
 install(FILES "com.dotsem.carpe_diem.desktop" DESTINATION "share/applications")
 
 # Install the application icon.
-install(FILES "runner/resources/carpe_diem.png" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
+install(FILES "runner/resources/carpe_diem.png" DESTINATION "share/pixmaps"
+  RENAME "carpe_diem.png"
   COMPONENT Runtime)

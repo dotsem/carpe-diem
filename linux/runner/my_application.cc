@@ -56,7 +56,8 @@ static void my_application_activate(GApplication *application) {
 
   // Set the window icon.
   g_autoptr(FlDartProject) project = fl_dart_project_new();
-  const gchar *executable_dir = g_path_get_dirname(g_get_prgname());
+  g_autofree gchar *exe_path = g_file_read_link("/proc/self/exe", nullptr);
+  g_autofree gchar *executable_dir = g_path_get_dirname(exe_path);
   g_autofree gchar *icon_path =
       g_build_filename(executable_dir, "data", "carpe_diem.png", nullptr);
   if (g_file_test(icon_path, G_FILE_TEST_EXISTS)) {
