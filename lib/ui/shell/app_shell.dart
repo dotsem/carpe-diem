@@ -114,8 +114,7 @@ class _SideNav extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Image.asset('assets/images/logo.png', width: 32),
-                const SizedBox(width: 8),
+                Image.asset('assets/images/logo.png', width: 48),
                 Text(
                   'Carpe Diem',
                   style: Theme.of(

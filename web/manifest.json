@@ -1,11 +1,11 @@
 {
-    "name": "Carpe Diem",
-    "short_name": "Carpe Diem",
+    "name": "carpe_diem",
+    "short_name": "carpe_diem",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A day by day planner built for productivity.",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
