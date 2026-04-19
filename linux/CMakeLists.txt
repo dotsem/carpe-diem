@@ -13,8 +13,27 @@ set(APPLICATION_ID "com.dotsem.carpe_diem")
 # versions of CMake.
 cmake_policy(SET CMP0063 NEW)
 
-# Load bundled libraries from the lib/ directory relative to the binary.
-set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
+# Determine installation mode.
+set(BUILD_BUNDLE_DIR "${PROJECT_BINARY_DIR}/bundle")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
+  set(SYSTEM_INSTALL FALSE)
+else()
+  set(SYSTEM_INSTALL TRUE)
+endif()
+
+# Set up installation paths and RPATH.
+if(SYSTEM_INSTALL)
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/share/${BINARY_NAME}/data")
+  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${BINARY_NAME}")
+else()
+  set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}")
+  set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
+  set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
+endif()
 
 # Root filesystem for cross-building.
 if(FLUTTER_TARGET_PLATFORM_SYSROOT)
@@ -76,22 +95,14 @@ include(flutter/generated_plugins.cmake)
 
 
 # === Installation ===
-# By default, "installing" just makes a relocatable bundle in the build
-# directory.
-set(BUILD_BUNDLE_DIR "${PROJECT_BINARY_DIR}/bundle")
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
+if(NOT SYSTEM_INSTALL)
+  # Start with a clean build bundle directory every time.
+  install(CODE "
+    file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
+    " COMPONENT Runtime)
 endif()
 
-# Start with a clean build bundle directory every time.
-install(CODE "
-  file(REMOVE_RECURSE \"${BUILD_BUNDLE_DIR}/\")
-  " COMPONENT Runtime)
-
-set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
-set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-
-install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
+install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
   COMPONENT Runtime)
 
 install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
@@ -124,5 +135,14 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 # Install the AOT library on non-Debug builds only.
 if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
   install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+    COMPONENT Runtime)
+endif()
+
+# Desktop integration files are only useful for system-wide installs.
+if(SYSTEM_INSTALL)
+  install(FILES "com.dotsem.carpe_diem.desktop" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications"
+    COMPONENT Runtime)
+  install(FILES "runner/resources/carpe_diem.png" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pixmaps"
+    RENAME "carpe_diem.png"
     COMPONENT Runtime)
 endif()
