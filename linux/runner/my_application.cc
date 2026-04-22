@@ -48,6 +48,10 @@ static void my_application_activate(GApplication *application) {
     gtk_header_bar_set_title(header_bar, "Carpe Diem");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
+    // Bind the window title to the header bar title so that
+    // Flutter/window_manager can update it
+    g_object_bind_property(window, "title", header_bar, "title",
+                           G_BINDING_SYNC_CREATE);
   } else {
     gtk_window_set_title(window, "Carpe Diem");
   }

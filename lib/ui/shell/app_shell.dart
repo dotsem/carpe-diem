@@ -8,6 +8,7 @@ import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 
+import 'package:carpe_diem/providers/window_title_provider.dart';
 import 'package:carpe_diem/routes/keys.dart';
 
 class AppShell extends StatefulWidget {
@@ -36,11 +37,31 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  void _updateWindowTitle(BuildContext context, String path) {
+    final titleProvider = context.read<WindowTitleProvider>();
+
+    if (path == '/') {
+      titleProvider.updateTitle(subtitle: 'Today');
+    } else if (path == '/tasks') {
+      titleProvider.updateTitle(subtitle: 'Backlog');
+    } else if (path == '/projects') {
+      titleProvider.updateTitle(subtitle: 'All Projects');
+    } else if (path.startsWith('/projects/')) {
+      // Handled by ProjectDetailScreen to include project name
+    } else {
+      titleProvider.reset();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final isMobile = width < 900;
     final currentPath = GoRouterState.of(context).uri.toString();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateWindowTitle(context, currentPath);
+    });
 
     return Scaffold(
       drawer: isMobile

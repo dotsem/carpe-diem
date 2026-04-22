@@ -12,6 +12,7 @@ import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 import 'package:carpe_diem/ui/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
+import 'package:carpe_diem/providers/window_title_provider.dart';
 import 'package:provider/provider.dart';
 
 class EditTaskDialog extends StatefulWidget {
@@ -33,6 +34,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   List<Task> _projectTasks = [];
   List<String> _selectedLabelIds = [];
   List<String> _inheritedLabelIds = [];
+  late WindowTitleProvider _windowTitleProvider;
 
   @override
   void initState() {
@@ -46,6 +48,17 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     _blockedById = widget.task.blockedById;
     _selectedLabelIds = List.from(widget.task.labelIds);
     if (_selectedProjectId != null) _loadProjectDetails();
+
+    _windowTitleProvider = context.read<WindowTitleProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _windowTitleProvider.pushSubtitle('Editing: ${widget.task.title}');
+    });
+  }
+
+  @override
+  void dispose() {
+    _windowTitleProvider.popSubtitle();
+    super.dispose();
   }
 
   Future<void> _loadProjectDetails() async {
