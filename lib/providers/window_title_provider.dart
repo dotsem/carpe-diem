@@ -9,7 +9,11 @@ class WindowTitleProvider extends ChangeNotifier {
   final List<String> _subtitleStack = [];
 
   String get title => _baseTitle;
-  String? get subtitle => _subtitleStack.isNotEmpty ? _subtitleStack.last : _baseSubtitle;
+  String? get subtitle => _baseSubtitle != null
+      ? _subtitleStack.isNotEmpty
+            ? "$_baseSubtitle -> ${_subtitleStack.join(" - ")}"
+            : _baseSubtitle
+      : null;
 
   void updateTitle({String? title, String? subtitle}) {
     if (title != null) _baseTitle = title;
