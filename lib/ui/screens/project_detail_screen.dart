@@ -28,6 +28,7 @@ import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
+import 'package:carpe_diem/providers/window_title_provider.dart';
 
 class _NewTaskIntent extends Intent {
   const _NewTaskIntent();
@@ -170,6 +171,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             child: Text("Project not found", style: TextStyle(color: AppColors.textSecondary)),
           );
         }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.read<WindowTitleProvider>().updateTitle(subtitle: 'Project: ${project.name}');
+        });
 
         return Shortcuts(
           shortcuts: {

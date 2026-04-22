@@ -9,6 +9,7 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
+import 'package:carpe_diem/providers/window_title_provider.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class BulkEditResult {
@@ -70,10 +71,21 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
   bool _enableBlocker = false;
   String? _blockedById;
   List<Task> _projectTasks = [];
+  late WindowTitleProvider _windowTitleProvider;
 
   @override
   void initState() {
     super.initState();
+    _windowTitleProvider = context.read<WindowTitleProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _windowTitleProvider.pushSubtitle('Bulk Editing ${widget.taskIds.length} Tasks');
+    });
+  }
+
+  @override
+  void dispose() {
+    _windowTitleProvider.popSubtitle();
+    super.dispose();
   }
 
   Future<void> _loadProjectTasks() async {

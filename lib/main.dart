@@ -10,10 +10,17 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/filter_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/routes/app_router.dart';
+import 'package:carpe_diem/providers/window_title_provider.dart';
 import 'package:toastification/toastification.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await windowManager.ensureInitialized();
+  } catch (e) {
+    debugPrint('WindowManager initialization failed: $e');
+  }
   await DatabaseHelper.initialize();
 
   runApp(const CarpeDiemApp());
@@ -38,6 +45,7 @@ class CarpeDiemApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => ProjectProvider()..loadProjects()),
         ChangeNotifierProvider(create: (_) => FilterProvider()),
+        ChangeNotifierProvider(create: (_) => WindowTitleProvider()),
       ],
       child: ToastificationWrapper(
         child: MaterialApp.router(

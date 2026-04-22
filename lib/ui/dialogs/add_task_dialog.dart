@@ -11,6 +11,7 @@ import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/priority_picker.dart';
 import 'package:carpe_diem/ui/widgets/date_picker_button.dart';
 import 'package:carpe_diem/ui/widgets/label_picker.dart';
+import 'package:carpe_diem/providers/window_title_provider.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -34,6 +35,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   List<Task> _projectTasks = [];
   List<String> _selectedLabelIds = [];
   List<String> _inheritedLabelIds = [];
+  late WindowTitleProvider _windowTitleProvider;
 
   @override
   void initState() {
@@ -41,6 +43,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     _selectedDate = widget.initialDate;
     _selectedProjectId = widget.initialProjectId;
     if (_selectedProjectId != null) _loadProjectDetails();
+
+    _windowTitleProvider = context.read<WindowTitleProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _windowTitleProvider.pushSubtitle('New Task');
+    });
   }
 
   Future<void> _loadProjectDetails() async {
@@ -65,6 +72,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
+    _windowTitleProvider.popSubtitle();
     super.dispose();
   }
 
