@@ -7,15 +7,25 @@ class TaskHierarchyUtils {
     final childrenMap = <String, List<Task>>{};
     final roots = <TaskHierarchyNode>[];
 
+    final addedBlockers = <String>{};
     for (final task in categoryTasks) {
-      if (task.blockedById != null && idSet.contains(task.blockedById)) {
-        childrenMap.putIfAbsent(task.blockedById!, () => []).add(task);
-      } else if (task.blockedById != null && allTasks != null && allTasks.containsKey(task.blockedById)) {
-        final blocker = allTasks[task.blockedById]!;
+      final blockedById = task.blockedById;
+      if (blockedById != null && idSet.contains(blockedById)) {
+        childrenMap.putIfAbsent(blockedById, () => []).add(task);
+      } else if (blockedById != null && allTasks != null && allTasks.containsKey(blockedById)) {
+        final blocker = allTasks[blockedById]!;
         if (!blocker.isCompleted) {
-          roots.add(
-            BlockerIndicatorNode(blockerId: blocker.id, blockerTitle: blocker.title, blockedTaskId: task.id, depth: 0),
-          );
+          if (!addedBlockers.contains(blockedById)) {
+            roots.add(
+              BlockerIndicatorNode(
+                blockerId: blocker.id,
+                blockerTitle: blocker.title,
+                blockedTaskId: task.id,
+                depth: 0,
+              ),
+            );
+            addedBlockers.add(blockedById);
+          }
           childrenMap.putIfAbsent(blocker.id, () => []).add(task);
         } else {
           roots.add(TaskNode(task, 0));
