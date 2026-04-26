@@ -3,12 +3,15 @@ import 'package:carpe_diem/data/models/task_hierarchy_node.dart';
 
 class TaskHierarchyUtils {
   static List<TaskHierarchyNode> buildHierarchy(List<Task> categoryTasks, {Map<String, Task>? allTasks}) {
-    final idSet = categoryTasks.map((t) => t.id).toSet();
+    final seenInputIds = <String>{};
+    final uniqueCategoryTasks = categoryTasks.where((t) => seenInputIds.add(t.id)).toList();
+
+    final idSet = uniqueCategoryTasks.map((t) => t.id).toSet();
     final childrenMap = <String, List<Task>>{};
     final roots = <TaskHierarchyNode>[];
-
     final addedBlockers = <String>{};
-    for (final task in categoryTasks) {
+
+    for (final task in uniqueCategoryTasks) {
       final blockedById = task.blockedById;
       if (blockedById != null && idSet.contains(blockedById)) {
         childrenMap.putIfAbsent(blockedById, () => []).add(task);
@@ -36,18 +39,27 @@ class TaskHierarchyUtils {
     }
 
     final result = <TaskHierarchyNode>[];
-    void addNode(TaskHierarchyNode node) {
-      result.add(node);
+    final processedIds = <String>{}; // Track both task IDs and indicator IDs
 
-      String? id;
+    void addNode(TaskHierarchyNode node) {
+      String? logicalId;
+      String? childLookupId;
+
       if (node is TaskNode) {
-        id = node.task.id;
+        logicalId = node.task.id;
+        childLookupId = node.task.id;
       } else if (node is BlockerIndicatorNode) {
-        id = node.blockerId;
+        logicalId = 'indicator_${node.blockerId}';
+        childLookupId = node.blockerId;
       }
 
-      if (id != null) {
-        final children = childrenMap[id];
+      if (logicalId == null || processedIds.contains(logicalId)) return;
+
+      processedIds.add(logicalId);
+      result.add(node);
+
+      if (childLookupId != null) {
+        final children = childrenMap[childLookupId];
         if (children != null) {
           for (final child in children) {
             addNode(TaskNode(child, node.depth + 1));
@@ -57,12 +69,9 @@ class TaskHierarchyUtils {
     }
 
     for (final root in roots) {
-      // Avoid adding the same task multiple times if it was handled as a child elsewhere
-      if (root is TaskNode && result.any((n) => n is TaskNode && n.task.id == root.task.id)) {
-        continue;
-      }
       addNode(root);
     }
+
     return result;
   }
 }
