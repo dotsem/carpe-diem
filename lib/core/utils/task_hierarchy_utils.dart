@@ -12,29 +12,65 @@ class TaskHierarchyUtils {
     final addedBlockers = <String>{};
 
     for (final task in uniqueCategoryTasks) {
-      final blockedById = task.blockedById;
-      if (blockedById != null && idSet.contains(blockedById)) {
-        childrenMap.putIfAbsent(blockedById, () => []).add(task);
-      } else if (blockedById != null && allTasks != null && allTasks.containsKey(blockedById)) {
-        final blocker = allTasks[blockedById]!;
-        if (!blocker.isCompleted) {
-          if (!addedBlockers.contains(blockedById)) {
-            roots.add(
-              BlockerIndicatorNode(
-                blockerId: blocker.id,
-                blockerTitle: blocker.title,
-                blockedTaskId: task.id,
-                depth: 0,
-              ),
-            );
-            addedBlockers.add(blockedById);
-          }
-          childrenMap.putIfAbsent(blocker.id, () => []).add(task);
-        } else {
-          roots.add(TaskNode(task, 0));
+      // Find the ultimate root for this task to "pull up" blockers to the highest priority item's position
+      TaskHierarchyNode? ultimateRoot;
+      Task currentTask = task;
+      final visitedIds = <String>{task.id};
+
+      while (true) {
+        final blockedById = currentTask.blockedById;
+        if (blockedById == null) {
+          ultimateRoot = TaskNode(currentTask, 0);
+          break;
         }
-      } else {
-        roots.add(TaskNode(task, 0));
+
+        if (idSet.contains(blockedById)) {
+          if (!visitedIds.add(blockedById)) {
+            // Cycle detected - treat as root
+            ultimateRoot = TaskNode(currentTask, 0);
+            break;
+          }
+          currentTask = uniqueCategoryTasks.firstWhere((t) => t.id == blockedById);
+          continue;
+        }
+
+        if (allTasks != null && allTasks.containsKey(blockedById)) {
+          final blocker = allTasks[blockedById]!;
+          if (!blocker.isCompleted) {
+            ultimateRoot = BlockerIndicatorNode(
+              blockerId: blocker.id,
+              blockerTitle: blocker.title,
+              blockedTaskId: currentTask.id,
+              depth: 0,
+            );
+          } else {
+            ultimateRoot = TaskNode(currentTask, 0);
+          }
+        } else {
+          ultimateRoot = TaskNode(currentTask, 0);
+        }
+        break;
+      }
+
+      final logicalId = (ultimateRoot is TaskNode)
+          ? ultimateRoot.task.id
+          : 'indicator_${(ultimateRoot as BlockerIndicatorNode).blockerId}';
+
+      if (addedBlockers.add(logicalId)) {
+        roots.add(ultimateRoot);
+      }
+
+      // Ensure every task is mapped for child pulls regardless of whether it was a root
+      final blockedById = task.blockedById;
+      if (blockedById != null) {
+        if (idSet.contains(blockedById)) {
+          childrenMap.putIfAbsent(blockedById, () => []).add(task);
+        } else if (allTasks != null && allTasks.containsKey(blockedById)) {
+          final blocker = allTasks[blockedById]!;
+          if (!blocker.isCompleted) {
+            childrenMap.putIfAbsent(blocker.id, () => []).add(task);
+          }
+        }
       }
     }
 
