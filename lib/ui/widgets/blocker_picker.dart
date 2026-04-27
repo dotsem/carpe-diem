@@ -161,7 +161,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
             child: Row(
               children: [
                 Icon(
-                  selectedTask != null ? Icons.link : Icons.link_off,
+                  selectedTask != null ? Icons.lock : Icons.lock_open_outlined,
                   size: 16,
                   color: selectedTask != null ? AppColors.accent : AppColors.textSecondary,
                 ),
