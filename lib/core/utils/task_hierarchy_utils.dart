@@ -3,109 +3,105 @@ import 'package:carpe_diem/data/models/task_hierarchy_node.dart';
 
 class TaskHierarchyUtils {
   static List<TaskHierarchyNode> buildHierarchy(List<Task> categoryTasks, {Map<String, Task>? allTasks}) {
-    final seenInputIds = <String>{};
-    final uniqueCategoryTasks = categoryTasks.where((t) => seenInputIds.add(t.id)).toList();
+    final seenIds = <String>{};
+    final tasks = categoryTasks.where((t) => seenIds.add(t.id)).toList();
+    final taskMap = {for (final t in tasks) t.id: t};
 
-    final idSet = uniqueCategoryTasks.map((t) => t.id).toSet();
-    final childrenMap = <String, List<Task>>{};
-    final roots = <TaskHierarchyNode>[];
-    final addedBlockers = <String>{};
+    // Build parent→children relationships for internal tasks
+    final childrenOf = <String, List<String>>{};
+    for (final task in tasks) {
+      final parentId = task.blockedById;
+      if (parentId != null && taskMap.containsKey(parentId)) {
+        childrenOf.putIfAbsent(parentId, () => []).add(task.id);
+      }
+    }
 
-    for (final task in uniqueCategoryTasks) {
-      // Find the ultimate root for this task to "pull up" blockers to the highest priority item's position
-      TaskHierarchyNode? ultimateRoot;
-      Task currentTask = task;
-      final visitedIds = <String>{task.id};
+    final externalBlockerChildren = <String, List<String>>{};
+    final externalBlockerTitles = <String, String>{};
 
-      while (true) {
-        final blockedById = currentTask.blockedById;
-        if (blockedById == null) {
-          ultimateRoot = TaskNode(currentTask, 0);
-          break;
-        }
-
-        if (idSet.contains(blockedById)) {
-          if (!visitedIds.add(blockedById)) {
-            // Cycle detected - treat as root
-            ultimateRoot = TaskNode(currentTask, 0);
-            break;
-          }
-          currentTask = uniqueCategoryTasks.firstWhere((t) => t.id == blockedById);
-          continue;
-        }
-
-        if (allTasks != null && allTasks.containsKey(blockedById)) {
-          final blocker = allTasks[blockedById]!;
-          if (!blocker.isCompleted) {
-            ultimateRoot = BlockerIndicatorNode(
-              blockerId: blocker.id,
-              blockerTitle: blocker.title,
-              blockedTaskId: currentTask.id,
-              depth: 0,
-            );
-          } else {
-            ultimateRoot = TaskNode(currentTask, 0);
-          }
-        } else {
-          ultimateRoot = TaskNode(currentTask, 0);
-        }
-        break;
+    for (final task in tasks) {
+      final parentId = task.blockedById;
+      if (parentId == null || taskMap.containsKey(parentId)) {
+        continue;
       }
 
-      final logicalId = (ultimateRoot is TaskNode)
-          ? ultimateRoot.task.id
-          : 'indicator_${(ultimateRoot as BlockerIndicatorNode).blockerId}';
-
-      if (addedBlockers.add(logicalId)) {
-        roots.add(ultimateRoot);
-      }
-
-      // Ensure every task is mapped for child pulls regardless of whether it was a root
-      final blockedById = task.blockedById;
-      if (blockedById != null) {
-        if (idSet.contains(blockedById)) {
-          childrenMap.putIfAbsent(blockedById, () => []).add(task);
-        } else if (allTasks != null && allTasks.containsKey(blockedById)) {
-          final blocker = allTasks[blockedById]!;
-          if (!blocker.isCompleted) {
-            childrenMap.putIfAbsent(blocker.id, () => []).add(task);
-          }
+      // Check if it's an external uncompleted blocker
+      if (allTasks != null && allTasks.containsKey(parentId)) {
+        final blocker = allTasks[parentId]!;
+        if (!blocker.isCompleted) {
+          externalBlockerChildren.putIfAbsent(blocker.id, () => []).add(task.id);
+          externalBlockerTitles[blocker.id] = blocker.title;
         }
       }
     }
 
+    // Flatten via DFS with Urgency Inheritance
     final result = <TaskHierarchyNode>[];
-    final processedIds = <String>{}; // Track both task IDs and indicator IDs
+    final emitted = <String>{};
 
-    void addNode(TaskHierarchyNode node) {
-      String? logicalId;
-      String? childLookupId;
+    void emit(String taskId, int depth) {
+      if (!emitted.add(taskId)) return;
+      final task = taskMap[taskId];
+      if (task == null) return;
 
-      if (node is TaskNode) {
-        logicalId = node.task.id;
-        childLookupId = node.task.id;
-      } else if (node is BlockerIndicatorNode) {
-        logicalId = 'indicator_${node.blockerId}';
-        childLookupId = node.blockerId;
-      }
-
-      if (logicalId == null || processedIds.contains(logicalId)) return;
-
-      processedIds.add(logicalId);
-      result.add(node);
-
-      if (childLookupId != null) {
-        final children = childrenMap[childLookupId];
-        if (children != null) {
-          for (final child in children) {
-            addNode(TaskNode(child, node.depth + 1));
-          }
+      result.add(TaskNode(task, depth));
+      final children = childrenOf[taskId];
+      if (children != null) {
+        for (final childId in children) {
+          emit(childId, depth + 1);
         }
       }
     }
 
-    for (final root in roots) {
-      addNode(root);
+    void emitExternalBlocker(String blockerId) {
+      final indicatorId = 'indicator_$blockerId';
+      if (!emitted.add(indicatorId)) return;
+
+      result.add(
+        BlockerIndicatorNode(
+          blockerId: blockerId,
+          blockerTitle: externalBlockerTitles[blockerId] ?? '',
+          blockedTaskId: externalBlockerChildren[blockerId]!.first,
+          depth: 0,
+        ),
+      );
+
+      for (final childId in externalBlockerChildren[blockerId]!) {
+        emit(childId, 1);
+      }
+    }
+
+    String? findRootId(String id, Set<String> visited) {
+      if (!visited.add(id)) return null;
+      final task = taskMap[id];
+      if (task == null) return null;
+
+      final parentId = task.blockedById;
+      if (parentId == null) return id;
+
+      if (taskMap.containsKey(parentId)) {
+        return findRootId(parentId, visited);
+      }
+
+      if (allTasks != null && allTasks.containsKey(parentId)) {
+        final blocker = allTasks[parentId]!;
+        if (!blocker.isCompleted) {
+          return 'indicator_$parentId';
+        }
+      }
+
+      return id;
+    }
+
+    for (final task in tasks) {
+      final rootId = findRootId(task.id, {});
+      if (rootId == null) continue;
+
+      if (rootId.startsWith('indicator_')) {
+        emitExternalBlocker(rootId.replaceFirst('indicator_', ''));
+      } else {
+        emit(rootId, 0);
+      }
     }
 
     return result;
