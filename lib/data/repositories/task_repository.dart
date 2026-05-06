@@ -3,6 +3,7 @@ import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/data/models/history_overview.dart';
 import 'package:carpe_diem/core/constants/app_constants.dart';
 
 class TaskRepository {
@@ -246,5 +247,90 @@ class TaskRepository {
     } else {
       return '$priorityPart, $datePart, $deadlinePart';
     }
+  }
+
+  Future<HistoryOverview> getHistoryOverview(DateTime start, DateTime end, {TaskFilter? filter}) async {
+    final db = await _db;
+    final startStr = start.toIso8601String();
+    final endStr = end.toIso8601String();
+
+    String whereCompleted = 't.status = ? AND t.completedAt >= ? AND t.completedAt <= ?';
+    List<dynamic> whereArgs = [TaskStatus.done.index, startStr, endStr];
+
+    String filterJoin = '';
+    if (filter != null && !filter.isEmpty) {
+      filterJoin = '''
+        LEFT JOIN task_labels tl ON t.id = tl.taskId
+        LEFT JOIN project_labels pl ON t.projectId = pl.projectId
+      ''';
+      if (filter.hasPriorityFilter) {
+        whereCompleted += ' AND t.priority IN (${filter.priorities.map((p) => p.index).join(',')})';
+      }
+      if (filter.hasProjectFilter) {
+        whereCompleted += ' AND t.projectId IN (${filter.projectIds.map((id) => "'$id'").join(',')})';
+      }
+      if (filter.hasLabelFilter) {
+        whereCompleted +=
+            ' AND (tl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}) OR pl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}))';
+      }
+    }
+
+    // 1. Total Completed
+    final totalCompletedResult = await db.rawQuery(
+      'SELECT COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE $whereCompleted',
+      whereArgs,
+    );
+    final totalCompleted = (totalCompletedResult.first['count'] as num?)?.toInt() ?? 0;
+
+    // 2. Missed Deadlines
+    final missedDeadlinesResult = await db.rawQuery(
+      'SELECT COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE $whereCompleted AND t.deadline IS NOT NULL AND t.completedAt > t.deadline',
+      whereArgs,
+    );
+    final missedDeadlines = (missedDeadlinesResult.first['count'] as num?)?.toInt() ?? 0;
+
+    // 3. Completed Late (after scheduled date)
+    final completedLateResult = await db.rawQuery(
+      'SELECT COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE $whereCompleted AND t.scheduledDate IS NOT NULL AND t.completedAt > datetime(t.scheduledDate, \'+1 day\')',
+      whereArgs,
+    );
+    final completedLate = (completedLateResult.first['count'] as num?)?.toInt() ?? 0;
+
+    // 4. Total Created in this period
+    final totalCreatedResult = await db.rawQuery(
+      'SELECT COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE t.createdAt >= ? AND t.createdAt <= ?',
+      [startStr, endStr],
+    );
+    final totalCreated = (totalCreatedResult.first['count'] as num?)?.toInt() ?? 0;
+
+    // 5. Tasks by Project
+    final projectsResult = await db.rawQuery(
+      'SELECT t.projectId, COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE $whereCompleted GROUP BY t.projectId',
+      whereArgs,
+    );
+    final tasksByProject = {for (var r in projectsResult) (r['projectId'] as String? ?? 'none'): r['count'] as int};
+
+    // 6. Tasks by Label
+    final labelsResult = await db.rawQuery(
+      '''
+      SELECT tl.labelId, COUNT(DISTINCT t.id) as count 
+      FROM tasks t 
+      JOIN task_labels tl ON t.id = tl.taskId 
+      $filterJoin
+      WHERE $whereCompleted 
+      GROUP BY tl.labelId
+      ''',
+      whereArgs,
+    );
+    final tasksByLabel = {for (var r in labelsResult) r['labelId'] as String: r['count'] as int};
+
+    return HistoryOverview(
+      totalCompleted: totalCompleted,
+      totalCreated: totalCreated,
+      missedDeadlines: missedDeadlines,
+      completedLate: completedLate,
+      tasksByProject: tasksByProject,
+      tasksByLabel: tasksByLabel,
+    );
   }
 }

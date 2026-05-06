@@ -1,11 +1,12 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/data/models/history_overview.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
-import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/pick_date_range_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
-import 'package:carpe_diem/ui/widgets/task_card.dart';
+import 'package:carpe_diem/ui/screens/history/history_items_view.dart';
+import 'package:carpe_diem/ui/screens/history/history_overview_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -28,31 +29,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _isLoading = false;
   bool _isLoadingMore = false;
   List<Task> _completedTasks = [];
+  HistoryOverview? _overview;
   DateTime? _minDate;
   int _offset = 0;
   bool _hasMore = true;
   final int _limit = 25;
-  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     _loadData();
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      if (!_isLoading && !_isLoadingMore && _hasMore) {
-        _loadMoreData();
-      }
-    }
   }
 
   Future<void> _loadData() async {
@@ -64,24 +50,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
     final taskProvider = context.read<TaskProvider>();
 
-    // Load first task date if not already loaded
     _minDate ??= await taskProvider.getFirstTaskDate();
 
-    // Normalize dates to start of day and end of day
     final start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
     final end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
 
-    final tasks = await taskProvider.getCompletedTasks(
-      start,
-      end,
-      limit: _limit,
-      offset: _offset,
-      filter: _filter,
-    );
+    final tasksFuture = taskProvider.getCompletedTasks(start, end, limit: _limit, offset: _offset, filter: _filter);
+    final overviewFuture = taskProvider.getHistoryOverview(start, end, filter: _filter);
+
+    final results = await Future.wait([tasksFuture, overviewFuture]);
+    final tasks = results[0] as List<Task>;
+    final overview = results[1] as HistoryOverview;
 
     if (mounted) {
       setState(() {
         _completedTasks = tasks;
+        _overview = overview;
         _isLoading = false;
         _offset = tasks.length;
         _hasMore = tasks.length == _limit;
@@ -90,20 +74,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _loadMoreData() async {
+    if (_isLoadingMore) return;
     setState(() => _isLoadingMore = true);
     final taskProvider = context.read<TaskProvider>();
 
-    // Normalize dates to start of day and end of day
     final start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
     final end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
 
-    final tasks = await taskProvider.getCompletedTasks(
-      start,
-      end,
-      limit: _limit,
-      offset: _offset,
-      filter: _filter,
-    );
+    final tasks = await taskProvider.getCompletedTasks(start, end, limit: _limit, offset: _offset, filter: _filter);
 
     if (mounted) {
       setState(() {
@@ -118,7 +96,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void _selectDateRange() async {
     final now = DateTime.now();
     final initialDateRange = _dateRange;
-    final firstDate = _minDate ?? now.subtract(const Duration(days: 365 * 10)); // Fallback if minDate is null
+    final firstDate = _minDate ?? now.subtract(const Duration(days: 365 * 10));
 
     final picked = await showDialog<DateTimeRange>(
       context: context,
@@ -127,9 +105,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
 
     if (picked != null && picked != _dateRange) {
-      setState(() {
-        _dateRange = picked;
-      });
+      setState(() => _dateRange = picked);
       _loadData();
     }
   }
@@ -153,36 +129,61 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 64),
-          Row(
-            children: [
-              Text(
-                'History',
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineMedium?.copyWith(color: AppColors.text, fontWeight: FontWeight.bold),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Text(
+                    'History',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineMedium?.copyWith(color: AppColors.text, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  _buildDateRangeButton(),
+                ],
               ),
-              const Spacer(),
-              _buildDateRangeButton(),
-            ],
-          ),
-          const SizedBox(height: 8),
-          FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
-          const SizedBox(height: 16),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _completedTasks.isEmpty
-                ? _buildEmptyState()
-                : _buildTaskList(_completedTasks),
-          ),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
+            ),
+            const SizedBox(height: 16),
+            const TabBar(
+              tabs: [
+                Tab(text: 'Items'),
+                Tab(text: 'Overview'),
+              ],
+              indicatorColor: AppColors.accent,
+              labelColor: AppColors.text,
+              unselectedLabelColor: AppColors.textSecondary,
+              indicatorSize: TabBarIndicatorSize.tab,
+            ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      children: [
+                        HistoryItemsView(
+                          tasks: _completedTasks,
+                          hasMore: _hasMore,
+                          isLoadingMore: _isLoadingMore,
+                          onLoadMore: _loadMoreData,
+                        ),
+                        HistoryOverviewView(overview: _overview),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -212,95 +213,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTaskList(List<Task> tasks) {
-    final projectProvider = context.read<ProjectProvider>();
-
-    // Group tasks by completion date
-    final groupedTasks = <String, List<Task>>{};
-    for (final task in tasks) {
-      if (task.completedAt == null) continue;
-      final dateKey = DateFormat('yyyy-MM-dd').format(task.completedAt!);
-      groupedTasks.putIfAbsent(dateKey, () => []).add(task);
-    }
-
-    final sortedKeys = groupedTasks.keys.toList()..sort((a, b) => b.compareTo(a));
-
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: sortedKeys.length + (_hasMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == sortedKeys.length) {
-          return const Center(
-            child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
-          );
-        }
-        final dateKey = sortedKeys[index];
-        final dayTasks = groupedTasks[dateKey]!;
-        final date = DateTime.parse(dateKey);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              child: Text(
-                _formatDateHeader(date),
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            ...dayTasks.map((task) {
-              final project = task.projectId != null ? projectProvider.getById(task.projectId!) : null;
-              return TaskCard(
-                task: task,
-                project: project,
-                onToggle: (_) {}, // Read-only for history
-                onTap: () {
-                  // TODO: Show task details if needed, but for now history is primary
-                },
-                leading: const SizedBox.shrink(),
-                showStrikeThroughOnCompleted: false,
-              );
-            }),
-          ],
-        );
-      },
-    );
-  }
-
-  String _formatDateHeader(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    if (date.isAtSameMomentAs(today)) return 'TODAY';
-    if (date.isAtSameMomentAs(yesterday)) return 'YESTERDAY';
-
-    return DateFormat('EEEE, MMM d').format(date).toUpperCase();
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.history, size: 64, color: AppColors.textSecondary.withAlpha(50)),
-          const SizedBox(height: 16),
-          Text('No completed tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
-          const SizedBox(height: 8),
-          Text(
-            'Try selecting a different date range or clearing filters',
-            style: TextStyle(color: AppColors.textSecondary.withAlpha(150), fontSize: 14),
-          ),
-        ],
       ),
     );
   }

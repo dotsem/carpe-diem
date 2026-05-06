@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/utils/date_time_utils.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/data/models/history_overview.dart';
 import 'package:carpe_diem/data/models/task_layout.dart';
 import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
@@ -361,6 +362,10 @@ class TaskProvider extends ChangeNotifier {
 
     // Fallback to today if no tasks are completed
     return DateTime.now();
+  }
+
+  Future<HistoryOverview> getHistoryOverview(DateTime start, DateTime end, {TaskFilter? filter}) async {
+    return _repo.getHistoryOverview(start, end, filter: filter);
   }
 
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
