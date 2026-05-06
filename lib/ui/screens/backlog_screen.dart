@@ -20,6 +20,7 @@ import 'package:carpe_diem/ui/widgets/task_hierarchy_indicator.dart';
 import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
 import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
+import 'package:carpe_diem/ui/widgets/screen_header.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
@@ -164,7 +165,35 @@ class _BacklogScreenState extends State<BacklogScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _header(context),
+              ScreenHeader(
+                title: 'Backlog',
+                subtitle: 'Tasks without a scheduled date',
+                actions: [
+                  if (_selectedTaskIds.isNotEmpty) ...[
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.success,
+                        foregroundColor: AppColors.text,
+                      ),
+                      onPressed: () {
+                        context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
+                          setState(() => _selectedTaskIds.clear());
+                        });
+                      },
+                      label: const Text('Plan tasks for today'),
+                      icon: const Icon(Icons.calendar_today_rounded),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  FilledButton.icon(
+                    onPressed: () => _showAddTask(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Task'),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildHeaderActions(context),
+                ],
+              ),
               Consumer<FilterProvider>(
                 builder: (context, filterProvider, _) => FilterBar(
                   filter: filterProvider.filter,
@@ -198,44 +227,6 @@ class _BacklogScreenState extends State<BacklogScreen> {
     );
   }
 
-  Widget _header(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 28, 0, 16),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Backlog', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              const Text('Tasks without a scheduled date', style: TextStyle(color: AppColors.textSecondary)),
-            ],
-          ),
-          const Spacer(),
-          if (_selectedTaskIds.isNotEmpty) ...[
-            FilledButton.icon(
-              style: FilledButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: AppColors.text),
-              onPressed: () {
-                context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
-                  setState(() => _selectedTaskIds.clear());
-                });
-              },
-              label: const Text('Plan tasks for today'),
-              icon: const Icon(Icons.calendar_today_rounded),
-            ),
-            const SizedBox(width: 8),
-          ],
-          FilledButton.icon(
-            onPressed: () => _showAddTask(context),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Task'),
-          ),
-          const SizedBox(width: 8),
-          _buildHeaderActions(context),
-        ],
-      ),
-    );
-  }
 
   Widget _buildHeaderActions(BuildContext context) {
     return BulkActionMenu(

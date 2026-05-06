@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
+import 'package:carpe_diem/ui/widgets/screen_header.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 import 'package:flutter/services.dart';
 import 'package:carpe_diem/ui/dialogs/add_project_dialog.dart';
@@ -141,7 +142,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _header(context),
+              ScreenHeader(
+                title: 'Projects',
+                actions: [
+                  FilledButton.icon(
+                    onPressed: () => _showAddProject(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('New Project'),
+                  ),
+                ],
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: FuzzySearchBar(
@@ -174,22 +184,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     );
   }
 
-  Widget _header(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          Text('Projects', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const Spacer(),
-          FilledButton.icon(
-            onPressed: () => _showAddProject(context),
-            icon: const Icon(Icons.add),
-            label: const Text('New Project'),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _projectGrid() {
     return Consumer<ProjectProvider>(
