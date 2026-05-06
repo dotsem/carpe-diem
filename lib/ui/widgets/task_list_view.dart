@@ -1,3 +1,4 @@
+import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
 import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
@@ -145,11 +146,21 @@ class _TaskListViewState extends State<TaskListView> {
       );
     } else {
       allTasks.sort((a, b) {
-        if (a.priority != b.priority) return b.priority.index.compareTo(a.priority.index);
-        if (a.deadline != b.deadline) {
+        final deadlineComp = () {
+          if (a.deadline == b.deadline) return 0;
           if (a.deadline == null) return 1;
           if (b.deadline == null) return -1;
           return a.deadline!.compareTo(b.deadline!);
+        }();
+
+        final priorityComp = b.priority.index.compareTo(a.priority.index);
+
+        if (AppConstants.prioritizeDeadlines) {
+          if (deadlineComp != 0) return deadlineComp;
+          if (priorityComp != 0) return priorityComp;
+        } else {
+          if (priorityComp != 0) return priorityComp;
+          if (deadlineComp != 0) return deadlineComp;
         }
         return b.createdAt.compareTo(a.createdAt);
       });
