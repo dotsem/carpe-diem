@@ -127,7 +127,7 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
     final offset = firstDay.weekday - 1;
     final totalDays = lastDay.day;
     final totalCells = offset + totalDays;
-    final rows = (totalCells + 6) ~/ 7;
+    const rows = 6;
 
     return GridView.builder(
       shrinkWrap: true,
