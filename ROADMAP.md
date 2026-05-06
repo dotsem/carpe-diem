@@ -19,8 +19,8 @@ The focus of this version is adding history and statistics. It will also include
 
 ### History
 
-- [⏳] **History:** View completed tasks.
-- [ ] **Overview:** Get an overview of completed tasks over a certain time period.
+- [✅] **History:** View completed tasks.
+- [⏳] **Overview:** Get an overview of completed tasks over a certain time period.
 
 ### Statistics
 
