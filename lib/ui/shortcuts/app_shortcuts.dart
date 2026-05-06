@@ -35,6 +35,14 @@ class MovePrevIntent extends Intent {
   const MovePrevIntent();
 }
 
+class MoveLeftIntent extends Intent {
+  const MoveLeftIntent();
+}
+
+class MoveRightIntent extends Intent {
+  const MoveRightIntent();
+}
+
 class FilterIntent extends Intent {
   const FilterIntent();
 }
@@ -75,10 +83,18 @@ const taskCardShortcutEntries = [
   ShortcutEntry(key: 'd', description: 'Delete task', category: 'Task (focused)'),
 ];
 
+const projectShortcutEntries = [
+  ShortcutEntry(key: 'h', description: 'Focus Left', category: 'Projects'),
+  ShortcutEntry(key: 'j', description: 'Focus Down', category: 'Projects'),
+  ShortcutEntry(key: 'k', description: 'Focus Up', category: 'Projects'),
+  ShortcutEntry(key: 'l', description: 'Focus Right', category: 'Projects'),
+];
+
 List<ShortcutEntry> get allShortcutEntries => [
   ...globalShortcutEntries,
   ...homeShortcutEntries,
   ...taskCardShortcutEntries,
+  ...projectShortcutEntries,
 ];
 bool isTypingInTextField() {
   final focus = FocusManager.instance.primaryFocus;
