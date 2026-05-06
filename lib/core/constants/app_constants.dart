@@ -7,4 +7,5 @@ class AppConstants {
   static const int taskCompletionDelaySeconds = 5;
   static const bool inheritParentDeadline = true;
   static const bool prioritizeDeadlines = true;
+  static const bool inheritProjectDeadline = false;
 }

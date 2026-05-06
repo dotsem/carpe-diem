@@ -9,10 +9,12 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/repositories/task_repository.dart';
+import 'package:carpe_diem/data/repositories/project_repository.dart';
 import 'package:carpe_diem/core/utils/toast_utils.dart';
 
 class TaskProvider extends ChangeNotifier {
   final TaskRepository _repo = TaskRepository();
+  final ProjectRepository _projectRepo = ProjectRepository();
   final SettingsProvider _settingsProvider;
   final _uuid = const Uuid();
 
@@ -243,6 +245,16 @@ class TaskProvider extends ChangeNotifier {
     bool updateBlockedById = false,
     bool clearBlockedById = false,
   }) async {
+    DateTime? projectDeadline;
+    bool shouldInheritDeadline = false;
+    if (updateProjectId && projectId != null && AppConstants.inheritProjectDeadline) {
+      final project = await _projectRepo.getById(projectId);
+      if (project?.deadline != null) {
+        projectDeadline = project!.deadline;
+        shouldInheritDeadline = true;
+      }
+    }
+
     for (final id in taskIds) {
       Task? task;
       try {
@@ -264,7 +276,7 @@ class TaskProvider extends ChangeNotifier {
           clearScheduledDate: clearScheduledDate,
           projectId: updateProjectId ? projectId : null,
           clearProjectId: clearProjectId,
-          deadline: updateDeadline ? deadline : null,
+          deadline: updateDeadline ? deadline : (shouldInheritDeadline ? projectDeadline : null),
           clearDeadline: clearDeadline,
           blockedById: updateBlockedById ? blockedById : null,
           clearBlockedBy: clearBlockedById,
@@ -334,8 +346,14 @@ class TaskProvider extends ChangeNotifier {
 
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
     final tasks = _parseMarkdown(markdown);
+    DateTime? projectDeadline;
+    if (projectId != null && AppConstants.inheritProjectDeadline) {
+      final project = await _projectRepo.getById(projectId);
+      projectDeadline = project?.deadline;
+    }
+
     for (final task in tasks) {
-      await _repo.insert(task.copyWith(projectId: projectId));
+      await _repo.insert(task.copyWith(projectId: projectId, deadline: projectDeadline));
     }
     await _refreshAll();
     ToastUtils.showSuccess('Imported ${tasks.length} tasks from markdown');

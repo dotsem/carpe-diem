@@ -65,6 +65,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     setState(() {
       _projectTasks = tasks;
       _inheritedLabelIds = project?.labelIds ?? [];
+      if (AppConstants.inheritProjectDeadline && project?.deadline != null) {
+        _deadline = project!.deadline;
+      }
     });
   }
 
