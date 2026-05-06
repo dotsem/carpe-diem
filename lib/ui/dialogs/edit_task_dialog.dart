@@ -61,7 +61,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     super.dispose();
   }
 
-  Future<void> _loadProjectDetails() async {
+  Future<void> _loadProjectDetails({bool overwriteDeadline = false}) async {
     if (_selectedProjectId == null) {
       setState(() {
         _projectTasks = [];
@@ -76,6 +76,9 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     setState(() {
       _projectTasks = tasks;
       _inheritedLabelIds = project?.labelIds ?? [];
+      if (overwriteDeadline && AppConstants.inheritProjectDeadline && project?.deadline != null) {
+        _deadline = project!.deadline;
+      }
     });
   }
 
@@ -146,7 +149,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
                   selectedProjectId: _selectedProjectId,
                   onChanged: (id) {
                     setState(() => _selectedProjectId = id);
-                    _loadProjectDetails();
+                    _loadProjectDetails(overwriteDeadline: true);
                   },
                 ),
               ),
@@ -161,14 +164,6 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
               onChanged: (id) {
                 setState(() {
                   _blockedById = id;
-                  if (AppConstants.inheritParentDeadline && id != null) {
-                    final blocker = _projectTasks.where((t) => t.id == id).firstOrNull;
-                    if (blocker?.deadline != null) {
-                      if (_deadline == null || _deadline!.isBefore(blocker!.deadline!)) {
-                        _deadline = blocker!.deadline;
-                      }
-                    }
-                  }
                 });
               },
             ),
@@ -186,13 +181,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
             label: 'Deadline (Optional)',
             date: _deadline,
             onChanged: (d) => setState(() => _deadline = d),
-            firstDate: () {
-              if (AppConstants.inheritParentDeadline && _blockedById != null) {
-                final blocker = _projectTasks.where((t) => t.id == _blockedById).firstOrNull;
-                if (blocker?.deadline != null) return blocker!.deadline!;
-              }
-              return widget.task.createdAt;
-            }(),
+            firstDate: widget.task.createdAt,
           ),
         ],
       ),

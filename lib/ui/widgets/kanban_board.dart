@@ -1,3 +1,4 @@
+import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/task_hierarchy_node.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/blocker_indicator.dart';
@@ -51,7 +52,27 @@ class _KanbanBoardState extends State<KanbanBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = widget.tasks;
+    final tasks = List<Task>.from(widget.tasks);
+    tasks.sort((a, b) {
+      final deadlineComp = () {
+        if (a.deadline == b.deadline) return 0;
+        if (a.deadline == null) return 1;
+        if (b.deadline == null) return -1;
+        return a.deadline!.compareTo(b.deadline!);
+      }();
+
+      final priorityComp = b.priority.index.compareTo(a.priority.index);
+
+      if (AppConstants.prioritizeDeadlines) {
+        if (deadlineComp != 0) return deadlineComp;
+        if (priorityComp != 0) return priorityComp;
+      } else {
+        if (priorityComp != 0) return priorityComp;
+        if (deadlineComp != 0) return deadlineComp;
+      }
+      return b.createdAt.compareTo(a.createdAt);
+    });
+
     final todo = tasks.where((t) => t.status.isTodo).toList();
     final inProgress = tasks.where((t) => t.status.isInProgress).toList();
     final done = tasks.where((t) => t.status.isDone).toList();
