@@ -65,6 +65,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     setState(() {
       _projectTasks = tasks;
       _inheritedLabelIds = project?.labelIds ?? [];
+      if (AppConstants.inheritProjectDeadline && project?.deadline != null) {
+        _deadline = project!.deadline;
+      }
     });
   }
 
@@ -140,14 +143,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               onChanged: (id) {
                 setState(() {
                   _blockedById = id;
-                  if (AppConstants.inheritParentDeadline && id != null) {
-                    final blocker = _projectTasks.where((t) => t.id == id).firstOrNull;
-                    if (blocker?.deadline != null) {
-                      if (_deadline == null || _deadline!.isBefore(blocker!.deadline!)) {
-                        _deadline = blocker!.deadline;
-                      }
-                    }
-                  }
                 });
               },
             ),
@@ -164,13 +159,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
           DatePickerButton(
             label: 'Deadline',
             date: _deadline,
-            firstDate: () {
-              if (AppConstants.inheritParentDeadline && _blockedById != null) {
-                final blocker = _projectTasks.where((t) => t.id == _blockedById).firstOrNull;
-                if (blocker?.deadline != null) return blocker!.deadline!;
-              }
-              return DateTime.now();
-            }(),
+            firstDate: DateTime.now(),
             onChanged: (d) => setState(() => _deadline = d),
           ),
         ],
