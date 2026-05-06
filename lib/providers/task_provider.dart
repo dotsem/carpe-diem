@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/utils/date_time_utils.dart';
+import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/data/models/task_layout.dart';
 import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
@@ -342,6 +343,24 @@ class TaskProvider extends ChangeNotifier {
     DateTime nextMonday = DateTime.now().next(DateTime.monday);
     await _scheduleTasksForDate(taskIds, nextMonday);
     ToastUtils.showSuccess('Tasks scheduled for next workday');
+  }
+
+  Future<List<Task>> getCompletedTasks(
+    DateTime start,
+    DateTime end, {
+    int? limit,
+    int? offset,
+    TaskFilter? filter,
+  }) async {
+    return _repo.getCompletedInRange(start, end, limit: limit, offset: offset, filter: filter);
+  }
+
+  Future<DateTime> getFirstTaskDate() async {
+    final firstCompleted = await _repo.getFirstCompletedDate();
+    if (firstCompleted != null) return firstCompleted;
+
+    // Fallback to today if no tasks are completed
+    return DateTime.now();
   }
 
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {

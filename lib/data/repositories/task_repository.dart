@@ -2,6 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
+import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/core/constants/app_constants.dart';
 
 class TaskRepository {
@@ -164,6 +165,68 @@ class TaskRepository {
   Future<void> delete(String id) async {
     final db = await _db;
     await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Task>> getCompletedInRange(
+    DateTime start,
+    DateTime end, {
+    int? limit,
+    int? offset,
+    TaskFilter? filter,
+  }) async {
+    final db = await _db;
+    final startStr = start.toIso8601String();
+    final endStr = end.toIso8601String();
+
+    String where = 't.status = ? AND t.completedAt >= ? AND t.completedAt <= ?';
+    List<dynamic> whereArgs = [TaskStatus.done.index, startStr, endStr];
+
+    if (filter != null && !filter.isEmpty) {
+      if (filter.hasPriorityFilter) {
+        where += ' AND t.priority IN (${filter.priorities.map((p) => p.index).join(',')})';
+      }
+      if (filter.hasProjectFilter) {
+        where += ' AND t.projectId IN (${filter.projectIds.map((id) => "'$id'").join(',')})';
+      }
+      if (filter.hasLabelFilter) {
+        where +=
+            ' AND (tl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}) OR pl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}))';
+      }
+    }
+
+    final query = '''
+      SELECT DISTINCT t.* FROM tasks t
+      LEFT JOIN task_labels tl ON t.id = tl.taskId
+      LEFT JOIN project_labels pl ON t.projectId = pl.projectId
+      WHERE $where
+      ORDER BY t.completedAt DESC
+      ${limit != null ? 'LIMIT $limit' : ''}
+      ${offset != null ? 'OFFSET $offset' : ''}
+    ''';
+
+    final maps = await db.rawQuery(query, whereArgs);
+
+    List<Task> tasks = [];
+    for (final map in maps) {
+      final id = map['id'] as String;
+      final labelIds = await _getLabelIds(id);
+      tasks.add(Task.fromMap(map, labelIds: labelIds));
+    }
+    return tasks;
+  }
+
+  Future<DateTime?> getFirstCompletedDate() async {
+    final db = await _db;
+    final maps = await db.query(
+      'tasks',
+      where: 'status = ? AND completedAt IS NOT NULL',
+      whereArgs: [TaskStatus.done.index],
+      orderBy: 'completedAt ASC',
+      limit: 1,
+    );
+
+    if (maps.isEmpty) return null;
+    return DateTime.parse(maps.first['completedAt'] as String);
   }
 
   Future<List<String>> _getLabelIds(String taskId) async {
