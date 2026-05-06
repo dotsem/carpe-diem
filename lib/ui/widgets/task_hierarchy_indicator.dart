@@ -15,8 +15,8 @@ class TaskHierarchyIndicator extends StatelessWidget {
     for (int i = 0; i < depth; i++) {
       current = Container(
         margin: const EdgeInsets.only(left: 8),
-        decoration: const BoxDecoration(
-          border: Border(left: BorderSide(color: AppColors.surfaceLight, width: 2)),
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surfaceVariant, width: 2)),
         ),
         padding: const EdgeInsets.only(left: 8),
         child: current,

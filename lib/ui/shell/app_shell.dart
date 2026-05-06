@@ -69,7 +69,7 @@ class _AppShellState extends State<AppShell> {
       drawer: isMobile
           ? Drawer(
               width: 280,
-              backgroundColor: AppColors.background,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: _SideNav(currentPath: currentPath, isMobile: true),
             )
           : null,
@@ -96,8 +96,8 @@ class _AppShellState extends State<AppShell> {
                           icon: Icon(Icons.menu),
                           onPressed: () => Scaffold.of(context).openDrawer(),
                           style: IconButton.styleFrom(
-                            backgroundColor: AppColors.surface.withValues(alpha: 0.8),
-                            foregroundColor: AppColors.text,
+                            backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                            foregroundColor: Theme.of(context).colorScheme.onSurface,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
@@ -129,7 +129,7 @@ class _SideNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         children: [
           SizedBox(height: 32),
@@ -185,7 +185,7 @@ class _SideNav extends StatelessWidget {
               child: Text(
                 'PROJECTS',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
@@ -304,7 +304,7 @@ class _NavItem extends StatelessWidget {
     return Padding(
       padding: outerPadding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
+        color: isSelected ? AppColors.accent.withOpacity(0.15) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
@@ -315,7 +315,7 @@ class _NavItem extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: iconColor ?? (isSelected ? AppColors.accent : AppColors.textSecondary),
+                  color: iconColor ?? (isSelected ? AppColors.accent : Theme.of(context).colorScheme.onSurfaceVariant),
                   size: iconSize,
                 ),
                 const SizedBox(width: 12),
@@ -324,7 +324,7 @@ class _NavItem extends StatelessWidget {
                     label,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: isSelected ? AppColors.accent : AppColors.textSecondary,
+                      color: isSelected ? AppColors.accent : Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
@@ -333,14 +333,14 @@ class _NavItem extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceLight.withValues(alpha: 0.8),
+                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       shortcutHint!,
 
                       style: TextStyle(
-                        color: AppColors.textSecondary.withValues(alpha: 0.5),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

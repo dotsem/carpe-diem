@@ -88,7 +88,7 @@ class _HistoryItemsViewState extends State<HistoryItemsView> {
               child: Text(
                 _formatDateHeader(date),
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
                   fontSize: 12,
@@ -128,13 +128,13 @@ class _HistoryItemsViewState extends State<HistoryItemsView> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.history, size: 64, color: AppColors.textSecondary.withValues(alpha: 0.1)),
+          Icon(Icons.history, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.1)),
           const SizedBox(height: 16),
-          Text('No completed tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+          Text('No completed tasks found', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16)),
           const SizedBox(height: 8),
           Text(
             'Try selecting a different date range or clearing filters',
-            style: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.5), fontSize: 14),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5), fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ],

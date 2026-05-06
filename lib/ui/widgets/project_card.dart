@@ -38,7 +38,7 @@ class _ProjectCardState extends State<ProjectCard> {
                     : BorderSide(
                         color: widget.project.isActive
                             ? widget.project.priority.color
-                            : AppColors.textSecondary.withValues(alpha: 0.3),
+                            : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
                       ),
               ),
               child: InkWell(
@@ -74,7 +74,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(color: AppColors.surfaceLight, shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceVariant, shape: BoxShape.circle),
                             child: Icon(
                               widget.project.priority.icon,
                               size: 16,
@@ -90,7 +90,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           widget.project.description!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         ),
                       ],
                       if (widget.project.deadline != null) ...[
@@ -137,11 +137,11 @@ class _DeadlineRow extends StatelessWidget {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return Row(
       children: [
-        Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
+        Icon(Icons.timer_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 6),
         Text(
           'Deadline: ${months[deadline.month - 1]} ${deadline.day}',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );

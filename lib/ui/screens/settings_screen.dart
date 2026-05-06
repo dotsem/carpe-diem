@@ -113,7 +113,7 @@ class SettingsScreen extends StatelessWidget {
                   Center(
                     child: Text(
                       'Carpe Diem v0.1.0',
-                      style: TextStyle(color: Colors.grey.withValues(alpha: 0.5), fontSize: 12),
+                      style: TextStyle(color: Colors.grey.withOpacity(0.5), fontSize: 12),
                     ),
                   ),
                   SizedBox(height: 32),

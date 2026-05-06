@@ -83,7 +83,7 @@ class _ProjectPickerState extends State<ProjectPicker> {
     if (widget.projects.isEmpty) {
       return InputDecorator(
         decoration: _inputDecoration().copyWith(hintText: 'No projects yet'),
-        child: Text('No projects yet', style: TextStyle(color: AppColors.textSecondary)),
+        child: Text('No projects yet', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
       );
     }
 
@@ -98,9 +98,9 @@ class _ProjectPickerState extends State<ProjectPicker> {
         setState(() => _selectedIndex = 0);
       },
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(AppColors.surfaceLight),
-        elevation: WidgetStateProperty.all(8),
-        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.surfaceVariant),
+        elevation: MaterialStateProperty.all(8),
+        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       ),
       menuChildren: [
         Padding(
@@ -122,7 +122,7 @@ class _ProjectPickerState extends State<ProjectPicker> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 32),
                                 child: Center(
-                                  child: Text('No results found', style: TextStyle(color: AppColors.textSecondary)),
+                                  child: Text('No results found', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                                 ),
                               ),
                             ]
@@ -207,7 +207,7 @@ class _ProjectPickerState extends State<ProjectPicker> {
         child: Row(
           children: [
             if (project == null)
-              Icon(Icons.block, size: 12, color: AppColors.textSecondary)
+              Icon(Icons.block, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)
             else
               Container(
                 width: 12,
@@ -218,7 +218,7 @@ class _ProjectPickerState extends State<ProjectPicker> {
             Text(
               project?.name ?? 'No project',
               style: TextStyle(
-                color: isHighlighted ? AppColors.accent : AppColors.text,
+                color: isHighlighted ? AppColors.accent : Theme.of(context).colorScheme.onSurface,
                 fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
               ),
             ),

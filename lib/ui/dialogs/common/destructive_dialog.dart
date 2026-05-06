@@ -20,7 +20,7 @@ class DestructiveDialog extends StatelessWidget {
     return SizedDialog(
       title: title,
       submitText: destructiveText,
-      submitStyle: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+      submitStyle: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
       onSubmit: () {
         Navigator.of(context).pop();
         onConfirm();

@@ -67,7 +67,6 @@ class _SizedDialogState extends State<SizedDialog> {
     final dialog = AlertDialog(
       title: widget.title != null ? Text(widget.title!) : null,
       contentPadding: EdgeInsets.zero,
-      backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       content: widget.onSubmit != null
           ? GestureDetector(

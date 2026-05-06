@@ -146,8 +146,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Tab(text: 'Overview'),
               ],
               indicatorColor: AppColors.accent,
-              labelColor: AppColors.text,
-              unselectedLabelColor: AppColors.textSecondary,
+              labelColor: Theme.of(context).colorScheme.onSurface,
+              unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
               indicatorSize: TabBarIndicatorSize.tab,
             ),
             Expanded(
@@ -179,9 +179,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.surfaceLight),
+          border: Border.all(color: Theme.of(context).colorScheme.surfaceVariant),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -190,10 +190,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const SizedBox(width: 8),
             Text(
               '${dateFormat.format(_dateRange.start)} - ${dateFormat.format(_dateRange.end)}',
-              style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+            Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ],
         ),
       ),

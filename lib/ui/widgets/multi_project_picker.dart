@@ -16,7 +16,7 @@ class MultiProjectPicker extends StatelessWidget {
       builder: (context, provider, _) {
         if (provider.projects.isEmpty) {
           return Center(
-            child: Text('No projects available', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            child: Text('No projects available', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
           );
         }
 
@@ -38,11 +38,11 @@ class MultiProjectPicker extends StatelessWidget {
                 onChanged(newSelected);
               },
               avatar: CircleAvatar(backgroundColor: p.color, radius: 4),
-              backgroundColor: AppColors.surfaceLight,
+              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
               selectedColor: p.color.withAlpha(50),
               checkmarkColor: p.color,
               labelStyle: TextStyle(
-                color: isSelected ? p.color : AppColors.textSecondary,
+                color: isSelected ? p.color : Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

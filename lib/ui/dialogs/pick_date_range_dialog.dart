@@ -95,7 +95,7 @@ class _DateTab extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 2),
         borderRadius: BorderRadius.circular(8),
-        color: isSelected ? AppColors.accent.withValues(alpha: 0.1) : AppColors.surfaceLight,
+        color: isSelected ? AppColors.accent.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceVariant,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +105,7 @@ class _DateTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: isSelected ? AppColors.accent : AppColors.textSecondary,
+              color: isSelected ? AppColors.accent : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
@@ -114,7 +114,7 @@ class _DateTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? AppColors.text : AppColors.textSecondary,
+              color: isSelected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],

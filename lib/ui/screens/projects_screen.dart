@@ -254,11 +254,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.folder_open, size: 64, color: AppColors.textSecondary),
+                Icon(Icons.folder_open, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 SizedBox(height: 16),
                 Text(
                   provider.projects.isEmpty ? 'No projects yet' : 'No projects match your filter',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16),
                 ),
                 SizedBox(height: 8),
                 if (provider.projects.isEmpty)
@@ -296,7 +296,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 Text(
                   'ARCHIVED',
                   style: TextStyle(
-                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,

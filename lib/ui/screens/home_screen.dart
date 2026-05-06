@@ -238,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 duration: const Duration(milliseconds: 200),
                 width: 52,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent : AppColors.surface,
+                  color: isSelected ? AppColors.accent : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -246,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       dayOfWeek,
-                      style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : AppColors.textSecondary),
+                      style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : AppColors.text,
+                        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -324,11 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
+          Icon(Icons.check_circle_outline, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
           SizedBox(height: 16),
           Text(
             _isToday ? 'No tasks for today' : 'No tasks scheduled',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16),
           ),
           SizedBox(height: 8),
           TextButton(onPressed: () => _showAddTask(context), child: Text('Add your first task')),
@@ -345,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (buttonContext) {
             return IconButton(
               icon: Icon(Icons.more_vert, size: 18),
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
                 final localPosition = Offset.zero;

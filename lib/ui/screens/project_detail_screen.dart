@@ -168,7 +168,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
         if (project == null) {
           return Center(
-            child: Text("Project not found", style: TextStyle(color: AppColors.textSecondary)),
+            child: Text("Project not found", style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           );
         }
 
@@ -224,12 +224,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               autofocus: true,
               debugLabel: 'ProjectDetailScreenMainFocus',
               child: Scaffold(
-                backgroundColor: AppColors.background,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _header(context, project),
-                    Divider(color: AppColors.surfaceLight, height: 1),
+                    Divider(color: Theme.of(context).colorScheme.surfaceVariant, height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: FuzzySearchBar(
@@ -253,7 +253,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         onClearFilter: () => filterProvider.clearFilter(),
                       ),
                     ),
-                    const Divider(color: AppColors.surfaceLight, height: 1),
+                    Divider(color: Theme.of(context).colorScheme.surfaceVariant, height: 1),
                     Expanded(
                       child: _isLoading
                           ? Center(child: CircularProgressIndicator())
@@ -277,7 +277,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                   emptyPlaceholder: Center(
                                     child: Text(
                                       "No tasks in this project",
-                                      style: TextStyle(color: AppColors.textSecondary),
+                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                                     ),
                                   ),
                                   onOrderedIdsChanged: (ids) {
@@ -357,12 +357,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       Expanded(
                         child: Text(
                           project.name,
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
+                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                         ),
                       ),
                       if (_selectedTaskIds.isEmpty) ...[
                         IconButton(
-                          icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
+                          icon: Icon(Icons.edit_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant),
                           onPressed: () => _showEditProject(context, project),
                           tooltip: 'Edit Project',
                         ),
@@ -376,7 +376,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         FilledButton.icon(
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.success,
-                            foregroundColor: AppColors.text,
+                            foregroundColor: Theme.of(context).colorScheme.onSurface,
                           ),
                           onPressed: () {
                             context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
@@ -430,7 +430,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     project.description!,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+                    style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant, height: 1.5),
                   ),
                 ],
               ],
@@ -456,7 +456,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           builder: (buttonContext) {
             return IconButton(
               icon: Icon(Icons.more_vert, size: 18),
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
                 final localPosition = Offset.zero;
@@ -526,11 +526,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       builder: (ctx) => AlertDialog(
         title: Text('Confirm Deletion'),
         content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
-        backgroundColor: AppColors.surfaceLight,
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text('Cancel')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Theme.of(context).colorScheme.onSurface),
             onPressed: () async {
               await context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds);
               if (!mounted) return;

@@ -173,7 +173,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.success,
-                        foregroundColor: AppColors.text,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
                       ),
                       onPressed: () {
                         context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
@@ -295,7 +295,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.filter_list_alt, size: 64, color: AppColors.textSecondary),
+                      Icon(Icons.filter_list_alt, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       SizedBox(height: 16),
                       Text('No items found'),
                       SizedBox(height: 8),
@@ -314,9 +314,9 @@ class _BacklogScreenState extends State<BacklogScreen> {
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.inbox_rounded, size: 64, color: AppColors.textSecondary),
+                      Icon(Icons.inbox_rounded, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       SizedBox(height: 16),
-                      Text('No backlog tasks', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+                      Text('No backlog tasks', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16)),
                       SizedBox(height: 8),
                       TextButton(onPressed: () => _showAddTask(context), child: Text('Add a task')),
                     ],
@@ -404,7 +404,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
                 'Completed',
                 style: Theme.of(
                   context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               SizedBox(height: 8),
               ...completedHierarchical.map((n) => buildNode(n)),
@@ -423,7 +423,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
           builder: (buttonContext) {
             return IconButton(
               icon: Icon(Icons.more_vert, size: 18),
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
                 final localPosition = Offset.zero;
@@ -530,13 +530,13 @@ class _BacklogScreenState extends State<BacklogScreen> {
       builder: (ctx) => AlertDialog(
         title: Text('Confirm Deletion'),
         content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
-        backgroundColor: AppColors.surfaceLight,
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
         titleTextStyle: Theme.of(context).textTheme.titleLarge,
         contentTextStyle: Theme.of(context).textTheme.bodyMedium,
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text('Cancel')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Theme.of(context).colorScheme.onSurface),
             onPressed: () async {
               await context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds);
               if (!mounted) return;

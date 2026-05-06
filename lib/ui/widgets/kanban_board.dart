@@ -115,7 +115,7 @@ class _KanbanBoardState extends State<KanbanBoard> {
                   width: responsiveColumnWidth,
                   child: _KanbanColumn(
                     title: 'Todo',
-                    titleColor: AppColors.text,
+                    titleColor: Theme.of(context).colorScheme.onSurface,
                     tasks: todo,
                     acceptedStatus: TaskStatus.todo,
                     projectProvider: widget.projectProvider,
@@ -260,9 +260,9 @@ class _KanbanColumn extends StatelessWidget {
         child: Container(
           width: 24,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.surfaceLight),
+            border: Border.all(color: Theme.of(context).colorScheme.surfaceVariant),
           ),
           child: Column(
             children: [
@@ -270,7 +270,7 @@ class _KanbanColumn extends StatelessWidget {
               SmallChip(
                 padding: EdgeInsets.all(2.0),
                 borderRadius: 10,
-                color: titleColor.withValues(alpha: 0.15),
+                color: titleColor.withOpacity(0.15),
                 child: Text(
                   '${tasks.length}',
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: titleColor),
@@ -286,7 +286,7 @@ class _KanbanColumn extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
-                    color: titleColor.withValues(alpha: 0.7),
+                    color: titleColor.withOpacity(0.7),
                   ),
                 ),
               ),
@@ -301,10 +301,10 @@ class _KanbanColumn extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: isHighlighted ? titleColor.withValues(alpha: 0.1) : AppColors.background,
+        color: isHighlighted ? titleColor.withOpacity(0.1) : Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighlighted ? titleColor.withValues(alpha: 0.4) : AppColors.surfaceLight,
+          color: isHighlighted ? titleColor.withOpacity(0.4) : Theme.of(context).colorScheme.surfaceVariant,
           width: isHighlighted ? 2 : 1,
         ),
       ),
@@ -325,7 +325,7 @@ class _KanbanColumn extends StatelessWidget {
                 const SizedBox(width: 8),
                 SmallChip(
                   borderRadius: 10,
-                  color: titleColor.withValues(alpha: 0.15),
+                  color: titleColor.withOpacity(0.15),
                   child: Text(
                     '${tasks.length}',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: titleColor),
@@ -339,7 +339,7 @@ class _KanbanColumn extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     visualDensity: VisualDensity.compact,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ],
               ],
@@ -351,7 +351,7 @@ class _KanbanColumn extends StatelessWidget {
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text('Drop tasks here', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      child: Text('Drop tasks here', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                     ),
                   )
                 : Builder(
@@ -440,8 +440,8 @@ class _KanbanCard extends StatelessWidget {
         child: Container(
           width: 250,
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-          child: Text(task.title, style: TextStyle(color: AppColors.text, fontSize: 14)),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(8)),
+          child: Text(task.title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
         ),
       ),
       childWhenDragging: Opacity(

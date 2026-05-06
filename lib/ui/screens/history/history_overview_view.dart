@@ -33,7 +33,7 @@ class HistoryOverviewView extends StatelessWidget {
                 label: 'Created',
                 value: overview!.totalCreated.toString(),
                 icon: Icons.add_task,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 12),
@@ -60,7 +60,7 @@ class HistoryOverviewView extends StatelessWidget {
         Text(
           'PROJECT BREAKDOWN',
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
             fontSize: 12,
@@ -81,7 +81,7 @@ class HistoryOverviewView extends StatelessWidget {
         Padding(
           padding: EdgeInsets.only(top: 16.0),
           child: Center(
-            child: Text('No project data', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('No project data', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
         ),
       ];
@@ -92,7 +92,7 @@ class HistoryOverviewView extends StatelessWidget {
     return sortedProjects.map((entry) {
       final project = entry.key != 'none' ? projectProvider.getById(entry.key) : null;
       final projectName = project?.name ?? 'No Project';
-      final projectColor = project != null ? project.color : AppColors.textSecondary;
+      final projectColor = project != null ? project.color : Theme.of(context).colorScheme.onSurfaceVariant;
 
       return ProjectBreakdownItem(
         projectName: projectName,

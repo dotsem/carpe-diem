@@ -32,7 +32,7 @@ class ProjectColorPicker extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: _presetColors.map((color) {
-        final isSelected = color.toARGB32() == selected.toARGB32();
+        final isSelected = color.value == selected.value;
         return GestureDetector(
           onTap: () => onChanged(color),
           child: AnimatedContainer(
@@ -42,7 +42,7 @@ class ProjectColorPicker extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              border: isSelected ? Border.all(color: AppColors.text, width: 2.5) : null,
+              border: isSelected ? Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2.5) : null,
             ),
             child: isSelected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
           ),

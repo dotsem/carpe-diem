@@ -110,9 +110,9 @@ class _BlockerPickerState extends State<BlockerPicker> {
         setState(() => _selectedIndex = 0);
       },
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(AppColors.surfaceLight),
-        elevation: WidgetStateProperty.all(8),
-        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.surfaceVariant),
+        elevation: MaterialStateProperty.all(8),
+        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       ),
       menuChildren: [
         Padding(
@@ -134,7 +134,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 32),
                                 child: Center(
-                                  child: Text('No tasks available', style: TextStyle(color: AppColors.textSecondary)),
+                                  child: Text('No tasks available', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                                 ),
                               ),
                             ]
@@ -163,7 +163,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
                 Icon(
                   selectedTask != null ? Icons.lock : Icons.lock_open_outlined,
                   size: 16,
-                  color: selectedTask != null ? AppColors.accent : AppColors.textSecondary,
+                  color: selectedTask != null ? AppColors.accent : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 8),
                 Expanded(child: Text(selectedTask?.title ?? 'No blocker', overflow: TextOverflow.ellipsis)),
@@ -212,7 +212,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
             Icon(
               task == null ? Icons.block : Icons.task_alt,
               size: 14,
-              color: task?.priority.color ?? AppColors.textSecondary,
+              color: task?.priority.color ?? Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -220,7 +220,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
                 task?.title ?? 'No blocker',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: isHighlighted ? AppColors.accent : AppColors.text,
+                  color: isHighlighted ? AppColors.accent : Theme.of(context).colorScheme.onSurface,
                   fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
                 ),
               ),

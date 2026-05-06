@@ -276,7 +276,7 @@ class _TaskListViewState extends State<TaskListView> {
             const SizedBox(height: 20),
           ],
           if (todoCategory.isNotEmpty) ...[
-            widget._buildHeader(context, 'Todo', amount: todoCategory.length, color: AppColors.textSecondary),
+            widget._buildHeader(context, 'Todo', amount: todoCategory.length, color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 8),
             ...buildHierarchy(todoCategory, (_) => false),
           ],
@@ -285,13 +285,13 @@ class _TaskListViewState extends State<TaskListView> {
             widget._buildHeader(
               context,
               'Done',
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               amount: doneCategory.length,
               onTap: () => setState(() => _isDoneExpanded = !_isDoneExpanded),
               trailing: AnimatedRotation(
                 duration: const Duration(milliseconds: 200),
                 turns: _isDoneExpanded ? 0.5 : 0,
-                child: Icon(Icons.expand_more, color: AppColors.textSecondary, size: 20),
+                child: Icon(Icons.expand_more, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20),
               ),
             ),
             const SizedBox(height: 8),
@@ -326,7 +326,7 @@ extension TaskListViewPrivate on TaskListView {
         ),
         const SizedBox(width: 8),
         SmallChip(
-          color: color?.withValues(alpha: 0.15) ?? Colors.transparent,
+          color: color?.withOpacity(0.15) ?? Colors.transparent,
           borderRadius: 10,
           child: Text(
             '${amount ?? tasks.length}',
@@ -402,9 +402,9 @@ extension TaskListViewPrivate on TaskListView {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
+          Icon(Icons.check_circle_outline, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: 16),
-          Text('No tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+          Text('No tasks found', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16)),
         ],
       ),
     );

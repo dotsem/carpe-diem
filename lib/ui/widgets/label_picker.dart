@@ -46,10 +46,10 @@ class LabelPicker extends StatelessWidget {
                         onSelected(newIds);
                       },
                 avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
-                backgroundColor: AppColors.surfaceLight,
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
                 selectedColor: isInherited ? label.color.withAlpha(100) : label.color.withAlpha(200),
                 checkmarkColor: Colors.white,
-                labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
+                labelStyle: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant),
               );
 
               return Builder(
@@ -71,7 +71,7 @@ class LabelPicker extends StatelessWidget {
                 label: const Text('New Label'),
                 avatar: const Icon(Icons.add, size: 16),
                 onPressed: () => _showAddLabel(context),
-                backgroundColor: AppColors.surfaceLight,
+                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
               ),
           ],
         );
