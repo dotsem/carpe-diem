@@ -137,15 +137,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ScreenHeader(
-              title: 'History',
-              actions: [_buildDateRangeButton()],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
-            ),
-            const SizedBox(height: 16),
+            ScreenHeader(title: 'History', actions: [_buildDateRangeButton()]),
+            FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
+
             const TabBar(
               tabs: [
                 Tab(text: 'Items'),
