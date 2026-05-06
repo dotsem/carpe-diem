@@ -20,16 +20,16 @@ The focus of this version is adding history and statistics. It will also include
 ### History
 
 - [✅] **History:** View completed tasks.
-- [⏳] **Overview:** Get an overview of completed tasks over a certain time period.
+- [✅] **Overview:** Get an overview of completed tasks over a certain time period.
 
 ### Statistics
 
-- [ ] **Statistics:** Get statistics about tasks.
+- [✅] **Statistics:** Get statistics about tasks.
 
 ### Personalization
 
-- [ ] **Dynamic Theming:** Manual toggle and system-based dark mode.
-- [ ] **Personalization:** More customizability of the app.
+- [⏳] **Dynamic Theming:** Manual toggle and system-based dark mode.
+- [⏳] **Personalization:** More customizability of the app.
 
 ---
 
