@@ -5,6 +5,7 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/pick_date_range_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
+import 'package:carpe_diem/ui/widgets/screen_header.dart';
 import 'package:carpe_diem/ui/screens/history/history_items_view.dart';
 import 'package:carpe_diem/ui/screens/history/history_overview_view.dart';
 import 'package:flutter/material.dart';
@@ -136,22 +137,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Text(
-                    'History',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(color: AppColors.text, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  _buildDateRangeButton(),
-                ],
-              ),
+            ScreenHeader(
+              title: 'History',
+              actions: [_buildDateRangeButton()],
             ),
-            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),

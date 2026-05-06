@@ -17,6 +17,7 @@ import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/filter_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_list_view.dart';
+import 'package:carpe_diem/ui/widgets/screen_header.dart';
 import 'package:carpe_diem/ui/dialogs/add_task_dialog.dart';
 import 'package:carpe_diem/ui/shortcuts/app_shortcuts.dart';
 
@@ -166,7 +167,27 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _header(context),
+              ScreenHeader(
+                title: _isToday ? 'Today' : _dateFormat.format(_selectedDate),
+                subtitle: _isToday
+                    ? _dateFormat.format(_selectedDate)
+                    : '${_normalizedSelected.difference(DateTime(_today.year, _today.month, _today.day)).inDays} days from now',
+                actions: [
+                  Consumer<TaskProvider>(
+                    builder: (context, provider, _) => IconButton(
+                      onPressed: () => provider.toggleLayoutMode(),
+                      icon: Icon(provider.layoutMode == TaskLayout.list ? Icons.view_kanban : Icons.view_list),
+                      tooltip: provider.layoutMode == TaskLayout.list ? 'Kanban view' : 'List view',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: () => _showAddTask(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Task'),
+                  ),
+                ],
+              ),
               _daySelector(),
               Consumer<FilterProvider>(
                 builder: (context, filterProvider, _) => FilterBar(
@@ -184,44 +205,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _header(BuildContext context) {
-    final provider = context.watch<TaskProvider>();
-    return Padding(
-      padding: const EdgeInsets.only(top: 28),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _isToday ? 'Today' : _dateFormat.format(_selectedDate),
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _isToday
-                    ? _dateFormat.format(_selectedDate)
-                    : '${_normalizedSelected.difference(DateTime(_today.year, _today.month, _today.day)).inDays} days from now',
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ],
-          ),
-          const Spacer(),
-          IconButton(
-            onPressed: () => provider.toggleLayoutMode(),
-            icon: Icon(provider.layoutMode == TaskLayout.list ? Icons.view_kanban : Icons.view_list),
-            tooltip: provider.layoutMode == TaskLayout.list ? 'Kanban view' : 'List view',
-          ),
-          const SizedBox(width: 8),
-          FilledButton.icon(
-            onPressed: () => _showAddTask(context),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Task'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _changeDay(int delta) {
     final days = _days;
