@@ -27,11 +27,11 @@ class ProjectBreakdownItem extends StatelessWidget {
             children: [
               Text(
                 projectName,
-                style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
+                style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
               ),
               Text(
                 '$taskCount tasks',
-                style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
               ),
             ],
           ),

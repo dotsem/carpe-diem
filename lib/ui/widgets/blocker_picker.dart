@@ -131,7 +131,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
                       mainAxisSize: MainAxisSize.min,
                       children: _selectableItems.isEmpty
                           ? [
-                              const Padding(
+                              Padding(
                                 padding: EdgeInsets.symmetric(vertical: 32),
                                 child: Center(
                                   child: Text('No tasks available', style: TextStyle(color: AppColors.textSecondary)),

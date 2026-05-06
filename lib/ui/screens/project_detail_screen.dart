@@ -167,7 +167,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         final project = projectProvider.getById(widget.projectId);
 
         if (project == null) {
-          return const Center(
+          return Center(
             child: Text("Project not found", style: TextStyle(color: AppColors.textSecondary)),
           );
         }
@@ -229,7 +229,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _header(context, project),
-                    const Divider(color: AppColors.surfaceLight, height: 1),
+                    Divider(color: AppColors.surfaceLight, height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: FuzzySearchBar(
@@ -256,7 +256,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     const Divider(color: AppColors.surfaceLight, height: 1),
                     Expanded(
                       child: _isLoading
-                          ? const Center(child: CircularProgressIndicator())
+                          ? Center(child: CircularProgressIndicator())
                           : Builder(
                               builder: (context) {
                                 final filter = context.watch<FilterProvider>().filter.limitTo(projects: false);
@@ -274,7 +274,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                     }
                                   },
                                   trailingBuilder: (ctx, task) => _taskTrailing(ctx, task),
-                                  emptyPlaceholder: const Center(
+                                  emptyPlaceholder: Center(
                                     child: Text(
                                       "No tasks in this project",
                                       style: TextStyle(color: AppColors.textSecondary),
@@ -321,7 +321,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           backgroundColor: project.color,
                           elevation: 0,
                           highlightElevation: 0,
-                          child: const Icon(Icons.add, color: Colors.white),
+                          child: Icon(Icons.add, color: Colors.white),
                         ),
                       )
                     : null,
@@ -357,21 +357,21 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       Expanded(
                         child: Text(
                           project.name,
-                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
+                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text),
                         ),
                       ),
                       if (_selectedTaskIds.isEmpty) ...[
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary),
+                          icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
                           onPressed: () => _showEditProject(context, project),
                           tooltip: 'Edit Project',
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                          icon: Icon(Icons.delete_outline, color: AppColors.error),
                           onPressed: () => _showDeleteProject(context, project),
                           tooltip: 'Delete Project',
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                       ] else ...[
                         FilledButton.icon(
                           style: FilledButton.styleFrom(
@@ -383,10 +383,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                               setState(() => _selectedTaskIds.clear());
                             });
                           },
-                          label: const Text('Plan for today'),
-                          icon: const Icon(Icons.calendar_today_rounded),
+                          label: Text('Plan for today'),
+                          icon: Icon(Icons.calendar_today_rounded),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                       ],
                       BulkActionMenu(
                         options: [
@@ -424,13 +424,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   ],
                 ),
                 if (project.description?.isNotEmpty == true) ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   // TODO: add expand button
                   Text(
                     project.description!,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
+                    style: TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.5),
                   ),
                 ],
               ],
@@ -455,11 +455,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         Builder(
           builder: (buttonContext) {
             return IconButton(
-              icon: const Icon(Icons.more_vert, size: 18),
+              icon: Icon(Icons.more_vert, size: 18),
               color: AppColors.textSecondary,
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
-                const localPosition = Offset.zero;
+                final localPosition = Offset.zero;
                 if (task.scheduledDate != null) {
                   showTaskCardContextMenu(context, task, localPosition, renderBox);
                 } else {
@@ -524,11 +524,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Deletion'),
+        title: Text('Confirm Deletion'),
         content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
         backgroundColor: AppColors.surfaceLight,
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
             onPressed: () async {
@@ -539,7 +539,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 Navigator.of(ctx).pop();
               }
             },
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),

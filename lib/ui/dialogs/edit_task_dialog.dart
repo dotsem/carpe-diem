@@ -1,8 +1,8 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:carpe_diem/ui/widgets/blocker_picker.dart';
@@ -73,16 +73,17 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     final tasks = await context.read<TaskProvider>().getTasksForProject(_selectedProjectId!);
     if (!mounted) return;
     final project = context.read<ProjectProvider>().getById(_selectedProjectId!);
+    final settings = context.read<SettingsProvider>();
     setState(() {
       _projectTasks = tasks;
       _inheritedLabelIds = project?.labelIds ?? [];
-      if (overwriteDeadline && AppConstants.inheritProjectDeadline && project?.deadline != null) {
+      if (overwriteDeadline && settings.inheritProjectDeadline && project?.deadline != null) {
         _deadline = project!.deadline;
       }
     });
   }
 
-  DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
+  DateTime get _maxDate => DateTime.now().add(Duration(days: context.read<SettingsProvider>().maxPlanningDays));
 
   @override
   Widget build(BuildContext context) {
@@ -118,13 +119,13 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
             controller: _nameController,
             autofocus: true,
             decoration: const InputDecoration(hintText: 'Task name'),
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _descController,
             decoration: const InputDecoration(hintText: 'Description (optional)'),
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: AppColors.text),
             maxLines: 2,
           ),
           const SizedBox(height: 16),

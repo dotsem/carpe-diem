@@ -90,7 +90,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           widget.project.description!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                         ),
                       ],
                       if (widget.project.deadline != null) ...[
@@ -137,11 +137,11 @@ class _DeadlineRow extends StatelessWidget {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return Row(
       children: [
-        const Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
+        Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
         const SizedBox(width: 6),
         Text(
           'Deadline: ${months[deadline.month - 1]} ${deadline.day}',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
       ],
     );

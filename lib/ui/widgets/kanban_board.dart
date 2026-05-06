@@ -1,5 +1,5 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/task_hierarchy_node.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/blocker_indicator.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
@@ -62,8 +62,9 @@ class _KanbanBoardState extends State<KanbanBoard> {
       }();
 
       final priorityComp = b.priority.index.compareTo(a.priority.index);
+      final settings = context.read<SettingsProvider>();
 
-      if (AppConstants.prioritizeDeadlines) {
+      if (settings.prioritizeDeadlines) {
         if (deadlineComp != 0) return deadlineComp;
         if (priorityComp != 0) return priorityComp;
       } else {
@@ -440,7 +441,7 @@ class _KanbanCard extends StatelessWidget {
           width: 250,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-          child: Text(task.title, style: const TextStyle(color: AppColors.text, fontSize: 14)),
+          child: Text(task.title, style: TextStyle(color: AppColors.text, fontSize: 14)),
         ),
       ),
       childWhenDragging: Opacity(

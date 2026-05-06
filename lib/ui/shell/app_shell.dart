@@ -46,6 +46,8 @@ class _AppShellState extends State<AppShell> {
       titleProvider.updateTitle(subtitle: 'Backlog');
     } else if (path == '/projects') {
       titleProvider.updateTitle(subtitle: 'All Projects');
+    } else if (path == '/settings') {
+      titleProvider.updateTitle(subtitle: 'Settings');
     } else if (path.startsWith('/projects/')) {
       // Handled by ProjectDetailScreen to include project name
     } else {
@@ -76,7 +78,7 @@ class _AppShellState extends State<AppShell> {
           children: [
             if (!isMobile) ...[
               SizedBox(width: 220, child: _SideNav(currentPath: currentPath, isMobile: false)),
-              const VerticalDivider(width: 1),
+              VerticalDivider(width: 1),
             ],
             Expanded(
               child: Stack(
@@ -91,7 +93,7 @@ class _AppShellState extends State<AppShell> {
                       left: 12,
                       child: Builder(
                         builder: (context) => IconButton(
-                          icon: const Icon(Icons.menu),
+                          icon: Icon(Icons.menu),
                           onPressed: () => Scaffold.of(context).openDrawer(),
                           style: IconButton.styleFrom(
                             backgroundColor: AppColors.surface.withValues(alpha: 0.8),
@@ -130,13 +132,13 @@ class _SideNav extends StatelessWidget {
       color: AppColors.background,
       child: Column(
         children: [
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 Image.asset('assets/images/logo.png', width: 32),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   'Carpe Diem',
                   style: Theme.of(
@@ -146,7 +148,7 @@ class _SideNav extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: 40),
           _NavItem(
             icon: Icons.today_rounded,
             label: 'Today',
@@ -176,7 +178,7 @@ class _SideNav extends StatelessWidget {
             onTap: () => _navigateTo(context, '/projects'),
           ),
           const SizedBox(height: 16),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Align(
               alignment: Alignment.centerLeft,
@@ -209,14 +211,14 @@ class _SideNav extends StatelessWidget {
 
               if (projects.isEmpty) {
                 return ElevatedButton(
-                  onPressed: () => showDialog(context: context, builder: (context) => const AddProjectDialog()),
+                  onPressed: () => showDialog(context: context, builder: (context) => AddProjectDialog()),
                   child: Text('Create a project'),
                 );
               }
 
               return Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: EdgeInsets.symmetric(vertical: 4),
                   itemCount: priorities.length,
                   itemBuilder: (context, pIndex) {
                     final priority = priorities[pIndex];
@@ -227,7 +229,7 @@ class _SideNav extends StatelessWidget {
                       child: Stack(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(left: 4),
+                            padding: EdgeInsets.only(left: 4),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: groupProjects.map((project) {
@@ -239,7 +241,7 @@ class _SideNav extends StatelessWidget {
                                   label: project.name,
                                   isSelected: isSelected,
                                   onTap: () => _navigateTo(context, '/projects/${project.id}'),
-                                  outerPadding: const EdgeInsets.only(right: 12, top: 2, bottom: 2),
+                                  outerPadding: EdgeInsets.only(right: 12, top: 2, bottom: 2),
                                 );
                               }).toList(),
                             ),
@@ -261,6 +263,15 @@ class _SideNav extends StatelessWidget {
               );
             },
           ),
+          Divider(height: 1),
+          _NavItem(
+            icon: Icons.settings_outlined,
+            label: 'Settings',
+            isSelected: currentPath == '/settings',
+            onTap: () => _navigateTo(context, '/settings'),
+            outerPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          SizedBox(height: 8),
         ],
       ),
     );
@@ -291,7 +302,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: outerPadding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: outerPadding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
         color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
@@ -299,7 +310,7 @@ class _NavItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
                 Icon(
@@ -320,7 +331,7 @@ class _NavItem extends StatelessWidget {
                 ),
                 if (shortcutHint != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLight.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(4),

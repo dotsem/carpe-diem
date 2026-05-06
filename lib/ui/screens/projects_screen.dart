@@ -193,8 +193,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 actions: [
                   FilledButton.icon(
                     onPressed: () => _showAddProject(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('New Project'),
+                    icon: Icon(Icons.add),
+                    label: Text('New Project'),
                   ),
                 ],
               ),
@@ -221,7 +221,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   onClearFilter: () => filterProvider.clearFilter(),
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               Expanded(child: _projectGrid()),
             ],
           ),
@@ -234,7 +234,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     return Consumer<ProjectProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         final filteredBySearch = provider.projects.where((p) {
@@ -255,14 +255,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.folder_open, size: 64, color: AppColors.textSecondary),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   provider.projects.isEmpty ? 'No projects yet' : 'No projects match your filter',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 if (provider.projects.isEmpty)
-                  TextButton(onPressed: () => _showAddProject(context), child: const Text('Create your first project')),
+                  TextButton(onPressed: () => _showAddProject(context), child: Text('Create your first project')),
               ],
             ),
           );
@@ -302,7 +302,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Wrap(
                   spacing: 16,
                   runSpacing: 16,
@@ -323,7 +323,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     showDialog(
       context: context,
       builder: (_) =>
-          ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const AddProjectDialog()),
+          ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: AddProjectDialog()),
     );
   }
 

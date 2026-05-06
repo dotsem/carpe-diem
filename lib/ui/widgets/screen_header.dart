@@ -33,7 +33,7 @@ class ScreenHeader extends StatelessWidget {
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   if (subtitle is String)
-                    Text(subtitle as String, style: const TextStyle(color: AppColors.textSecondary))
+                    Text(subtitle as String, style: TextStyle(color: AppColors.textSecondary))
                   else if (subtitle is Widget)
                     subtitle as Widget,
                 ],

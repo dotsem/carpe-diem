@@ -13,6 +13,7 @@ import 'package:carpe_diem/routes/app_router.dart';
 import 'package:carpe_diem/providers/window_title_provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,16 +48,36 @@ class CarpeDiemApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => WindowTitleProvider()),
       ],
-      child: ToastificationWrapper(
-        child: MaterialApp.router(
-          title: AppConstants.appName,
-          debugShowCheckedModeBanner: true,
-          theme: AppTheme.dark,
-          routerConfig: appRouter,
-          localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          supportedLocales: const [Locale('en', 'US'), Locale('en', 'GB')],
-          locale: AppConstants.firstDayOfWeek == DateTime.monday ? const Locale('en', 'GB') : const Locale('en', 'US'),
-        ),
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          return DynamicColorBuilder(
+            builder: (lightDynamic, darkDynamic) {
+              ColorScheme? lightColorScheme;
+              ColorScheme? darkColorScheme;
+
+              if (settings.useSystemColor && lightDynamic != null && darkDynamic != null) {
+                lightColorScheme = lightDynamic.harmonized();
+                darkColorScheme = darkDynamic.harmonized();
+              }
+
+              return ToastificationWrapper(
+                child: MaterialApp.router(
+                  title: AppConstants.appName,
+                  debugShowCheckedModeBanner: false,
+                  theme: AppTheme.light(lightColorScheme),
+                  darkTheme: AppTheme.dark(darkColorScheme),
+                  themeMode: settings.themeMode,
+                  routerConfig: appRouter,
+                  localizationsDelegates: GlobalMaterialLocalizations.delegates,
+                  supportedLocales: const [Locale('en', 'US'), Locale('en', 'GB')],
+                  locale: settings.firstDayOfWeek == DateTime.monday
+                      ? const Locale('en', 'GB')
+                      : const Locale('en', 'US'),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

@@ -140,7 +140,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ScreenHeader(title: 'History', actions: [_buildDateRangeButton()]),
             FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
 
-            const TabBar(
+            TabBar(
               tabs: [
                 Tab(text: 'Items'),
                 Tab(text: 'Overview'),
@@ -190,10 +190,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const SizedBox(width: 8),
             Text(
               '${dateFormat.format(_dateRange.start)} - ${dateFormat.format(_dateRange.end)}',
-              style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
+              style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+            Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
           ],
         ),
       ),

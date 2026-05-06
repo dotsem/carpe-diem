@@ -23,6 +23,7 @@ dependencies:
   fuzzy: ^0.5.1
   toastification: ^3.0.3
   window_manager: ^0.4.3
+  dynamic_color: ^1.8.1
 
 dev_dependencies:
   flutter_test:

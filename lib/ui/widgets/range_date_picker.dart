@@ -82,17 +82,17 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.chevron_left, color: AppColors.textSecondary),
+          icon: Icon(Icons.chevron_left, color: AppColors.textSecondary),
           onPressed: _viewMonth.isAfter(widget.firstDate.startOfMonth())
               ? () => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month - 1))
               : null,
         ),
         Text(
           title,
-          style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16),
         ),
         IconButton(
-          icon: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+          icon: Icon(Icons.chevron_right, color: AppColors.textSecondary),
           onPressed: _viewMonth.isBefore(widget.lastDate.startOfMonth())
               ? () => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + 1))
               : null,
@@ -111,7 +111,7 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
               child: Center(
                 child: Text(
                   d,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

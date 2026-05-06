@@ -83,7 +83,7 @@ class ShortcutsHelpOverlayState extends State<ShortcutsHelpOverlay> with SingleT
               const Spacer(),
               _KeyBadge(label: 'Esc'),
               const SizedBox(width: 8),
-              const Text('to close', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              Text('to close', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             ],
           ),
           const SizedBox(height: 24),
@@ -126,7 +126,7 @@ class ShortcutsHelpOverlayState extends State<ShortcutsHelpOverlay> with SingleT
             _KeyBadge(label: entry.key),
             const SizedBox(width: 12),
             Flexible(
-              child: Text(entry.description, style: const TextStyle(color: AppColors.text, fontSize: 14)),
+              child: Text(entry.description, style: TextStyle(color: AppColors.text, fontSize: 14)),
             ),
           ],
         ),

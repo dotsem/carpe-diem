@@ -4,14 +4,13 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/data/models/history_overview.dart';
-import 'package:carpe_diem/core/constants/app_constants.dart';
 
 class TaskRepository {
   Future<Database> get _db => DatabaseHelper.database;
 
-  Future<List<Task>> getAll() async {
+  Future<List<Task>> getAll({bool prioritizeDeadlines = true}) async {
     final db = await _db;
-    final maps = await db.query('tasks', orderBy: _getOrderBy());
+    final maps = await db.query('tasks', orderBy: _getOrderBy(prioritizeDeadlines: prioritizeDeadlines));
 
     List<Task> tasks = [];
     for (final map in maps) {
@@ -43,7 +42,7 @@ class TaskRepository {
     return tasks;
   }
 
-  Future<List<Task>> getByDate(DateTime date) async {
+  Future<List<Task>> getByDate(DateTime date, {bool prioritizeDeadlines = true}) async {
     final db = await _db;
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
@@ -53,7 +52,7 @@ class TaskRepository {
       'tasks',
       where: '(scheduledDate = ?) OR (completedAt >= ? AND completedAt < ?)',
       whereArgs: [scheduledDateStr, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
-      orderBy: _getOrderBy(),
+      orderBy: _getOrderBy(prioritizeDeadlines: prioritizeDeadlines),
     );
 
     List<Task> tasks = [];
@@ -84,12 +83,12 @@ class TaskRepository {
     return tasks;
   }
 
-  Future<List<Task>> getUnscheduled() async {
+  Future<List<Task>> getUnscheduled({bool prioritizeDeadlines = true}) async {
     final db = await _db;
     final maps = await db.query(
       'tasks',
       where: 'scheduledDate IS NULL',
-      orderBy: _getOrderBy(),
+      orderBy: _getOrderBy(prioritizeDeadlines: prioritizeDeadlines),
     );
 
     List<Task> tasks = [];
@@ -101,13 +100,13 @@ class TaskRepository {
     return tasks;
   }
 
-  Future<List<Task>> getByProject(String projectId) async {
+  Future<List<Task>> getByProject(String projectId, {bool prioritizeDeadlines = true}) async {
     final db = await _db;
     final maps = await db.query(
       'tasks',
       where: 'projectId = ?',
       whereArgs: [projectId],
-      orderBy: _getOrderBy(useScheduledDate: true),
+      orderBy: _getOrderBy(useScheduledDate: true, prioritizeDeadlines: prioritizeDeadlines),
     );
 
     List<Task> tasks = [];
@@ -119,7 +118,7 @@ class TaskRepository {
     return tasks;
   }
 
-  Future<List<Task>> getByLabel(String labelId) async {
+  Future<List<Task>> getByLabel(String labelId, {bool prioritizeDeadlines = true}) async {
     final db = await _db;
     final maps = await db.rawQuery(
       '''
@@ -127,7 +126,7 @@ class TaskRepository {
       LEFT JOIN project_labels pl ON t.projectId = pl.projectId
       LEFT JOIN task_labels tl ON t.id = tl.taskId
       WHERE pl.labelId = ? OR tl.labelId = ?
-      ORDER BY ${_getOrderBy(useScheduledDate: true, tableAlias: 't')}
+      ORDER BY ${_getOrderBy(useScheduledDate: true, tableAlias: 't', prioritizeDeadlines: prioritizeDeadlines)}
     ''',
       [labelId, labelId],
     );
@@ -195,7 +194,8 @@ class TaskRepository {
       }
     }
 
-    final query = '''
+    final query =
+        '''
       SELECT DISTINCT t.* FROM tasks t
       LEFT JOIN task_labels tl ON t.id = tl.taskId
       LEFT JOIN project_labels pl ON t.projectId = pl.projectId
@@ -236,13 +236,13 @@ class TaskRepository {
     return maps.map((m) => m['labelId'] as String).toList();
   }
 
-  String _getOrderBy({bool useScheduledDate = false, String? tableAlias}) {
+  String _getOrderBy({bool useScheduledDate = false, String? tableAlias, bool prioritizeDeadlines = true}) {
     final prefix = tableAlias != null ? '$tableAlias.' : '';
     final deadlinePart = '(${prefix}deadline IS NULL), ${prefix}deadline ASC';
     final priorityPart = '${prefix}priority DESC';
     final datePart = useScheduledDate ? '${prefix}scheduledDate ASC' : '${prefix}createdAt DESC';
 
-    if (AppConstants.prioritizeDeadlines) {
+    if (prioritizeDeadlines) {
       return '$deadlinePart, $priorityPart, $datePart';
     } else {
       return '$priorityPart, $datePart, $deadlinePart';
@@ -311,17 +311,14 @@ class TaskRepository {
     final tasksByProject = {for (var r in projectsResult) (r['projectId'] as String? ?? 'none'): r['count'] as int};
 
     // 6. Tasks by Label
-    final labelsResult = await db.rawQuery(
-      '''
+    final labelsResult = await db.rawQuery('''
       SELECT tl.labelId, COUNT(DISTINCT t.id) as count 
       FROM tasks t 
       JOIN task_labels tl ON t.id = tl.taskId 
       $filterJoin
       WHERE $whereCompleted 
       GROUP BY tl.labelId
-      ''',
-      whereArgs,
-    );
+      ''', whereArgs);
     final tasksByLabel = {for (var r in labelsResult) r['labelId'] as String: r['count'] as int};
 
     return HistoryOverview(

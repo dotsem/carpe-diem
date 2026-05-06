@@ -1,9 +1,9 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/core/utils/fuzzy_search_utils.dart';
 import 'package:carpe_diem/core/utils/task_hierarchy_utils.dart';
 import 'package:carpe_diem/data/models/task_hierarchy_node.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/blocker_indicator.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
@@ -154,8 +154,9 @@ class _TaskListViewState extends State<TaskListView> {
         }();
 
         final priorityComp = b.priority.index.compareTo(a.priority.index);
+        final settings = context.read<SettingsProvider>();
 
-        if (AppConstants.prioritizeDeadlines) {
+        if (settings.prioritizeDeadlines) {
           if (deadlineComp != 0) return deadlineComp;
           if (priorityComp != 0) return priorityComp;
         } else {
@@ -290,7 +291,7 @@ class _TaskListViewState extends State<TaskListView> {
               trailing: AnimatedRotation(
                 duration: const Duration(milliseconds: 200),
                 turns: _isDoneExpanded ? 0.5 : 0,
-                child: const Icon(Icons.expand_more, color: AppColors.textSecondary, size: 20),
+                child: Icon(Icons.expand_more, color: AppColors.textSecondary, size: 20),
               ),
             ),
             const SizedBox(height: 8),
@@ -401,9 +402,9 @@ extension TaskListViewPrivate on TaskListView {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
+          Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
           const SizedBox(height: 16),
-          const Text('No tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+          Text('No tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
         ],
       ),
     );

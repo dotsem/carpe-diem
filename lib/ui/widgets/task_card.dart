@@ -1,5 +1,5 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/label.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/chip.dart';
@@ -58,9 +58,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsProvider>();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: AppConstants.taskCompletionDelaySeconds),
+      duration: Duration(seconds: settings.taskCompletionDelay),
     );
     _checkPending();
   }
@@ -138,14 +139,14 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
         );
       },
       child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 4),
+        margin: EdgeInsets.symmetric(vertical: 4),
         child: InkWell(
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           onTap: widget.onTap,
           onFocusChange: (focused) {
             if (focused && mounted) {
-              Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 200), alignment: 0.5);
+              Scrollable.ensureVisible(context, duration: Duration(milliseconds: 200), alignment: 0.5);
             }
             setState(() => _isFocused = focused);
           },
@@ -166,7 +167,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                   : null,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Stack(
                 children: [
                   Positioned(left: 0, top: 0, bottom: 0, child: PriorityIndicator(priority: widget.task.priority)),
@@ -175,7 +176,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                     child: Row(
                       children: [
                         widget.leading ?? _statusIndicator(),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +199,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                     widget.task.description!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                                   ),
                                 ),
                               if (widget.project != null ||
@@ -267,7 +268,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
             color: isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
             border: Border.all(color: AppColors.accent, width: 2),
           ),
-          child: isPending ? const Icon(Icons.close, size: 14, color: AppColors.accent) : null,
+          child: isPending ? Icon(Icons.close, size: 14, color: AppColors.accent) : null,
         ),
       );
     }
@@ -283,7 +284,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
             color: AppColors.success.withValues(alpha: 0.1),
             border: Border.all(color: AppColors.success, width: 2),
           ),
-          child: const Icon(Icons.play_arrow_rounded, size: 16, color: AppColors.success),
+          child: Icon(Icons.play_arrow_rounded, size: 16, color: AppColors.success),
         ),
       );
     }

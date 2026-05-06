@@ -4,6 +4,7 @@ import 'package:carpe_diem/ui/screens/projects_screen.dart';
 import 'package:carpe_diem/ui/screens/backlog_screen.dart';
 import 'package:carpe_diem/ui/screens/history_screen.dart';
 import 'package:carpe_diem/ui/screens/project_detail_screen.dart';
+import 'package:carpe_diem/ui/screens/settings_screen.dart';
 import 'package:carpe_diem/ui/shell/app_shell.dart';
 import 'package:carpe_diem/routes/keys.dart';
 
@@ -37,6 +38,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/history',
           pageBuilder: (context, state) => const NoTransitionPage(child: HistoryScreen()),
+        ),
+        GoRoute(
+          path: '/settings',
+          pageBuilder: (context, state) => const NoTransitionPage(child: SettingsScreen()),
         ),
       ],
     ),

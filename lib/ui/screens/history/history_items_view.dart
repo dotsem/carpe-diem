@@ -72,10 +72,7 @@ class _HistoryItemsViewState extends State<HistoryItemsView> {
       itemBuilder: (context, index) {
         if (index == sortedKeys.length) {
           return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
           );
         }
 
@@ -90,7 +87,7 @@ class _HistoryItemsViewState extends State<HistoryItemsView> {
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
               child: Text(
                 _formatDateHeader(date),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
@@ -133,7 +130,7 @@ class _HistoryItemsViewState extends State<HistoryItemsView> {
         children: [
           Icon(Icons.history, size: 64, color: AppColors.textSecondary.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
-          const Text('No completed tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+          Text('No completed tasks found', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
           const SizedBox(height: 8),
           Text(
             'Try selecting a different date range or clearing filters',

@@ -63,11 +63,11 @@ class DeadlineChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.timer_outlined, size: 10, color: AppColors.textSecondary),
+          Icon(Icons.timer_outlined, size: 10, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text(
             'Due: ${months[deadline.month - 1]} ${deadline.day}',
-            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
           ),
         ],
       ),

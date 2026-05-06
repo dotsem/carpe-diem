@@ -77,7 +77,7 @@ class FilterBar extends StatelessWidget {
             ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+            icon: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
             onPressed: onClearFilter,
             tooltip: 'Clear filters',
           ),

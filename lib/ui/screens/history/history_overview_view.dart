@@ -57,7 +57,7 @@ class HistoryOverviewView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 32),
-        const Text(
+        Text(
           'PROJECT BREAKDOWN',
           style: TextStyle(
             color: AppColors.textSecondary,
@@ -78,7 +78,7 @@ class HistoryOverviewView extends StatelessWidget {
 
     if (sortedProjects.isEmpty) {
       return [
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(top: 16.0),
           child: Center(
             child: Text('No project data', style: TextStyle(color: AppColors.textSecondary)),

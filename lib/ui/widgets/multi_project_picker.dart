@@ -15,7 +15,7 @@ class MultiProjectPicker extends StatelessWidget {
     return Consumer<ProjectProvider>(
       builder: (context, provider, _) {
         if (provider.projects.isEmpty) {
-          return const Center(
+          return Center(
             child: Text('No projects available', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
           );
         }

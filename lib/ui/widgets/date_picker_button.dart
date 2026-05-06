@@ -49,7 +49,7 @@ class DatePickerButton extends StatelessWidget {
         decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(8)),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
+            Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
             const SizedBox(width: 8),
             Text(
               date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
@@ -59,7 +59,7 @@ class DatePickerButton extends StatelessWidget {
               const Spacer(),
               GestureDetector(
                 onTap: () => onChanged(null),
-                child: const Icon(Icons.close, size: 16, color: AppColors.textSecondary),
+                child: Icon(Icons.close, size: 16, color: AppColors.textSecondary),
               ),
             ],
           ],

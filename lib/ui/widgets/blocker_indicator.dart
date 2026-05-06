@@ -24,7 +24,7 @@ class BlockerIndicator extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock_outline, size: 14, color: AppColors.textSecondary),
+              Icon(Icons.lock_outline, size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 8),
               Text(
                 'Task is blocked',
