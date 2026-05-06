@@ -155,7 +155,7 @@ void _unscheduleTask(BuildContext context, Task task, TaskProvider provider) {
         title: "Unschedule Completed Task",
         message: "This task is already completed. Are you sure you want to unschedule it?",
         warningText: 'Unschedule',
-        onConfirm: () => provider.unScheduleTask(task),
+        onConfirm: () => provider.unScheduleTask(task, resetStatus: true),
       ),
     );
   } else if (task.status.isInProgress) {
@@ -165,7 +165,7 @@ void _unscheduleTask(BuildContext context, Task task, TaskProvider provider) {
         title: "Unschedule In Progress Task",
         message: "This task is already in progress. Are you sure you want to unschedule it?",
         warningText: 'Unschedule',
-        onConfirm: () => provider.unScheduleTask(task),
+        onConfirm: () => provider.unScheduleTask(task, resetStatus: true),
       ),
     );
   } else {

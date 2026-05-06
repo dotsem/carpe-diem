@@ -10,10 +10,12 @@ import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/repositories/task_repository.dart';
+import 'package:carpe_diem/data/repositories/project_repository.dart';
 import 'package:carpe_diem/core/utils/toast_utils.dart';
 
 class TaskProvider extends ChangeNotifier {
   final TaskRepository _repo = TaskRepository();
+  final ProjectRepository _projectRepo = ProjectRepository();
   final SettingsProvider _settingsProvider;
   final _uuid = const Uuid();
 
@@ -106,8 +108,10 @@ class TaskProvider extends ChangeNotifier {
       labelIds: labelIds,
     );
 
-    final finalTask = await _handleDeadlineInheritance(task);
-    await _repo.insert(finalTask);
+    await _repo.insert(task);
+    if (AppConstants.inheritParentDeadline && task.deadline != null) {
+      await _propagateDeadline(task);
+    }
     await loadTasksForDate(_currentDate);
     await loadUnscheduledTasks();
     ToastUtils.showSuccess('Task "$title" created');
@@ -186,10 +190,9 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> updateTask(Task task) async {
-    final updated = await _handleDeadlineInheritance(task);
-    await _repo.update(updated);
-    if (AppConstants.inheritParentDeadline && updated.deadline != null) {
-      await _propagateDeadline(updated);
+    await _repo.update(task);
+    if (AppConstants.inheritParentDeadline && task.deadline != null) {
+      await _propagateDeadline(task);
     }
     await _refreshAll();
     ToastUtils.showSuccess('Task "${task.title}" updated');
@@ -243,6 +246,16 @@ class TaskProvider extends ChangeNotifier {
     bool updateBlockedById = false,
     bool clearBlockedById = false,
   }) async {
+    DateTime? projectDeadline;
+    bool shouldInheritDeadline = false;
+    if (updateProjectId && projectId != null && AppConstants.inheritProjectDeadline) {
+      final project = await _projectRepo.getById(projectId);
+      if (project?.deadline != null) {
+        projectDeadline = project!.deadline;
+        shouldInheritDeadline = true;
+      }
+    }
+
     for (final id in taskIds) {
       Task? task;
       try {
@@ -264,15 +277,14 @@ class TaskProvider extends ChangeNotifier {
           clearScheduledDate: clearScheduledDate,
           projectId: updateProjectId ? projectId : null,
           clearProjectId: clearProjectId,
-          deadline: updateDeadline ? deadline : null,
+          deadline: updateDeadline ? deadline : (shouldInheritDeadline ? projectDeadline : null),
           clearDeadline: clearDeadline,
           blockedById: updateBlockedById ? blockedById : null,
           clearBlockedBy: clearBlockedById,
         );
-        final finalTask = await _handleDeadlineInheritance(updated);
-        await _repo.update(finalTask);
-        if (AppConstants.inheritParentDeadline && finalTask.deadline != null) {
-          await _propagateDeadline(finalTask);
+        await _repo.update(updated);
+        if (AppConstants.inheritParentDeadline && updated.deadline != null) {
+          await _propagateDeadline(updated);
         }
       }
     }
@@ -353,8 +365,14 @@ class TaskProvider extends ChangeNotifier {
 
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
     final tasks = _parseMarkdown(markdown);
+    DateTime? projectDeadline;
+    if (projectId != null && AppConstants.inheritProjectDeadline) {
+      final project = await _projectRepo.getById(projectId);
+      projectDeadline = project?.deadline;
+    }
+
     for (final task in tasks) {
-      await _repo.insert(task.copyWith(projectId: projectId));
+      await _repo.insert(task.copyWith(projectId: projectId, deadline: projectDeadline));
     }
     await _refreshAll();
     ToastUtils.showSuccess('Imported ${tasks.length} tasks from markdown');
@@ -412,28 +430,17 @@ class TaskProvider extends ChangeNotifier {
     }
   }
 
-  Future<Task> _handleDeadlineInheritance(Task task) async {
-    if (!AppConstants.inheritParentDeadline || task.blockedById == null) return task;
+  Future<void> _propagateDeadline(Task task) async {
+    if (!AppConstants.inheritParentDeadline || task.deadline == null || task.blockedById == null) return;
 
-    final parent = await _repo.getById(task.blockedById!);
-    if (parent?.deadline == null) return task;
+    final blocker = await _repo.getById(task.blockedById!);
+    if (blocker == null) return;
 
-    if (task.deadline == null || task.deadline!.isBefore(parent!.deadline!)) {
-      return task.copyWith(deadline: parent!.deadline);
-    }
-    return task;
-  }
-
-  Future<void> _propagateDeadline(Task parentTask) async {
-    if (!AppConstants.inheritParentDeadline || parentTask.deadline == null) return;
-
-    final children = await _repo.getByBlockedBy(parentTask.id);
-    for (final child in children) {
-      if (child.deadline == null || child.deadline!.isBefore(parentTask.deadline!)) {
-        final updatedChild = child.copyWith(deadline: parentTask.deadline);
-        await _repo.update(updatedChild);
-        await _propagateDeadline(updatedChild);
-      }
+    // If blocker has no deadline or a later deadline, update it to the child's deadline
+    if (blocker.deadline == null || blocker.deadline!.isAfter(task.deadline!)) {
+      final updatedBlocker = blocker.copyWith(deadline: task.deadline);
+      await _repo.update(updatedBlocker);
+      await _propagateDeadline(updatedBlocker);
     }
   }
 }

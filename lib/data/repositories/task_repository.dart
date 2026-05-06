@@ -3,13 +3,14 @@ import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/core/constants/app_constants.dart';
 
 class TaskRepository {
   Future<Database> get _db => DatabaseHelper.database;
 
   Future<List<Task>> getAll() async {
     final db = await _db;
-    final maps = await db.query('tasks', orderBy: '(deadline IS NULL), deadline ASC, priority DESC, createdAt DESC');
+    final maps = await db.query('tasks', orderBy: _getOrderBy());
 
     List<Task> tasks = [];
     for (final map in maps) {
@@ -51,7 +52,7 @@ class TaskRepository {
       'tasks',
       where: '(scheduledDate = ?) OR (completedAt >= ? AND completedAt < ?)',
       whereArgs: [scheduledDateStr, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
-      orderBy: '(deadline IS NULL), deadline ASC, priority DESC, createdAt DESC',
+      orderBy: _getOrderBy(),
     );
 
     List<Task> tasks = [];
@@ -87,7 +88,7 @@ class TaskRepository {
     final maps = await db.query(
       'tasks',
       where: 'scheduledDate IS NULL',
-      orderBy: '(deadline IS NULL), deadline ASC, priority DESC, createdAt DESC',
+      orderBy: _getOrderBy(),
     );
 
     List<Task> tasks = [];
@@ -105,7 +106,7 @@ class TaskRepository {
       'tasks',
       where: 'projectId = ?',
       whereArgs: [projectId],
-      orderBy: '(deadline IS NULL), deadline ASC, priority DESC, scheduledDate ASC',
+      orderBy: _getOrderBy(useScheduledDate: true),
     );
 
     List<Task> tasks = [];
@@ -125,7 +126,7 @@ class TaskRepository {
       LEFT JOIN project_labels pl ON t.projectId = pl.projectId
       LEFT JOIN task_labels tl ON t.id = tl.taskId
       WHERE pl.labelId = ? OR tl.labelId = ?
-      ORDER BY (t.deadline IS NULL), t.deadline ASC, t.priority DESC, t.scheduledDate ASC
+      ORDER BY ${_getOrderBy(useScheduledDate: true, tableAlias: 't')}
     ''',
       [labelId, labelId],
     );
@@ -232,5 +233,18 @@ class TaskRepository {
     final db = await _db;
     final maps = await db.query('task_labels', where: 'taskId = ?', columns: ['labelId'], whereArgs: [taskId]);
     return maps.map((m) => m['labelId'] as String).toList();
+  }
+
+  String _getOrderBy({bool useScheduledDate = false, String? tableAlias}) {
+    final prefix = tableAlias != null ? '$tableAlias.' : '';
+    final deadlinePart = '(${prefix}deadline IS NULL), ${prefix}deadline ASC';
+    final priorityPart = '${prefix}priority DESC';
+    final datePart = useScheduledDate ? '${prefix}scheduledDate ASC' : '${prefix}createdAt DESC';
+
+    if (AppConstants.prioritizeDeadlines) {
+      return '$deadlinePart, $priorityPart, $datePart';
+    } else {
+      return '$priorityPart, $datePart, $deadlinePart';
+    }
   }
 }
