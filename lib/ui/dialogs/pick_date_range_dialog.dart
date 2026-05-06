@@ -74,17 +74,6 @@ class _PickDateRangeDialogState extends State<PickDateRangeDialog> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                  const SizedBox(width: 8),
-                  FilledButton(onPressed: _submit, child: const Text('OK')),
-                ],
-              ),
-            ),
           ],
         ),
       ),

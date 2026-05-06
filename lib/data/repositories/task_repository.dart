@@ -2,6 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:carpe_diem/data/database/database_helper.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_status.dart';
+import 'package:carpe_diem/data/models/task_filter.dart';
 
 class TaskRepository {
   Future<Database> get _db => DatabaseHelper.database;
@@ -165,17 +166,44 @@ class TaskRepository {
     await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<List<Task>> getCompletedInRange(DateTime start, DateTime end) async {
+  Future<List<Task>> getCompletedInRange(
+    DateTime start,
+    DateTime end, {
+    int? limit,
+    int? offset,
+    TaskFilter? filter,
+  }) async {
     final db = await _db;
     final startStr = start.toIso8601String();
     final endStr = end.toIso8601String();
 
-    final maps = await db.query(
-      'tasks',
-      where: 'status = ? AND completedAt >= ? AND completedAt <= ?',
-      whereArgs: [TaskStatus.done.index, startStr, endStr],
-      orderBy: 'completedAt DESC',
-    );
+    String where = 't.status = ? AND t.completedAt >= ? AND t.completedAt <= ?';
+    List<dynamic> whereArgs = [TaskStatus.done.index, startStr, endStr];
+
+    if (filter != null && !filter.isEmpty) {
+      if (filter.hasPriorityFilter) {
+        where += ' AND t.priority IN (${filter.priorities.map((p) => p.index).join(',')})';
+      }
+      if (filter.hasProjectFilter) {
+        where += ' AND t.projectId IN (${filter.projectIds.map((id) => "'$id'").join(',')})';
+      }
+      if (filter.hasLabelFilter) {
+        where +=
+            ' AND (tl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}) OR pl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}))';
+      }
+    }
+
+    final query = '''
+      SELECT DISTINCT t.* FROM tasks t
+      LEFT JOIN task_labels tl ON t.id = tl.taskId
+      LEFT JOIN project_labels pl ON t.projectId = pl.projectId
+      WHERE $where
+      ORDER BY t.completedAt DESC
+      ${limit != null ? 'LIMIT $limit' : ''}
+      ${offset != null ? 'OFFSET $offset' : ''}
+    ''';
+
+    final maps = await db.rawQuery(query, whereArgs);
 
     List<Task> tasks = [];
     for (final map in maps) {

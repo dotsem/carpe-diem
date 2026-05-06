@@ -26,17 +26,42 @@ class _HistoryScreenState extends State<HistoryScreen> {
   );
   TaskFilter _filter = const TaskFilter();
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   List<Task> _completedTasks = [];
   DateTime? _minDate;
+  int _offset = 0;
+  bool _hasMore = true;
+  final int _limit = 25;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoading && !_isLoadingMore && _hasMore) {
+        _loadMoreData();
+      }
+    }
+  }
+
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _offset = 0;
+      _hasMore = true;
+      _completedTasks = [];
+    });
     final taskProvider = context.read<TaskProvider>();
 
     // Load first task date if not already loaded
@@ -46,12 +71,46 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
     final end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
 
-    final tasks = await taskProvider.getCompletedTasks(start, end);
+    final tasks = await taskProvider.getCompletedTasks(
+      start,
+      end,
+      limit: _limit,
+      offset: _offset,
+      filter: _filter,
+    );
 
     if (mounted) {
       setState(() {
         _completedTasks = tasks;
         _isLoading = false;
+        _offset = tasks.length;
+        _hasMore = tasks.length == _limit;
+      });
+    }
+  }
+
+  Future<void> _loadMoreData() async {
+    setState(() => _isLoadingMore = true);
+    final taskProvider = context.read<TaskProvider>();
+
+    // Normalize dates to start of day and end of day
+    final start = DateTime(_dateRange.start.year, _dateRange.start.month, _dateRange.start.day);
+    final end = DateTime(_dateRange.end.year, _dateRange.end.month, _dateRange.end.day, 23, 59, 59);
+
+    final tasks = await taskProvider.getCompletedTasks(
+      start,
+      end,
+      limit: _limit,
+      offset: _offset,
+      filter: _filter,
+    );
+
+    if (mounted) {
+      setState(() {
+        _completedTasks.addAll(tasks);
+        _isLoadingMore = false;
+        _offset += tasks.length;
+        _hasMore = tasks.length == _limit;
       });
     }
   }
@@ -83,18 +142,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     if (result != null) {
       setState(() => _filter = result);
+      _loadData();
     }
+  }
+
+  void _clearFilter() {
+    setState(() => _filter = const TaskFilter());
+    _loadData();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Apply filters to loaded tasks
-    final projectProvider = context.watch<ProjectProvider>();
-    final filteredTasks = _completedTasks.where((task) {
-      final project = task.projectId != null ? projectProvider.getById(task.projectId!) : null;
-      final inheritedLabelIds = project?.labelIds ?? [];
-      return _filter.applyToTask(task, inheritedLabelIds);
-    }).toList();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -115,18 +173,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          FilterBar(
-            filter: _filter,
-            onFilterTap: _showFilterDialog,
-            onClearFilter: () => setState(() => _filter = const TaskFilter()),
-          ),
+          FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
           const SizedBox(height: 16),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : filteredTasks.isEmpty
+                : _completedTasks.isEmpty
                 ? _buildEmptyState()
-                : _buildTaskList(filteredTasks),
+                : _buildTaskList(_completedTasks),
           ),
         ],
       ),
@@ -176,8 +230,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final sortedKeys = groupedTasks.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return ListView.builder(
-      itemCount: sortedKeys.length,
+      controller: _scrollController,
+      itemCount: sortedKeys.length + (_hasMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == sortedKeys.length) {
+          return const Center(
+            child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
         final dateKey = sortedKeys[index];
         final dayTasks = groupedTasks[dateKey]!;
         final date = DateTime.parse(dateKey);
