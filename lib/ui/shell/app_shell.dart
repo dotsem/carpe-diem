@@ -164,7 +164,7 @@ class _SideNav extends StatelessWidget {
           _NavItem(
             icon: Icons.history_rounded,
             label: 'History',
-            shortcutHint: 'H',
+            shortcutHint: 'Y',
             isSelected: currentPath == '/history',
             onTap: () => _navigateTo(context, '/history'),
           ),

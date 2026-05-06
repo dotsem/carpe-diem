@@ -71,28 +71,66 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     super.dispose();
   }
 
-  void _moveFocus(int delta) {
+  void _moveFocus(int dx, int dy) {
     if (_orderedItemIds.isEmpty) return;
 
-    int currentIndex = -1;
-    for (int i = 0; i < _orderedItemIds.length; i++) {
-      final node = _itemFocusNodes[_orderedItemIds[i]];
-      if (node?.hasFocus ?? false) {
-        currentIndex = i;
+    String? currentId;
+    FocusNode? currentNode;
+    for (var entry in _itemFocusNodes.entries) {
+      if (entry.value.hasFocus) {
+        currentId = entry.key;
+        currentNode = entry.value;
         break;
       }
     }
 
-    if (currentIndex == -1) {
-      final targetIndex = delta > 0 ? 0 : _orderedItemIds.length - 1;
+    if (currentNode == null || currentNode.context == null) {
+      final targetIndex = (dx + dy) > 0 ? 0 : _orderedItemIds.length - 1;
       final id = _orderedItemIds[targetIndex];
-      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'Project_$id'));
-      node.requestFocus();
-    } else {
-      final nextIndex = (currentIndex + delta).clamp(0, _orderedItemIds.length - 1);
-      final id = _orderedItemIds[nextIndex];
-      final node = _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'Project_$id'));
-      node.requestFocus();
+      _itemFocusNodes.putIfAbsent(id, () => FocusNode(debugLabel: 'Project_$id')).requestFocus();
+      return;
+    }
+
+    final currentBox = currentNode.context!.findRenderObject() as RenderBox;
+    final currentCenter = currentBox.localToGlobal(currentBox.size.center(Offset.zero));
+
+    String? bestId;
+    double bestScore = double.infinity;
+
+    for (final id in _orderedItemIds) {
+      if (id == currentId) continue;
+      final node = _itemFocusNodes[id];
+      if (node == null || node.context == null) continue;
+
+      final box = node.context!.findRenderObject() as RenderBox;
+      final center = box.localToGlobal(box.size.center(Offset.zero));
+      final diff = center - currentCenter;
+
+      bool inDirection = false;
+      if (dx > 0) {
+        inDirection = diff.dx > 20;
+      } else if (dx < 0) {
+        inDirection = diff.dx < -20;
+      } else if (dy > 0) {
+        inDirection = diff.dy > 20;
+      } else if (dy < 0) {
+        inDirection = diff.dy < -20;
+      }
+
+      if (inDirection) {
+        double score = diff.distanceSquared;
+        if (dx != 0) score += diff.dy.abs() * 5000;
+        if (dy != 0) score += diff.dx.abs() * 5000;
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestId = id;
+        }
+      }
+    }
+
+    if (bestId != null) {
+      _itemFocusNodes[bestId]?.requestFocus();
     }
   }
 
@@ -104,16 +142,24 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         const SingleActivator(LogicalKeyboardKey.escape): const _UnfocusSearchIntent(),
         const CharacterActivator('j'): const MoveNextIntent(),
         const CharacterActivator('k'): const MovePrevIntent(),
+        const CharacterActivator('h'): const MoveLeftIntent(),
+        const CharacterActivator('l'): const MoveRightIntent(),
         const CharacterActivator('f'): const FilterIntent(),
         const CharacterActivator('F'): const FilterIntent(),
       },
       child: Actions(
         actions: {
           MoveNextIntent: NonTypingAction<MoveNextIntent>((_) {
-            _moveFocus(1);
+            _moveFocus(0, 1);
           }),
           MovePrevIntent: NonTypingAction<MovePrevIntent>((_) {
-            _moveFocus(-1);
+            _moveFocus(0, -1);
+          }),
+          MoveLeftIntent: NonTypingAction<MoveLeftIntent>((_) {
+            _moveFocus(-1, 0);
+          }),
+          MoveRightIntent: NonTypingAction<MoveRightIntent>((_) {
+            _moveFocus(1, 0);
           }),
           FilterIntent: NonTypingAction<FilterIntent>((_) {
             _showFilterDialog(context);
@@ -183,7 +229,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       ),
     );
   }
-
 
   Widget _projectGrid() {
     return Consumer<ProjectProvider>(

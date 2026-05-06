@@ -205,7 +205,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   void _changeDay(int delta) {
     final days = _days;
     final currentIndex = days.indexWhere((d) => d == _normalizedSelected);

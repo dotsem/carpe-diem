@@ -35,6 +35,14 @@ class MovePrevIntent extends Intent {
   const MovePrevIntent();
 }
 
+class MoveLeftIntent extends Intent {
+  const MoveLeftIntent();
+}
+
+class MoveRightIntent extends Intent {
+  const MoveRightIntent();
+}
+
 class FilterIntent extends Intent {
   const FilterIntent();
 }
@@ -51,7 +59,7 @@ const globalShortcutEntries = [
   ShortcutEntry(key: 'T', description: 'Go to Today', category: 'Navigation'),
   ShortcutEntry(key: 'B', description: 'Go to Backlog', category: 'Navigation'),
   ShortcutEntry(key: 'P', description: 'Go to Projects', category: 'Navigation'),
-  ShortcutEntry(key: 'H', description: 'Go to History', category: 'Navigation'),
+  ShortcutEntry(key: 'Y', description: 'Go to History', category: 'Navigation'),
   ShortcutEntry(key: 'j', description: 'Move Focus Down', category: 'Navigation'),
   ShortcutEntry(key: 'k', description: 'Move Focus Up', category: 'Navigation'),
   ShortcutEntry(key: '?', description: 'Toggle shortcut help', category: 'Global'),
@@ -75,10 +83,18 @@ const taskCardShortcutEntries = [
   ShortcutEntry(key: 'd', description: 'Delete task', category: 'Task (focused)'),
 ];
 
+const projectShortcutEntries = [
+  ShortcutEntry(key: 'h', description: 'Focus Left', category: 'Projects'),
+  ShortcutEntry(key: 'j', description: 'Focus Down', category: 'Projects'),
+  ShortcutEntry(key: 'k', description: 'Focus Up', category: 'Projects'),
+  ShortcutEntry(key: 'l', description: 'Focus Right', category: 'Projects'),
+];
+
 List<ShortcutEntry> get allShortcutEntries => [
   ...globalShortcutEntries,
   ...homeShortcutEntries,
   ...taskCardShortcutEntries,
+  ...projectShortcutEntries,
 ];
 bool isTypingInTextField() {
   final focus = FocusManager.instance.primaryFocus;
@@ -185,10 +201,11 @@ class GlobalShortcutsState extends State<GlobalShortcuts> {
           const CharacterActivator('T'): const NavigateToTodayIntent(),
           const CharacterActivator('B'): const NavigateToBacklogIntent(),
           const CharacterActivator('P'): const NavigateToProjectsIntent(),
+          const CharacterActivator('Y'): const NavigateToHistoryIntent(),
           const CharacterActivator('t'): const NavigateToTodayIntent(),
           const CharacterActivator('b'): const NavigateToBacklogIntent(),
           const CharacterActivator('p'): const NavigateToProjectsIntent(),
-          const CharacterActivator('H'): const NavigateToHistoryIntent(),
+          const CharacterActivator('y'): const NavigateToHistoryIntent(),
           const CharacterActivator('?'): const ToggleHelpIntent(),
           const SingleActivator(LogicalKeyboardKey.escape): const CloseHelpIntent(),
           const CharacterActivator('j'): const MoveNextIntent(),
