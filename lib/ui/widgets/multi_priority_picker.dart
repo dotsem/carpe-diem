@@ -27,7 +27,7 @@ class MultiPriorityPicker extends StatelessWidget {
             onChanged(newSelected);
           },
           avatar: Icon(p.icon, size: 16, color: isSelected ? Colors.white : p.color),
-          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           selectedColor: p.color.withAlpha(50),
           checkmarkColor: p.color,
           labelStyle: TextStyle(

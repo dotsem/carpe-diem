@@ -39,7 +39,7 @@ class MultiProjectPicker extends StatelessWidget {
                 onChanged(newSelected);
               },
               avatar: CircleAvatar(backgroundColor: p.color, radius: 4),
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
               selectedColor: p.color.withAlpha(50),
               checkmarkColor: p.color,
               labelStyle: TextStyle(

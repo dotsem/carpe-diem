@@ -181,7 +181,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+          border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

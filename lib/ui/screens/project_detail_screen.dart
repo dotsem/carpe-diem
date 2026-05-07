@@ -229,7 +229,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _header(context, project),
-                    Divider(color: Theme.of(context).colorScheme.surfaceContainerHighest, height: 1),
+                    Divider(color: Theme.of(context).colorScheme.surfaceContainerHigh, height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: FuzzySearchBar(
@@ -253,7 +253,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         onClearFilter: () => filterProvider.clearFilter(),
                       ),
                     ),
-                    Divider(color: Theme.of(context).colorScheme.surfaceContainerHighest, height: 1),
+                    Divider(color: Theme.of(context).colorScheme.surfaceContainerHigh, height: 1),
                     Expanded(
                       child: _isLoading
                           ? Center(child: CircularProgressIndicator())
@@ -526,7 +526,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       builder: (ctx) => AlertDialog(
         title: Text('Confirm Deletion'),
         content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text('Cancel')),
           FilledButton(

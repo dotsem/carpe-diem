@@ -74,7 +74,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHigh, shape: BoxShape.circle),
                             child: Icon(
                               widget.project.priority.icon,
                               size: 16,

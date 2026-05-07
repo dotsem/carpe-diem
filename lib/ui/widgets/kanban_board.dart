@@ -262,7 +262,7 @@ class _KanbanColumn extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
           ),
           child: Column(
             children: [
@@ -304,7 +304,7 @@ class _KanbanColumn extends StatelessWidget {
         color: isHighlighted ? titleColor.withValues(alpha: 0.1) : Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighlighted ? titleColor.withValues(alpha: 0.4) : Theme.of(context).colorScheme.surfaceContainerHighest,
+          color: isHighlighted ? titleColor.withValues(alpha: 0.4) : Theme.of(context).colorScheme.surfaceContainerHigh,
           width: isHighlighted ? 2 : 1,
         ),
       ),

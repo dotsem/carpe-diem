@@ -66,7 +66,7 @@ class ShortcutsHelpOverlayState extends State<ShortcutsHelpOverlay> with SingleT
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest, width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh, width: 1),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -148,7 +148,7 @@ class _KeyBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest, width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh, width: 1),
       ),
       child: Text(
         label,

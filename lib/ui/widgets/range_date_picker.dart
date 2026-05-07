@@ -244,7 +244,7 @@ class _CalendarDay extends StatelessWidget {
   Color? _getBackgroundColor(BuildContext context) {
     if (isStart || isEnd) return AppColors.accent;
     if (isInRange) return AppColors.accent.withValues(alpha: 0.2);
-    if (isHovered) return Theme.of(context).colorScheme.surfaceContainerHighest;
+    if (isHovered) return Theme.of(context).colorScheme.surfaceContainerHigh;
     return null;
   }
 

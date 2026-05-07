@@ -333,7 +333,7 @@ class _NavItem extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                      color: Theme.of(context).colorScheme.surfaceContainerHigh.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

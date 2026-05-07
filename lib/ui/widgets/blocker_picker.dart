@@ -110,7 +110,7 @@ class _BlockerPickerState extends State<BlockerPicker> {
         setState(() => _selectedIndex = 0);
       },
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHighest),
+        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHigh),
         elevation: WidgetStateProperty.all(8),
         shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       ),

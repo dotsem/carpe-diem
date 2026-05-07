@@ -23,7 +23,7 @@ class FilterBar extends StatelessWidget {
               avatar: const Icon(Icons.filter_list, size: 16),
               label: const Text('Filter'),
               onPressed: onFilterTap,
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
               side: BorderSide.none,
             ),
           ],
@@ -91,7 +91,7 @@ class FilterBar extends StatelessWidget {
       child: Chip(
         label: Text(label, style: const TextStyle(fontSize: 12)),
         avatar: CircleAvatar(backgroundColor: color, radius: 4),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         side: BorderSide.none,
         visualDensity: VisualDensity.compact,
       ),

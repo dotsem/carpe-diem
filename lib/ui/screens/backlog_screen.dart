@@ -530,7 +530,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
       builder: (ctx) => AlertDialog(
         title: Text('Confirm Deletion'),
         content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         titleTextStyle: Theme.of(context).textTheme.titleLarge,
         contentTextStyle: Theme.of(context).textTheme.bodyMedium,
         actions: [

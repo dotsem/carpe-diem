@@ -22,7 +22,7 @@ class PriorityPicker extends StatelessWidget {
             onSelected: (_) => onChanged(p),
             avatar: Icon(p.icon, size: 16, color: isSelected ? Colors.white : p.color),
             selectedColor: p.color,
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
             labelStyle: TextStyle(
               color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13,
