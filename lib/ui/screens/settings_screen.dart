@@ -1,4 +1,5 @@
 import 'package:carpe_diem/providers/settings_provider.dart';
+import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:carpe_diem/ui/widgets/screen_header.dart';
 import 'package:carpe_diem/ui/widgets/settings/settings_components.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,15 @@ class SettingsScreen extends StatelessWidget {
                         subtitle: 'Use system color palette (if supported)',
                         value: settings.useSystemColor,
                         onChanged: (value) => settings.setUseSystemColor(value),
+                      ),
+                    ],
+                  ),
+                  SettingsSection(
+                    title: 'Labels',
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: LabelPicker(selectedLabelIds: const [], onSelected: (_) {}, isManageMode: true),
                       ),
                     ],
                   ),
@@ -109,14 +119,6 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 32),
-                  Center(
-                    child: Text(
-                      'Carpe Diem v0.1.0',
-                      style: TextStyle(color: Colors.grey.withValues(alpha: 0.5), fontSize: 12),
-                    ),
-                  ),
-                  SizedBox(height: 32),
                 ],
               ),
             ),

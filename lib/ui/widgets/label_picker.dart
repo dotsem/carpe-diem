@@ -9,6 +9,7 @@ class LabelPicker extends StatelessWidget {
   final List<String> inheritedLabelIds;
   final ValueChanged<List<String>> onSelected;
   final bool allowAdd;
+  final bool isManageMode;
 
   const LabelPicker({
     super.key,
@@ -16,6 +17,7 @@ class LabelPicker extends StatelessWidget {
     this.inheritedLabelIds = const [],
     required this.onSelected,
     this.allowAdd = true,
+    this.isManageMode = false,
   });
 
   @override
@@ -29,6 +31,23 @@ class LabelPicker extends StatelessWidget {
             ...provider.labels.map((label) {
               final isInherited = inheritedLabelIds.contains(label.id);
               final isSelected = selectedLabelIds.contains(label.id) || isInherited;
+
+              if (isManageMode) {
+                return Builder(
+                  builder: (context) {
+                    return ActionChip(
+                      label: Text(label.name),
+                      avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                      side: BorderSide.none,
+                      onPressed: () {
+                        final RenderBox box = context.findRenderObject() as RenderBox;
+                        showLabelContextMenu(context, label, Offset.zero, box);
+                      },
+                    );
+                  },
+                );
+              }
 
               Widget chip = FilterChip(
                 label: Text(label.name),
