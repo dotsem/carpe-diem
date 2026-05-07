@@ -35,7 +35,7 @@ class MultiPriorityPicker extends StatelessWidget {
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
-          side: isSelected ? BorderSide(color: p.color) : BorderSide.none,
+          side: isSelected ? BorderSide(color: p.color) : BorderSide(color: Theme.of(context).colorScheme.outline),
         );
       }).toList(),
     );
