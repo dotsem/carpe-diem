@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class BlockerIndicator extends StatelessWidget {
@@ -17,20 +16,21 @@ class BlockerIndicator extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight.withValues(alpha: 0.5),
+            color: Theme.of(context).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.surfaceLight, width: 1),
+            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh, width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock_outline, size: 14, color: AppColors.textSecondary),
+              Icon(Icons.lock_outline, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
               const SizedBox(width: 8),
               Text(
                 'Task is blocked',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/core/utils/date_time_utils.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/data/models/history_overview.dart';
@@ -63,7 +62,7 @@ class TaskProvider extends ChangeNotifier {
 
     await _autoScheduleDeadlines();
 
-    _tasks = await _repo.getByDate(_currentDate);
+    _tasks = await _repo.getByDate(_currentDate, prioritizeDeadlines: _settingsProvider.prioritizeDeadlines);
     _overdueTasks = await _repo.getOverdue(_currentDate);
 
     if (!silent) {
@@ -78,7 +77,7 @@ class TaskProvider extends ChangeNotifier {
       notifyListeners();
     }
 
-    _unscheduledTasks = await _repo.getUnscheduled();
+    _unscheduledTasks = await _repo.getUnscheduled(prioritizeDeadlines: _settingsProvider.prioritizeDeadlines);
 
     if (!silent) {
       _isLoading = false;
@@ -110,7 +109,7 @@ class TaskProvider extends ChangeNotifier {
     );
 
     await _repo.insert(task);
-    if (AppConstants.inheritParentDeadline && task.deadline != null) {
+    if (_settingsProvider.inheritParentDeadline && task.deadline != null) {
       await _propagateDeadline(task);
     }
     await loadTasksForDate(_currentDate);
@@ -135,9 +134,21 @@ class TaskProvider extends ChangeNotifier {
     final updated = task.copyWith(
       status: TaskStatus.done,
       scheduledDate: task.scheduledDate ?? _normalizeDate(DateTime.now()),
+      completedAt: DateTime.now(),
     );
     await _repo.update(updated);
+    await cleanupHistory();
     await _refreshAll();
+  }
+
+  Future<void> cleanupHistory() async {
+    final days = _settingsProvider.historyRetention;
+    if (days > 0) {
+      final deletedCount = await _repo.cleanupHistory(days);
+      if (deletedCount > 0) {
+        await _refreshAll();
+      }
+    }
   }
 
   Future<void> toggleComplete(Task task, {bool useTimer = false}) async {
@@ -165,7 +176,7 @@ class TaskProvider extends ChangeNotifier {
 
   void _startPending(Task task) {
     _pendingCompletions[task.id] = DateTime.now();
-    _completionTimers[task.id] = Timer(const Duration(seconds: AppConstants.taskCompletionDelaySeconds), () {
+    _completionTimers[task.id] = Timer(Duration(seconds: _settingsProvider.taskCompletionDelay), () {
       _pendingCompletions.remove(task.id);
       _completionTimers.remove(task.id);
       completeTask(task);
@@ -186,13 +197,13 @@ class TaskProvider extends ChangeNotifier {
     final startTime = _pendingCompletions[taskId];
     if (startTime == null) return 0.0;
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-    final total = AppConstants.taskCompletionDelaySeconds * 1000;
+    final total = _settingsProvider.taskCompletionDelay * 1000;
     return (elapsed / total).clamp(0.0, 1.0);
   }
 
   Future<void> updateTask(Task task) async {
     await _repo.update(task);
-    if (AppConstants.inheritParentDeadline && task.deadline != null) {
+    if (_settingsProvider.inheritParentDeadline && task.deadline != null) {
       await _propagateDeadline(task);
     }
     await _refreshAll();
@@ -219,15 +230,15 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<List<Task>> getTasksForProject(String projectId) async {
-    return _repo.getByProject(projectId);
+    return _repo.getByProject(projectId, prioritizeDeadlines: _settingsProvider.prioritizeDeadlines);
   }
 
   Future<List<Task>> getBacklog() async {
-    return _repo.getUnscheduled();
+    return _repo.getUnscheduled(prioritizeDeadlines: _settingsProvider.prioritizeDeadlines);
   }
 
   Future<List<Task>> getTasksForLabel(String labelId) async {
-    return _repo.getByLabel(labelId);
+    return _repo.getByLabel(labelId, prioritizeDeadlines: _settingsProvider.prioritizeDeadlines);
   }
 
   Future<void> bulkUpdateTasks({
@@ -249,7 +260,7 @@ class TaskProvider extends ChangeNotifier {
   }) async {
     DateTime? projectDeadline;
     bool shouldInheritDeadline = false;
-    if (updateProjectId && projectId != null && AppConstants.inheritProjectDeadline) {
+    if (updateProjectId && projectId != null && _settingsProvider.inheritProjectDeadline) {
       final project = await _projectRepo.getById(projectId);
       if (project?.deadline != null) {
         projectDeadline = project!.deadline;
@@ -284,7 +295,7 @@ class TaskProvider extends ChangeNotifier {
           clearBlockedBy: clearBlockedById,
         );
         await _repo.update(updated);
-        if (AppConstants.inheritParentDeadline && updated.deadline != null) {
+        if (_settingsProvider.inheritParentDeadline && updated.deadline != null) {
           await _propagateDeadline(updated);
         }
       }
@@ -341,9 +352,9 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> scheduleTasksForNextWorkDay(List<String> taskIds) async {
-    DateTime nextMonday = DateTime.now().next(DateTime.monday);
-    await _scheduleTasksForDate(taskIds, nextMonday);
-    ToastUtils.showSuccess('Tasks scheduled for next workday');
+    DateTime nextStartOfWeek = DateTime.now().next(_settingsProvider.firstDayOfWeek);
+    await _scheduleTasksForDate(taskIds, nextStartOfWeek);
+    ToastUtils.showSuccess('Tasks scheduled for next week');
   }
 
   Future<List<Task>> getCompletedTasks(
@@ -371,7 +382,7 @@ class TaskProvider extends ChangeNotifier {
   Future<void> importTasksFromMarkdown(String markdown, String? projectId) async {
     final tasks = _parseMarkdown(markdown);
     DateTime? projectDeadline;
-    if (projectId != null && AppConstants.inheritProjectDeadline) {
+    if (projectId != null && _settingsProvider.inheritProjectDeadline) {
       final project = await _projectRepo.getById(projectId);
       projectDeadline = project?.deadline;
     }
@@ -436,7 +447,7 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> _propagateDeadline(Task task) async {
-    if (!AppConstants.inheritParentDeadline || task.deadline == null || task.blockedById == null) return;
+    if (!_settingsProvider.inheritParentDeadline || task.deadline == null || task.blockedById == null) return;
 
     final blocker = await _repo.getById(task.blockedById!);
     if (blocker == null) return;

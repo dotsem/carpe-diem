@@ -1,8 +1,8 @@
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/ui/widgets/project_picker.dart';
 import 'package:carpe_diem/ui/widgets/blocker_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
@@ -106,7 +106,7 @@ class _BulkEditTasksDialogState extends State<BulkEditTasksDialog> {
     }
   }
 
-  DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
+  DateTime get _maxDate => DateTime.now().add(Duration(days: context.read<SettingsProvider>().maxPlanningDays));
 
   Widget _buildFieldRow(String label, bool value, ValueChanged<bool?> onChanged, Widget child) {
     return Column(

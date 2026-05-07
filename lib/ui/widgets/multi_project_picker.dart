@@ -1,5 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
-
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,8 +13,11 @@ class MultiProjectPicker extends StatelessWidget {
     return Consumer<ProjectProvider>(
       builder: (context, provider, _) {
         if (provider.projects.isEmpty) {
-          return const Center(
-            child: Text('No projects available', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          return Center(
+            child: Text(
+              'No projects available',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+            ),
           );
         }
 
@@ -38,11 +39,11 @@ class MultiProjectPicker extends StatelessWidget {
                 onChanged(newSelected);
               },
               avatar: CircleAvatar(backgroundColor: p.color, radius: 4),
-              backgroundColor: AppColors.surfaceLight,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
               selectedColor: p.color.withAlpha(50),
               checkmarkColor: p.color,
               labelStyle: TextStyle(
-                color: isSelected ? p.color : AppColors.textSecondary,
+                color: isSelected ? p.color : Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

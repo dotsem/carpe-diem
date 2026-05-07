@@ -36,7 +36,7 @@ class BulkActionMenu extends StatelessWidget {
     return Builder(
       builder: (buttonContext) {
         return IconButton(
-          icon: Icon(Icons.more_horiz, color: hasMultiple ? AppColors.accent : AppColors.text),
+          icon: Icon(Icons.more_horiz, color: hasMultiple ? AppColors.accent : Theme.of(context).colorScheme.onSurface),
           tooltip: 'More actions',
           style: IconButton.styleFrom(
             side: hasMultiple ? const BorderSide(color: AppColors.accent, width: 1.5) : BorderSide.none,
@@ -64,10 +64,10 @@ class BulkActionMenu extends StatelessWidget {
     showMenu<String>(
       context: context,
       position: position,
-      color: AppColors.surface,
+      color: Theme.of(context).colorScheme.surface,
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      items: options.map((opt) => _buildPopupMenuItem(opt)).toList(),
+      items: options.map((opt) => _buildPopupMenuItem(context, opt)).toList(),
     ).then((value) {
       if (value != null) {
         onOptionSelected(value);
@@ -75,18 +75,24 @@ class BulkActionMenu extends StatelessWidget {
     });
   }
 
-  PopupMenuItem<String> _buildPopupMenuItem(BulkActionOption opt) {
+  PopupMenuItem<String> _buildPopupMenuItem(BuildContext context, BulkActionOption opt) {
     final content = Row(
       children: [
         Icon(
           opt.icon,
           size: 20,
-          color: opt.enabled ? (opt.isDestructive ? AppColors.error : null) : AppColors.textSecondary,
+          color: opt.enabled
+              ? (opt.isDestructive ? AppColors.error : null)
+              : Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: 12),
         Text(
           opt.label,
-          style: TextStyle(color: opt.enabled ? (opt.isDestructive ? AppColors.error : null) : AppColors.textSecondary),
+          style: TextStyle(
+            color: opt.enabled
+                ? (opt.isDestructive ? AppColors.error : null)
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

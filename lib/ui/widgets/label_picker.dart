@@ -2,7 +2,6 @@ import 'package:carpe_diem/ui/dialogs/add_label_dialog.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/label_context_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 
 class LabelPicker extends StatelessWidget {
@@ -10,6 +9,7 @@ class LabelPicker extends StatelessWidget {
   final List<String> inheritedLabelIds;
   final ValueChanged<List<String>> onSelected;
   final bool allowAdd;
+  final bool isManageMode;
 
   const LabelPicker({
     super.key,
@@ -17,6 +17,7 @@ class LabelPicker extends StatelessWidget {
     this.inheritedLabelIds = const [],
     required this.onSelected,
     this.allowAdd = true,
+    this.isManageMode = false,
   });
 
   @override
@@ -30,6 +31,23 @@ class LabelPicker extends StatelessWidget {
             ...provider.labels.map((label) {
               final isInherited = inheritedLabelIds.contains(label.id);
               final isSelected = selectedLabelIds.contains(label.id) || isInherited;
+
+              if (isManageMode) {
+                return Builder(
+                  builder: (context) {
+                    return ActionChip(
+                      label: Text(label.name),
+                      avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                      side: BorderSide.none,
+                      onPressed: () {
+                        final RenderBox box = context.findRenderObject() as RenderBox;
+                        showLabelContextMenu(context, label, Offset.zero, box);
+                      },
+                    );
+                  },
+                );
+              }
 
               Widget chip = FilterChip(
                 label: Text(label.name),
@@ -46,10 +64,12 @@ class LabelPicker extends StatelessWidget {
                         onSelected(newIds);
                       },
                 avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
-                backgroundColor: AppColors.surfaceLight,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
                 selectedColor: isInherited ? label.color.withAlpha(100) : label.color.withAlpha(200),
                 checkmarkColor: Colors.white,
-                labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary),
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               );
 
               return Builder(
@@ -71,7 +91,7 @@ class LabelPicker extends StatelessWidget {
                 label: const Text('New Label'),
                 avatar: const Icon(Icons.add, size: 16),
                 onPressed: () => _showAddLabel(context),
-                backgroundColor: AppColors.surfaceLight,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
               ),
           ],
         );

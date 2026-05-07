@@ -1,5 +1,5 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/label.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/chip.dart';
@@ -7,6 +7,7 @@ import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/project.dart';
@@ -58,9 +59,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsProvider>();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: AppConstants.taskCompletionDelaySeconds),
+      duration: Duration(seconds: settings.taskCompletionDelay),
     );
     _checkPending();
   }
@@ -127,6 +129,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     final today = DateTime(now.year, now.month, now.day);
     final isOverdue = widget.task.deadline != null ? widget.task.deadline!.isBefore(today) : widget.isOverdue;
 
+    final settings = context.watch<SettingsProvider>();
+    final isCompact = settings.compactMode;
+    final showDescription = settings.showDescriptionOnCard;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -138,35 +144,46 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
         );
       },
       child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        child: InkWell(
-          focusNode: widget.focusNode,
-          autofocus: widget.autofocus,
-          onTap: widget.onTap,
-          onFocusChange: (focused) {
-            if (focused && mounted) {
-              Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 200), alignment: 0.5);
-            }
-            setState(() => _isFocused = focused);
-          },
-          onSecondaryTapDown: widget.onContextMenu != null
-              ? (details) => widget.onContextMenu!(details.localPosition, context.findRenderObject() as RenderBox)
-              : null,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: _isFocused ? Border.all(color: AppColors.accent, width: 2) : null,
-              gradient: widget.project?.color != null
-                  ? LinearGradient(
-                      colors: [AppColors.surface, widget.project!.color],
-                      begin: Alignment.center,
-                      end: Alignment.centerRight,
-                    )
-                  : null,
-            ),
+        margin: EdgeInsets.symmetric(vertical: isCompact ? 2 : 4),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: _isFocused ? Border.all(color: AppColors.accent, width: 2) : null,
+            gradient: widget.project?.color != null
+                ? LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.surface,
+                      Theme.of(context).colorScheme.surface,
+                      widget.project!.color.themeDependentColor(context).withValues(alpha: 0),
+                      widget.project!.color.themeDependentColor(context).withValues(alpha: 0.4),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    stops: [
+                      0.0,
+                      (1.0 - settings.taskGradientWidth).clamp(0.0, 1.0),
+                      (1.0 - settings.taskGradientWidth).clamp(0.0, 1.0),
+                      1.0,
+                    ],
+                  )
+                : null,
+          ),
+          child: InkWell(
+            focusNode: widget.focusNode,
+            autofocus: widget.autofocus,
+            onTap: widget.onTap,
+            onFocusChange: (focused) {
+              if (focused && mounted) {
+                Scrollable.ensureVisible(context, duration: Duration(milliseconds: 200), alignment: 0.5);
+              }
+              setState(() => _isFocused = focused);
+            },
+            onSecondaryTapDown: widget.onContextMenu != null
+                ? (details) => widget.onContextMenu!(details.localPosition, context.findRenderObject() as RenderBox)
+                : null,
+            borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: isCompact ? 4 : 8),
               child: Stack(
                 children: [
                   Positioned(left: 0, top: 0, bottom: 0, child: PriorityIndicator(priority: widget.task.priority)),
@@ -175,7 +192,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                     child: Row(
                       children: [
                         widget.leading ?? _statusIndicator(),
-                        const SizedBox(width: 8),
+                        SizedBox(width: isCompact ? 6 : 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,22 +200,25 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                               Text(
                                 widget.task.title,
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: isCompact ? 14 : 15,
                                   fontWeight: FontWeight.w500,
                                   decoration: (!widget.selectionMode && showDone && widget.showStrikeThroughOnCompleted)
                                       ? TextDecoration.lineThrough
                                       : null,
-                                  color: (showDone && !widget.selectionMode) ? AppColors.textSecondary : AppColors.text,
+                                  color: (showDone && !widget.selectionMode) ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              if (widget.task.description != null && widget.task.description!.isNotEmpty)
+                              if (showDescription && widget.task.description != null && widget.task.description!.isNotEmpty)
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 2),
+                                  padding: const EdgeInsets.only(top: 1),
                                   child: Text(
                                     widget.task.description!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                      fontSize: isCompact ? 12 : 13,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ),
                               if (widget.project != null ||
@@ -207,7 +227,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   widget.task.deadline != null ||
                                   widget.task.labelIds.isNotEmpty ||
                                   (widget.showScheduleDate && widget.task.scheduledDate != null)) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: isCompact ? 2 : 4),
                                 Wrap(
                                   spacing: 4,
                                   runSpacing: 4,
@@ -267,7 +287,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
             color: isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
             border: Border.all(color: AppColors.accent, width: 2),
           ),
-          child: isPending ? const Icon(Icons.close, size: 14, color: AppColors.accent) : null,
+          child: isPending ? Icon(Icons.close, size: 14, color: AppColors.accent) : null,
         ),
       );
     }
@@ -283,7 +303,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
             color: AppColors.success.withValues(alpha: 0.1),
             border: Border.all(color: AppColors.success, width: 2),
           ),
-          child: const Icon(Icons.play_arrow_rounded, size: 16, color: AppColors.success),
+          child: Icon(Icons.play_arrow_rounded, size: 16, color: AppColors.success),
         ),
       );
     }

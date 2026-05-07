@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 
 class MultiPriorityPicker extends StatelessWidget {
@@ -28,11 +27,11 @@ class MultiPriorityPicker extends StatelessWidget {
             onChanged(newSelected);
           },
           avatar: Icon(p.icon, size: 16, color: isSelected ? Colors.white : p.color),
-          backgroundColor: AppColors.surfaceLight,
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           selectedColor: p.color.withAlpha(50),
           checkmarkColor: p.color,
           labelStyle: TextStyle(
-            color: isSelected ? p.color : AppColors.textSecondary,
+            color: isSelected ? p.color : Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),

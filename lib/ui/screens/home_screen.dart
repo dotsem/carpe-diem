@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/task_layout.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/ui/dialogs/edit_task_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/task_card_context_menu.dart';
@@ -12,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/providers/filter_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
@@ -91,8 +91,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<DateTime> get _days {
+    final settings = context.watch<SettingsProvider>();
     final today = DateTime(_today.year, _today.month, _today.day);
-    return List.generate(AppConstants.maxPlanningDaysAhead + 1, (i) => today.add(Duration(days: i)));
+    return List.generate(settings.maxPlanningDays + 1, (i) => today.add(Duration(days: i)));
   }
 
   void _moveFocus(int delta) {
@@ -124,18 +125,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: {
-        const CharacterActivator('h'): const _PrevDayIntent(),
-        const CharacterActivator('l'): const _NextDayIntent(),
-        const CharacterActivator('n'): const _NewTaskIntent(),
-        const CharacterActivator('v'): const _ToggleLayoutIntent(),
-        const CharacterActivator('f'): const FilterIntent(),
-        const CharacterActivator('H'): const _PrevDayIntent(),
-        const CharacterActivator('L'): const _NextDayIntent(),
-        const CharacterActivator('N'): const _NewTaskIntent(),
-        const CharacterActivator('V'): const _ToggleLayoutIntent(),
-        const CharacterActivator('F'): const FilterIntent(),
-        const CharacterActivator('j'): const MoveNextIntent(),
-        const CharacterActivator('k'): const MovePrevIntent(),
+        const CharacterActivator('h'): _PrevDayIntent(),
+        const CharacterActivator('l'): _NextDayIntent(),
+        const CharacterActivator('n'): _NewTaskIntent(),
+        const CharacterActivator('v'): _ToggleLayoutIntent(),
+        const CharacterActivator('f'): FilterIntent(),
+        const CharacterActivator('H'): _PrevDayIntent(),
+        const CharacterActivator('L'): _NextDayIntent(),
+        const CharacterActivator('N'): _NewTaskIntent(),
+        const CharacterActivator('V'): _ToggleLayoutIntent(),
+        const CharacterActivator('F'): FilterIntent(),
+        const CharacterActivator('j'): MoveNextIntent(),
+        const CharacterActivator('k'): MovePrevIntent(),
       },
       child: Actions(
         actions: {
@@ -180,11 +181,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       tooltip: provider.layoutMode == TaskLayout.list ? 'Kanban view' : 'List view',
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: () => _showAddTask(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Task'),
+                    icon: Icon(Icons.add),
+                    label: Text('Add Task'),
                   ),
                 ],
               ),
@@ -223,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: _days.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          separatorBuilder: (_, _) => SizedBox(width: 8),
           itemBuilder: (context, index) {
             final day = _days[index];
             final isSelected = _normalizedSelected == day;
@@ -237,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 duration: const Duration(milliseconds: 200),
                 width: 52,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent : AppColors.surface,
+                  color: isSelected ? AppColors.accent : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -245,15 +246,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       dayOfWeek,
-                      style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : AppColors.textSecondary),
+                      style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       '${day.day}',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : AppColors.text,
+                        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -270,19 +271,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<TaskProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         final projectProvider = context.read<ProjectProvider>();
         final filter = context.watch<FilterProvider>().filter;
+        final settings = context.watch<SettingsProvider>();
+        final showActiveOnly = settings.showActiveProjectsOnly;
 
         final overdue = provider.overdueTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          if (showActiveOnly && project != null && !project.isActive) return false;
           return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
         final allTasks = provider.tasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          if (showActiveOnly && project != null && !project.isActive) return false;
           return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
@@ -323,14 +328,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle_outline, size: 64, color: AppColors.textSecondary),
-          const SizedBox(height: 16),
+          Icon(Icons.check_circle_outline, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          SizedBox(height: 16),
           Text(
             _isToday ? 'No tasks for today' : 'No tasks scheduled',
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16),
           ),
-          const SizedBox(height: 8),
-          TextButton(onPressed: () => _showAddTask(context), child: const Text('Add your first task')),
+          SizedBox(height: 8),
+          TextButton(onPressed: () => _showAddTask(context), child: Text('Add your first task')),
         ],
       ),
     );
@@ -343,11 +348,11 @@ class _HomeScreenState extends State<HomeScreen> {
         Builder(
           builder: (buttonContext) {
             return IconButton(
-              icon: const Icon(Icons.more_vert, size: 18),
-              color: AppColors.textSecondary,
+              icon: Icon(Icons.more_vert, size: 18),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
-                const localPosition = Offset.zero;
+                final localPosition = Offset.zero;
                 showTaskCardContextMenu(context, task, localPosition, renderBox);
               },
             );

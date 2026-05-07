@@ -173,22 +173,22 @@ class _BacklogScreenState extends State<BacklogScreen> {
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.success,
-                        foregroundColor: AppColors.text,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
                       ),
                       onPressed: () {
                         context.read<TaskProvider>().scheduleTasksForToday(_selectedTaskIds).then((_) {
                           setState(() => _selectedTaskIds.clear());
                         });
                       },
-                      label: const Text('Plan tasks for today'),
-                      icon: const Icon(Icons.calendar_today_rounded),
+                      label: Text('Plan tasks for today'),
+                      icon: Icon(Icons.calendar_today_rounded),
                     ),
                     const SizedBox(width: 8),
                   ],
                   FilledButton.icon(
                     onPressed: () => _showAddTask(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Task'),
+                    icon: Icon(Icons.add),
+                    label: Text('Add Task'),
                   ),
                   const SizedBox(width: 8),
                   _buildHeaderActions(context),
@@ -201,7 +201,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
                   onClearFilter: () => filterProvider.clearFilter(),
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: FuzzySearchBar(
@@ -218,7 +218,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
                   },
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               Expanded(child: _taskList()),
             ],
           ),
@@ -266,7 +266,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
     return Consumer<TaskProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         final projectProvider = context.read<ProjectProvider>();
@@ -295,10 +295,10 @@ class _BacklogScreenState extends State<BacklogScreen> {
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.filter_list_alt, size: 64, color: AppColors.textSecondary),
-                      const SizedBox(height: 16),
-                      const Text('No items found'),
-                      const SizedBox(height: 8),
+                      Icon(Icons.filter_list_alt, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      SizedBox(height: 16),
+                      Text('No items found'),
+                      SizedBox(height: 8),
                       TextButton(
                         onPressed: () {
                           setState(() {
@@ -307,18 +307,18 @@ class _BacklogScreenState extends State<BacklogScreen> {
                           });
                           context.read<FilterProvider>().clearFilter();
                         },
-                        child: const Text('Remove Filters'),
+                        child: Text('Remove Filters'),
                       ),
                     ],
                   )
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.inbox_rounded, size: 64, color: AppColors.textSecondary),
-                      const SizedBox(height: 16),
-                      const Text('No backlog tasks', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
-                      const SizedBox(height: 8),
-                      TextButton(onPressed: () => _showAddTask(context), child: const Text('Add a task')),
+                      Icon(Icons.inbox_rounded, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      SizedBox(height: 16),
+                      Text('No backlog tasks', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16)),
+                      SizedBox(height: 8),
+                      TextButton(onPressed: () => _showAddTask(context), child: Text('Add a task')),
                     ],
                   ),
           );
@@ -399,14 +399,14 @@ class _BacklogScreenState extends State<BacklogScreen> {
           children: [
             ...activeHierarchical.map((n) => buildNode(n)),
             if (completedHierarchical.isNotEmpty) ...[
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Text(
                 'Completed',
                 style: Theme.of(
                   context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               ...completedHierarchical.map((n) => buildNode(n)),
             ],
           ],
@@ -422,11 +422,11 @@ class _BacklogScreenState extends State<BacklogScreen> {
         Builder(
           builder: (buttonContext) {
             return IconButton(
-              icon: const Icon(Icons.more_vert, size: 18),
-              color: AppColors.textSecondary,
+              icon: Icon(Icons.more_vert, size: 18),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               onPressed: () {
                 final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
-                const localPosition = Offset.zero;
+                final localPosition = Offset.zero;
                 showBacklogContextMenu(
                   context,
                   task,
@@ -464,7 +464,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
       context: context,
       builder: (_) => ChangeNotifierProvider.value(
         value: context.read<TaskProvider>(),
-        child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const AddTaskDialog()),
+        child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: AddTaskDialog()),
       ),
     );
   }
@@ -474,7 +474,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
       context: context,
       builder: (_) => ChangeNotifierProvider.value(
         value: context.read<TaskProvider>(),
-        child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const ImportFromMDDialog()),
+        child: ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: ImportFromMDDialog()),
       ),
     );
   }
@@ -528,15 +528,15 @@ class _BacklogScreenState extends State<BacklogScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Deletion'),
+        title: Text('Confirm Deletion'),
         content: Text('Are you sure you want to delete ${_selectedTaskIds.length} tasks?'),
-        backgroundColor: AppColors.surfaceLight,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         titleTextStyle: Theme.of(context).textTheme.titleLarge,
         contentTextStyle: Theme.of(context).textTheme.bodyMedium,
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text('Cancel')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.text),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Theme.of(context).colorScheme.onSurface),
             onPressed: () async {
               await context.read<TaskProvider>().bulkDeleteTasks(_selectedTaskIds);
               if (!mounted) return;
@@ -545,7 +545,7 @@ class _BacklogScreenState extends State<BacklogScreen> {
                 Navigator.of(ctx).pop();
               }
             },
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),

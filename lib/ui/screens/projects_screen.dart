@@ -1,11 +1,11 @@
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/widgets/project_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/widgets/screen_header.dart';
@@ -33,11 +33,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _mainFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _archivedHeaderKey = GlobalKey();
 
   final Map<String, FocusNode> _itemFocusNodes = {};
   final List<String> _orderedItemIds = [];
 
   String _searchQuery = '';
+  bool _temporarilyShowArchived = false;
 
   @override
   void initState() {
@@ -68,6 +71,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     for (final node in _itemFocusNodes.values) {
       node.dispose();
     }
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -193,8 +197,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 actions: [
                   FilledButton.icon(
                     onPressed: () => _showAddProject(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('New Project'),
+                    icon: Icon(Icons.add),
+                    label: Text('New Project'),
                   ),
                 ],
               ),
@@ -221,7 +225,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   onClearFilter: () => filterProvider.clearFilter(),
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               Expanded(child: _projectGrid()),
             ],
           ),
@@ -234,7 +238,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     return Consumer<ProjectProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         final filteredBySearch = provider.projects.where((p) {
@@ -254,15 +258,15 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.folder_open, size: 64, color: AppColors.textSecondary),
-                const SizedBox(height: 16),
+                Icon(Icons.folder_open, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                SizedBox(height: 16),
                 Text(
                   provider.projects.isEmpty ? 'No projects yet' : 'No projects match your filter',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 if (provider.projects.isEmpty)
-                  TextButton(onPressed: () => _showAddProject(context), child: const Text('Create your first project')),
+                  TextButton(onPressed: () => _showAddProject(context), child: Text('Create your first project')),
               ],
             ),
           );
@@ -277,9 +281,13 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           _orderedItemIds.add(p.id);
         }
 
+        final settings = context.watch<SettingsProvider>();
+        final showActiveOnly = settings.showActiveProjectsOnly;
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 32),
           child: ListView(
+            controller: _scrollController,
             scrollDirection: Axis.vertical,
             children: [
               if (activeProjects.isNotEmpty)
@@ -291,18 +299,19 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     return ProjectCard(project: p, focusNode: focusNode, onTap: () => context.go('/projects/${p.id}'));
                   }).toList(),
                 ),
-              if (inactiveProjects.isNotEmpty) ...[
+              if ((!showActiveOnly || _temporarilyShowArchived) && inactiveProjects.isNotEmpty) ...[
                 const SizedBox(height: 48),
                 Text(
                   'ARCHIVED',
+                  key: _archivedHeaderKey,
                   style: TextStyle(
-                    color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Wrap(
                   spacing: 16,
                   runSpacing: 16,
@@ -312,6 +321,24 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   }).toList(),
                 ),
               ],
+              if (showActiveOnly && !_temporarilyShowArchived && inactiveProjects.isNotEmpty)
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() => _temporarilyShowArchived = true);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_archivedHeaderKey.currentContext != null) {
+                          Scrollable.ensureVisible(
+                            _archivedHeaderKey.currentContext!,
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      });
+                    },
+                    child: Text('Show archived projects'),
+                  ),
+                ),
             ],
           ),
         );
@@ -322,8 +349,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   void _showAddProject(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) =>
-          ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: const AddProjectDialog()),
+      builder: (_) => ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: AddProjectDialog()),
     );
   }
 

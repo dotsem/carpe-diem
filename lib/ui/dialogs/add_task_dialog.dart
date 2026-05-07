@@ -1,9 +1,8 @@
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/ui/widgets/project_picker.dart';
 import 'package:carpe_diem/ui/widgets/blocker_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
@@ -40,8 +39,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsProvider>();
     _selectedDate = widget.initialDate;
-    _selectedProjectId = widget.initialProjectId;
+    _selectedProjectId = widget.initialProjectId ?? settings.defaultProjectId;
+    _priority = Priority.fromName(settings.defaultPriority) ?? Priority.none;
+
     if (_selectedProjectId != null) _loadProjectDetails();
 
     _windowTitleProvider = context.read<WindowTitleProvider>();
@@ -62,10 +64,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final tasks = await context.read<TaskProvider>().getTasksForProject(_selectedProjectId!);
     if (!mounted) return;
     final project = context.read<ProjectProvider>().getById(_selectedProjectId!);
+    final settings = context.read<SettingsProvider>();
     setState(() {
       _projectTasks = tasks;
       _inheritedLabelIds = project?.labelIds ?? [];
-      if (AppConstants.inheritProjectDeadline && project?.deadline != null) {
+      if (settings.inheritProjectDeadline && project?.deadline != null) {
         _deadline = project!.deadline;
       }
     });
@@ -79,7 +82,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     super.dispose();
   }
 
-  DateTime get _maxDate => DateTime.now().add(const Duration(days: AppConstants.maxPlanningDaysAhead));
+  DateTime get _maxDate => DateTime.now().add(Duration(days: context.read<SettingsProvider>().maxPlanningDays));
 
   @override
   Widget build(BuildContext context) {
@@ -98,13 +101,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             controller: _titleController,
             autofocus: true,
             decoration: const InputDecoration(hintText: 'Task title'),
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _descController,
             decoration: const InputDecoration(hintText: 'Description (optional)'),
-            style: const TextStyle(color: AppColors.text),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             maxLines: 2,
           ),
           const SizedBox(height: 16),

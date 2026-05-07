@@ -1,5 +1,5 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
 import 'package:carpe_diem/data/models/task_hierarchy_node.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/widgets/blocker_indicator.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
@@ -62,8 +62,9 @@ class _KanbanBoardState extends State<KanbanBoard> {
       }();
 
       final priorityComp = b.priority.index.compareTo(a.priority.index);
+      final settings = context.read<SettingsProvider>();
 
-      if (AppConstants.prioritizeDeadlines) {
+      if (settings.prioritizeDeadlines) {
         if (deadlineComp != 0) return deadlineComp;
         if (priorityComp != 0) return priorityComp;
       } else {
@@ -114,7 +115,7 @@ class _KanbanBoardState extends State<KanbanBoard> {
                   width: responsiveColumnWidth,
                   child: _KanbanColumn(
                     title: 'Todo',
-                    titleColor: AppColors.text,
+                    titleColor: Theme.of(context).colorScheme.onSurface,
                     tasks: todo,
                     acceptedStatus: TaskStatus.todo,
                     projectProvider: widget.projectProvider,
@@ -259,9 +260,9 @@ class _KanbanColumn extends StatelessWidget {
         child: Container(
           width: 24,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.surfaceLight),
+            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
           ),
           child: Column(
             children: [
@@ -300,10 +301,10 @@ class _KanbanColumn extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: isHighlighted ? titleColor.withValues(alpha: 0.1) : AppColors.background,
+        color: isHighlighted ? titleColor.withValues(alpha: 0.1) : Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighlighted ? titleColor.withValues(alpha: 0.4) : AppColors.surfaceLight,
+          color: isHighlighted ? titleColor.withValues(alpha: 0.4) : Theme.of(context).colorScheme.surfaceContainerHigh,
           width: isHighlighted ? 2 : 1,
         ),
       ),
@@ -338,7 +339,7 @@ class _KanbanColumn extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     visualDensity: VisualDensity.compact,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ],
               ],
@@ -350,7 +351,7 @@ class _KanbanColumn extends StatelessWidget {
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text('Drop tasks here', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      child: Text('Drop tasks here', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                     ),
                   )
                 : Builder(
@@ -439,8 +440,8 @@ class _KanbanCard extends StatelessWidget {
         child: Container(
           width: 250,
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-          child: Text(task.title, style: const TextStyle(color: AppColors.text, fontSize: 14)),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(8)),
+          child: Text(task.title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
         ),
       ),
       childWhenDragging: Opacity(

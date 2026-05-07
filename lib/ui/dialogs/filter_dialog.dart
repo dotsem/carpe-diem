@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/ui/dialogs/common/sized_dialog.dart';
@@ -99,9 +98,9 @@ class _FilterDialogState extends State<FilterDialog> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: AppColors.textSecondary,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           fontSize: 12,
           letterSpacing: 0.5,
         ),

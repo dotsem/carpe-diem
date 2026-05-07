@@ -1,7 +1,9 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
+import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +22,32 @@ class ProjectCard extends StatefulWidget {
 class _ProjectCardState extends State<ProjectCard> {
   bool _isFocused = false;
 
+  void _showContextMenu(BuildContext context, Offset globalPosition) {
+    final projectProvider = context.read<ProjectProvider>();
+    final isActive = widget.project.isActive;
+    final RenderBox navigatorBox = Navigator.of(context).context.findRenderObject() as RenderBox;
+    final Offset navigatorOffset = navigatorBox.localToGlobal(Offset.zero);
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        Rect.fromLTWH(globalPosition.dx, globalPosition.dy, 0, 0),
+        navigatorOffset & navigatorBox.size,
+      ),
+      items: [
+        PopupMenuItem(
+          child: ListTile(
+            leading: Icon(isActive ? Icons.archive_outlined : Icons.unarchive_outlined),
+            title: Text(isActive ? 'Archive Project' : 'Restore Project'),
+            contentPadding: EdgeInsets.zero,
+            visualDensity: VisualDensity.compact,
+          ),
+          onTap: () => projectProvider.toggleProjectActive(widget.project),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -37,8 +65,8 @@ class _ProjectCardState extends State<ProjectCard> {
                     ? BorderSide(color: AppColors.accent, width: 2)
                     : BorderSide(
                         color: widget.project.isActive
-                            ? widget.project.priority.color
-                            : AppColors.textSecondary.withValues(alpha: 0.3),
+                            ? widget.project.priority.color.themeDependentColor(context)
+                            : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                       ),
               ),
               child: InkWell(
@@ -49,6 +77,12 @@ class _ProjectCardState extends State<ProjectCard> {
                     Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 200), alignment: 0.5);
                   }
                   setState(() => _isFocused = focused);
+                },
+                onSecondaryTapDown: (details) => _showContextMenu(context, details.globalPosition),
+                onLongPress: () {
+                  final RenderBox box = context.findRenderObject() as RenderBox;
+                  final Offset pos = box.localToGlobal(box.size.center(Offset.zero));
+                  _showContextMenu(context, pos);
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
@@ -61,7 +95,10 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 16,
                             height: 16,
-                            decoration: BoxDecoration(color: widget.project.color, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: widget.project.color.themeDependentColor(context),
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -74,11 +111,14 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(color: AppColors.surfaceLight, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                              shape: BoxShape.circle,
+                            ),
                             child: Icon(
                               widget.project.priority.icon,
                               size: 16,
-                              color: widget.project.priority.color,
+                              color: widget.project.priority.color.themeDependentColor(context),
                               semanticLabel: widget.project.priority.name,
                             ),
                           ),
@@ -90,7 +130,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           widget.project.description!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         ),
                       ],
                       if (widget.project.deadline != null) ...[
@@ -137,11 +177,11 @@ class _DeadlineRow extends StatelessWidget {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return Row(
       children: [
-        const Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
+        Icon(Icons.timer_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 6),
         Text(
           'Deadline: ${months[deadline.month - 1]} ${deadline.day}',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );

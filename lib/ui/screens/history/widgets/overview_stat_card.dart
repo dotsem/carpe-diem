@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class OverviewStatCard extends StatelessWidget {
@@ -22,9 +21,9 @@ class OverviewStatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isLarge ? 24 : 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceLight),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +35,7 @@ class OverviewStatCard extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: isLarge ? 14 : 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -47,7 +46,7 @@ class OverviewStatCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: AppColors.text,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: isLarge ? 32 : 24,
               fontWeight: FontWeight.bold,
             ),

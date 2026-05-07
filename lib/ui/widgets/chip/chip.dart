@@ -1,4 +1,5 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
@@ -44,9 +45,13 @@ class ProjectChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayColor = project!.color.themeDependentColor(context);
     return SmallChip(
-      color: project!.color,
-      child: Text(project!.name, style: TextStyle(fontSize: 11, color: AppColors.text)),
+      color: displayColor,
+      child: Text(
+        project!.name,
+        style: TextStyle(fontSize: 11, color: displayColor.contrastColor),
+      ),
     );
   }
 }
@@ -59,15 +64,15 @@ class DeadlineChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmallChip(
-      color: AppColors.textSecondary.withValues(alpha: 0.1),
+      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.timer_outlined, size: 10, color: AppColors.textSecondary),
+          Icon(Icons.timer_outlined, size: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 4),
           Text(
             'Due: ${months[deadline.month - 1]} ${deadline.day}',
-            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -108,7 +113,7 @@ class PriorityChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return SmallChip(
       color: priority.color.withValues(alpha: 0.2),
-      child: Text(priority.name, style: TextStyle(fontSize: 11, color: AppColors.text)),
+      child: Text(priority.name, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface)),
     );
   }
 }

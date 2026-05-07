@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class ProjectBreakdownItem extends StatelessWidget {
@@ -27,11 +26,11 @@ class ProjectBreakdownItem extends StatelessWidget {
             children: [
               Text(
                 projectName,
-                style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
               ),
               Text(
                 '$taskCount tasks',
-                style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -40,7 +39,10 @@ class ProjectBreakdownItem extends StatelessWidget {
             children: [
               Container(
                 height: 8,
-                decoration: BoxDecoration(color: AppColors.surfaceLight, borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
               FractionallySizedBox(
                 widthFactor: widthFactor,

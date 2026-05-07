@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 
 class PriorityPicker extends StatelessWidget {
@@ -23,8 +22,11 @@ class PriorityPicker extends StatelessWidget {
             onSelected: (_) => onChanged(p),
             avatar: Icon(p.icon, size: 16, color: isSelected ? Colors.white : p.color),
             selectedColor: p.color,
-            backgroundColor: AppColors.surfaceLight,
-            labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textSecondary, fontSize: 13),
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+            labelStyle: TextStyle(
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 13,
+            ),
           ),
         );
       }).toList(),

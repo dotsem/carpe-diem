@@ -1,6 +1,7 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/history_overview.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/pick_date_range_dialog.dart';
@@ -39,6 +40,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsProvider>();
+    final now = DateTime.now();
+
+    switch (settings.defaultStatsPeriod) {
+      case 'daily':
+        _dateRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day),
+          end: DateTime(now.year, now.month, now.day),
+        );
+        break;
+      case 'monthly':
+        _dateRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day).subtract(const Duration(days: 30)),
+          end: now,
+        );
+        break;
+      case 'weekly':
+      default:
+        _dateRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6)),
+          end: now,
+        );
+        break;
+    }
+
     _loadData();
   }
 
@@ -140,14 +166,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ScreenHeader(title: 'History', actions: [_buildDateRangeButton()]),
             FilterBar(filter: _filter, onFilterTap: _showFilterDialog, onClearFilter: _clearFilter),
 
-            const TabBar(
+            TabBar(
               tabs: [
                 Tab(text: 'Items'),
                 Tab(text: 'Overview'),
               ],
               indicatorColor: AppColors.accent,
-              labelColor: AppColors.text,
-              unselectedLabelColor: AppColors.textSecondary,
+              labelColor: Theme.of(context).colorScheme.onSurface,
+              unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
               indicatorSize: TabBarIndicatorSize.tab,
             ),
             Expanded(
@@ -179,9 +205,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.surfaceLight),
+          border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -190,10 +216,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const SizedBox(width: 8),
             Text(
               '${dateFormat.format(_dateRange.start)} - ${dateFormat.format(_dateRange.end)}',
-              style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+            Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ],
         ),
       ),

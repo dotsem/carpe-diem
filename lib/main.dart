@@ -47,16 +47,22 @@ class CarpeDiemApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FilterProvider()),
         ChangeNotifierProvider(create: (_) => WindowTitleProvider()),
       ],
-      child: ToastificationWrapper(
-        child: MaterialApp.router(
-          title: AppConstants.appName,
-          debugShowCheckedModeBanner: true,
-          theme: AppTheme.dark,
-          routerConfig: appRouter,
-          localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          supportedLocales: const [Locale('en', 'US'), Locale('en', 'GB')],
-          locale: AppConstants.firstDayOfWeek == DateTime.monday ? const Locale('en', 'GB') : const Locale('en', 'US'),
-        ),
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          return ToastificationWrapper(
+            child: MaterialApp.router(
+              title: AppConstants.appName,
+              debugShowCheckedModeBanner: true, // Leave this on true!
+              theme: AppTheme.light(null),
+              darkTheme: AppTheme.dark(null),
+              themeMode: settings.themeMode,
+              routerConfig: appRouter,
+              localizationsDelegates: GlobalMaterialLocalizations.delegates,
+              supportedLocales: const [Locale('en', 'US'), Locale('en', 'GB')],
+              locale: settings.firstDayOfWeek == DateTime.monday ? const Locale('en', 'GB') : const Locale('en', 'US'),
+            ),
+          );
+        },
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
-
 import 'package:carpe_diem/data/models/task_filter.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
@@ -24,7 +23,7 @@ class FilterBar extends StatelessWidget {
               avatar: const Icon(Icons.filter_list, size: 16),
               label: const Text('Filter'),
               onPressed: onFilterTap,
-              backgroundColor: AppColors.surfaceLight,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
               side: BorderSide.none,
             ),
           ],
@@ -48,7 +47,7 @@ class FilterBar extends StatelessWidget {
             side: BorderSide(color: AppColors.accent.withAlpha(50)),
           ),
           const SizedBox(width: 8),
-          if (filter.hasPriorityFilter) ...filter.priorities.map((p) => _buildChip(p.label, p.color)),
+          if (filter.hasPriorityFilter) ...filter.priorities.map((p) => _buildChip(context, p.label, p.color)),
           if (filter.hasProjectFilter)
             Consumer<ProjectProvider>(
               builder: (context, provider, _) {
@@ -56,7 +55,7 @@ class FilterBar extends StatelessWidget {
                   children: filter.projectIds.map((id) {
                     final project = provider.getById(id);
                     if (project == null) return const SizedBox.shrink();
-                    return _buildChip(project.name, project.color);
+                    return _buildChip(context, project.name, project.color);
                   }).toList(),
                 );
               },
@@ -70,14 +69,14 @@ class FilterBar extends StatelessWidget {
                       (l) => l.id == id,
                       orElse: () => throw Exception('Label not found'),
                     );
-                    return _buildChip(label.name, label.color);
+                    return _buildChip(context, label.name, label.color);
                   }).toList(),
                 );
               },
             ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+            icon: Icon(Icons.close, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
             onPressed: onClearFilter,
             tooltip: 'Clear filters',
           ),
@@ -86,13 +85,13 @@ class FilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(String label, Color color) {
+  Widget _buildChip(BuildContext context, String label, Color color) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Chip(
         label: Text(label, style: const TextStyle(fontSize: 12)),
         avatar: CircleAvatar(backgroundColor: color, radius: 4),
-        backgroundColor: AppColors.surfaceLight,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
         side: BorderSide.none,
         visualDensity: VisualDensity.compact,
       ),

@@ -82,17 +82,17 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.chevron_left, color: AppColors.textSecondary),
+          icon: Icon(Icons.chevron_left, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: _viewMonth.isAfter(widget.firstDate.startOfMonth())
               ? () => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month - 1))
               : null,
         ),
         Text(
           title,
-          style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16),
         ),
         IconButton(
-          icon: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+          icon: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onPressed: _viewMonth.isBefore(widget.lastDate.startOfMonth())
               ? () => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + 1))
               : null,
@@ -111,7 +111,7 @@ class _RangeDatePickerState extends State<RangeDatePicker> {
               child: Center(
                 child: Text(
                   d,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -204,7 +204,7 @@ class _CalendarDay extends StatelessWidget {
 
     Color? textColor;
     if (!isEnabled) {
-      textColor = AppColors.textSecondary.withValues(alpha: 0.3);
+      textColor = Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
     } else if (isStart || isEnd) {
       textColor = Colors.white;
     } else if (isInRange) {
@@ -212,7 +212,7 @@ class _CalendarDay extends StatelessWidget {
     } else if (isToday) {
       textColor = AppColors.accent;
     } else {
-      textColor = AppColors.text;
+      textColor = Theme.of(context).colorScheme.onSurface;
     }
 
     return MouseRegion(
@@ -223,7 +223,7 @@ class _CalendarDay extends StatelessWidget {
         onTap: isEnabled ? onTap : null,
         child: Container(
           decoration: BoxDecoration(
-            color: _getBackgroundColor(),
+            color: _getBackgroundColor(context),
             borderRadius: _getBorderRadius(),
             border: isToday && !isStart && !isEnd ? Border.all(color: AppColors.accent.withValues(alpha: 0.5)) : null,
           ),
@@ -241,10 +241,10 @@ class _CalendarDay extends StatelessWidget {
     );
   }
 
-  Color? _getBackgroundColor() {
+  Color? _getBackgroundColor(BuildContext context) {
     if (isStart || isEnd) return AppColors.accent;
     if (isInRange) return AppColors.accent.withValues(alpha: 0.2);
-    if (isHovered) return AppColors.surfaceLight;
+    if (isHovered) return Theme.of(context).colorScheme.surfaceContainerHigh;
     return null;
   }
 

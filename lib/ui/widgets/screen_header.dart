@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class ScreenHeader extends StatelessWidget {
@@ -24,16 +23,17 @@ class ScreenHeader extends StatelessWidget {
                 if (title is String)
                   Text(
                     title as String,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(color: AppColors.text, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
                 else if (title is Widget)
                   title as Widget,
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   if (subtitle is String)
-                    Text(subtitle as String, style: const TextStyle(color: AppColors.textSecondary))
+                    Text(subtitle as String, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))
                   else if (subtitle is Widget)
                     subtitle as Widget,
                 ],
