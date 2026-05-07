@@ -268,22 +268,25 @@ class TaskRepository {
     List<dynamic> whereArgs = [TaskStatus.done.index, startStr, endStr];
 
     String filterJoin = '';
+    String filterWhere = '';
     if (filter != null && !filter.isEmpty) {
       filterJoin = '''
-        LEFT JOIN task_labels tl ON t.id = tl.taskId
-        LEFT JOIN project_labels pl ON t.projectId = pl.projectId
+        LEFT JOIN task_labels ftl ON t.id = ftl.taskId
+        LEFT JOIN project_labels fpl ON t.projectId = fpl.projectId
       ''';
       if (filter.hasPriorityFilter) {
-        whereCompleted += ' AND t.priority IN (${filter.priorities.map((p) => p.index).join(',')})';
+        filterWhere += ' AND t.priority IN (${filter.priorities.map((p) => p.index).join(',')})';
       }
       if (filter.hasProjectFilter) {
-        whereCompleted += ' AND t.projectId IN (${filter.projectIds.map((id) => "'$id'").join(',')})';
+        filterWhere += ' AND t.projectId IN (${filter.projectIds.map((id) => "'$id'").join(',')})';
       }
       if (filter.hasLabelFilter) {
-        whereCompleted +=
-            ' AND (tl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}) OR pl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}))';
+        filterWhere +=
+            ' AND (ftl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}) OR fpl.labelId IN (${filter.labelIds.map((id) => "'$id'").join(',')}))';
       }
     }
+
+    whereCompleted += filterWhere;
 
     // 1. Total Completed
     final totalCompletedResult = await db.rawQuery(
@@ -308,7 +311,7 @@ class TaskRepository {
 
     // 4. Total Created in this period
     final totalCreatedResult = await db.rawQuery(
-      'SELECT COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE t.createdAt >= ? AND t.createdAt <= ?',
+      'SELECT COUNT(DISTINCT t.id) as count FROM tasks t $filterJoin WHERE t.createdAt >= ? AND t.createdAt <= ? $filterWhere',
       [startStr, endStr],
     );
     final totalCreated = (totalCreatedResult.first['count'] as num?)?.toInt() ?? 0;
