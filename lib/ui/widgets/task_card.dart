@@ -129,6 +129,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     final today = DateTime(now.year, now.month, now.day);
     final isOverdue = widget.task.deadline != null ? widget.task.deadline!.isBefore(today) : widget.isOverdue;
 
+    final settings = context.watch<SettingsProvider>();
+    final isCompact = settings.compactMode;
+    final showDescription = settings.showDescriptionOnCard;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -140,7 +144,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
         );
       },
       child: Card(
-        margin: EdgeInsets.symmetric(vertical: 4),
+        margin: EdgeInsets.symmetric(vertical: isCompact ? 2 : 4),
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -157,8 +161,8 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                     end: Alignment.centerRight,
                     stops: [
                       0.0,
-                      (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
-                      (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
+                      (1.0 - settings.taskGradientWidth).clamp(0.0, 1.0),
+                      (1.0 - settings.taskGradientWidth).clamp(0.0, 1.0),
                       1.0,
                     ],
                   )
@@ -179,7 +183,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                 : null,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: isCompact ? 4 : 8),
               child: Stack(
                 children: [
                   Positioned(left: 0, top: 0, bottom: 0, child: PriorityIndicator(priority: widget.task.priority)),
@@ -188,7 +192,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                     child: Row(
                       children: [
                         widget.leading ?? _statusIndicator(),
-                        SizedBox(width: 8),
+                        SizedBox(width: isCompact ? 6 : 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +200,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                               Text(
                                 widget.task.title,
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: isCompact ? 14 : 15,
                                   fontWeight: FontWeight.w500,
                                   decoration: (!widget.selectionMode && showDone && widget.showStrikeThroughOnCompleted)
                                       ? TextDecoration.lineThrough
@@ -204,15 +208,15 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   color: (showDone && !widget.selectionMode) ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              if (widget.task.description != null && widget.task.description!.isNotEmpty)
+                              if (showDescription && widget.task.description != null && widget.task.description!.isNotEmpty)
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 2),
+                                  padding: const EdgeInsets.only(top: 1),
                                   child: Text(
                                     widget.task.description!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: isCompact ? 12 : 13,
                                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
@@ -223,7 +227,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   widget.task.deadline != null ||
                                   widget.task.labelIds.isNotEmpty ||
                                   (widget.showScheduleDate && widget.task.scheduledDate != null)) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: isCompact ? 2 : 4),
                                 Wrap(
                                   spacing: 4,
                                   runSpacing: 4,

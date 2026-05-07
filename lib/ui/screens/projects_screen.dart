@@ -1,4 +1,5 @@
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/widgets/filter_bar.dart';
 import 'package:carpe_diem/ui/widgets/project_card.dart';
@@ -32,11 +33,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final FocusNode _mainFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _archivedHeaderKey = GlobalKey();
 
   final Map<String, FocusNode> _itemFocusNodes = {};
   final List<String> _orderedItemIds = [];
 
   String _searchQuery = '';
+  bool _temporarilyShowArchived = false;
 
   @override
   void initState() {
@@ -67,6 +71,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     for (final node in _itemFocusNodes.values) {
       node.dispose();
     }
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -276,9 +281,13 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           _orderedItemIds.add(p.id);
         }
 
+        final settings = context.watch<SettingsProvider>();
+        final showActiveOnly = settings.showActiveProjectsOnly;
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 32),
           child: ListView(
+            controller: _scrollController,
             scrollDirection: Axis.vertical,
             children: [
               if (activeProjects.isNotEmpty)
@@ -290,10 +299,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     return ProjectCard(project: p, focusNode: focusNode, onTap: () => context.go('/projects/${p.id}'));
                   }).toList(),
                 ),
-              if (inactiveProjects.isNotEmpty) ...[
+              if ((!showActiveOnly || _temporarilyShowArchived) && inactiveProjects.isNotEmpty) ...[
                 const SizedBox(height: 48),
                 Text(
                   'ARCHIVED',
+                  key: _archivedHeaderKey,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     fontSize: 12,
@@ -311,6 +321,24 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   }).toList(),
                 ),
               ],
+              if (showActiveOnly && !_temporarilyShowArchived && inactiveProjects.isNotEmpty)
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() => _temporarilyShowArchived = true);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_archivedHeaderKey.currentContext != null) {
+                          Scrollable.ensureVisible(
+                            _archivedHeaderKey.currentContext!,
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      });
+                    },
+                    child: Text('Show archived projects'),
+                  ),
+                ),
             ],
           ),
         );

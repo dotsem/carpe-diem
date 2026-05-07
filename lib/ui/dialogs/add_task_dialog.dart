@@ -39,8 +39,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsProvider>();
     _selectedDate = widget.initialDate;
-    _selectedProjectId = widget.initialProjectId;
+    _selectedProjectId = widget.initialProjectId ?? settings.defaultProjectId;
+    _priority = Priority.fromName(settings.defaultPriority) ?? Priority.none;
+
     if (_selectedProjectId != null) _loadProjectDetails();
 
     _windowTitleProvider = context.read<WindowTitleProvider>();

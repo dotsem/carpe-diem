@@ -167,6 +167,16 @@ class TaskRepository {
     await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<int> cleanupHistory(int days) async {
+    final db = await _db;
+    final threshold = DateTime.now().subtract(Duration(days: days)).toIso8601String();
+    return await db.delete(
+      'tasks',
+      where: 'status = ? AND completedAt < ?',
+      whereArgs: [TaskStatus.done.index, threshold],
+    );
+  }
+
   Future<List<Task>> getCompletedInRange(
     DateTime start,
     DateTime end, {

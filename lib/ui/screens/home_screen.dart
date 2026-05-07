@@ -276,14 +276,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final projectProvider = context.read<ProjectProvider>();
         final filter = context.watch<FilterProvider>().filter;
+        final settings = context.watch<SettingsProvider>();
+        final showActiveOnly = settings.showActiveProjectsOnly;
 
         final overdue = provider.overdueTasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          if (showActiveOnly && project != null && !project.isActive) return false;
           return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 
         final allTasks = provider.tasks.where((t) {
           final project = t.projectId != null ? projectProvider.getById(t.projectId!) : null;
+          if (showActiveOnly && project != null && !project.isActive) return false;
           return filter.applyToTask(t, project?.labelIds ?? []);
         }).toList();
 

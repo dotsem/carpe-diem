@@ -1,5 +1,7 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/core/utils/color_utils.dart';
+import 'package:carpe_diem/data/models/priority.dart';
+import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/ui/widgets/label_picker.dart';
 import 'package:carpe_diem/ui/widgets/screen_header.dart';
@@ -44,6 +46,20 @@ class SettingsScreen extends StatelessWidget {
                         subtitle: 'Use system color palette (if supported)',
                         value: settings.useSystemColor,
                         onChanged: (value) => settings.setUseSystemColor(value),
+                      ),
+                      SettingsSwitchTile(
+                        icon: Icons.compress_outlined,
+                        title: 'Compact Mode',
+                        subtitle: 'Reduce card size and text density',
+                        value: settings.compactMode,
+                        onChanged: (value) => settings.setCompactMode(value),
+                      ),
+                      SettingsSwitchTile(
+                        icon: Icons.description_outlined,
+                        title: 'Show Descriptions',
+                        subtitle: 'Display task descriptions on cards',
+                        value: settings.showDescriptionOnCard,
+                        onChanged: (value) => settings.setShowDescriptionOnCard(value),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -146,6 +162,90 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  SettingsSection(
+                    title: 'Defaults',
+                    children: [
+                      SettingsDropdownTile<String>(
+                        icon: Icons.flag_outlined,
+                        title: 'Default Priority',
+                        subtitle: 'Priority for new tasks',
+                        value: settings.defaultPriority,
+                        items: Priority.values
+                            .map((p) => DropdownMenuItem(value: p.name, child: Text(p.label)))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) settings.setDefaultPriority(value);
+                        },
+                      ),
+                      SettingsDropdownTile<String?>(
+                        icon: Icons.folder_outlined,
+                        title: 'Default Project',
+                        subtitle: 'Project for new tasks',
+                        value: settings.defaultProjectId,
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('None')),
+                          ...context.watch<ProjectProvider>().projects.map(
+                            (p) => DropdownMenuItem(
+                              value: p.id,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(color: p.color, shape: BoxShape.circle),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(p.name),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) => settings.setDefaultProjectId(value),
+                      ),
+                    ],
+                  ),
+                  SettingsSection(
+                    title: 'Data Management',
+                    children: [
+                      SettingsDropdownTile<String>(
+                        icon: Icons.analytics_outlined,
+                        title: 'Default Stats Period',
+                        subtitle: 'Initial timeframe for history and statistics',
+                        value: settings.defaultStatsPeriod,
+                        items: const [
+                          DropdownMenuItem(value: 'daily', child: Text('Daily')),
+                          DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                          DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) settings.setDefaultStatsPeriod(value);
+                        },
+                      ),
+                      SettingsDropdownTile<int>(
+                        icon: Icons.auto_delete_outlined,
+                        title: 'History Retention',
+                        subtitle: 'Automatically delete old completed tasks',
+                        value: settings.historyRetention,
+                        items: const [
+                          DropdownMenuItem(value: 0, child: Text('Keep Forever')),
+                          DropdownMenuItem(value: 30, child: Text('30 Days')),
+                          DropdownMenuItem(value: 90, child: Text('90 Days')),
+                          DropdownMenuItem(value: 365, child: Text('1 Year')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) settings.setHistoryRetention(value);
+                        },
+                      ),
+                      SettingsSwitchTile(
+                        icon: Icons.filter_alt_outlined,
+                        title: 'Hide archived projects',
+                        subtitle: 'They can still be temporarily shown by clicking "Show archived projects" button',
+                        value: settings.showActiveProjectsOnly,
+                        onChanged: (value) => settings.setShowActiveProjectsOnly(value),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -214,12 +314,7 @@ class _InteractiveTaskCardState extends State<_InteractiveTaskCard> {
               ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              stops: [
-                0.0,
-                (1.0 - _currentWidth).clamp(0.0, 1.0),
-                (1.0 - _currentWidth).clamp(0.0, 1.0),
-                1.0,
-              ],
+              stops: [0.0, (1.0 - _currentWidth).clamp(0.0, 1.0), (1.0 - _currentWidth).clamp(0.0, 1.0), 1.0],
             ),
           ),
           child: Padding(

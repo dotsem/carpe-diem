@@ -3,6 +3,7 @@ import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
+import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,32 @@ class ProjectCard extends StatefulWidget {
 
 class _ProjectCardState extends State<ProjectCard> {
   bool _isFocused = false;
+
+  void _showContextMenu(BuildContext context, Offset globalPosition) {
+    final projectProvider = context.read<ProjectProvider>();
+    final isActive = widget.project.isActive;
+    final RenderBox navigatorBox = Navigator.of(context).context.findRenderObject() as RenderBox;
+    final Offset navigatorOffset = navigatorBox.localToGlobal(Offset.zero);
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        Rect.fromLTWH(globalPosition.dx, globalPosition.dy, 0, 0),
+        navigatorOffset & navigatorBox.size,
+      ),
+      items: [
+        PopupMenuItem(
+          child: ListTile(
+            leading: Icon(isActive ? Icons.archive_outlined : Icons.unarchive_outlined),
+            title: Text(isActive ? 'Archive Project' : 'Restore Project'),
+            contentPadding: EdgeInsets.zero,
+            visualDensity: VisualDensity.compact,
+          ),
+          onTap: () => projectProvider.toggleProjectActive(widget.project),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +77,12 @@ class _ProjectCardState extends State<ProjectCard> {
                     Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 200), alignment: 0.5);
                   }
                   setState(() => _isFocused = focused);
+                },
+                onSecondaryTapDown: (details) => _showContextMenu(context, details.globalPosition),
+                onLongPress: () {
+                  final RenderBox box = context.findRenderObject() as RenderBox;
+                  final Offset pos = box.localToGlobal(box.size.center(Offset.zero));
+                  _showContextMenu(context, pos);
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(

@@ -1,6 +1,7 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/history_overview.dart';
 import 'package:carpe_diem/data/models/task_filter.dart';
+import 'package:carpe_diem/providers/settings_provider.dart';
 import 'package:carpe_diem/providers/task_provider.dart';
 import 'package:carpe_diem/ui/dialogs/filter_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/pick_date_range_dialog.dart';
@@ -39,6 +40,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
+    final settings = context.read<SettingsProvider>();
+    final now = DateTime.now();
+
+    switch (settings.defaultStatsPeriod) {
+      case 'daily':
+        _dateRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day),
+          end: DateTime(now.year, now.month, now.day),
+        );
+        break;
+      case 'monthly':
+        _dateRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day).subtract(const Duration(days: 30)),
+          end: now,
+        );
+        break;
+      case 'weekly':
+      default:
+        _dateRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day).subtract(const Duration(days: 6)),
+          end: now,
+        );
+        break;
+    }
+
     _loadData();
   }
 

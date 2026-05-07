@@ -31,4 +31,12 @@ enum Priority {
     Priority.high => Icons.priority_high,
     Priority.urgent => Icons.warning,
   };
+
+  static Priority? fromName(String name) {
+    try {
+      return Priority.values.firstWhere((e) => e.name == name);
+    } catch (_) {
+      return null;
+    }
+  }
 }

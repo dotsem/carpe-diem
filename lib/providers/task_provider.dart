@@ -134,9 +134,21 @@ class TaskProvider extends ChangeNotifier {
     final updated = task.copyWith(
       status: TaskStatus.done,
       scheduledDate: task.scheduledDate ?? _normalizeDate(DateTime.now()),
+      completedAt: DateTime.now(),
     );
     await _repo.update(updated);
+    await cleanupHistory();
     await _refreshAll();
+  }
+
+  Future<void> cleanupHistory() async {
+    final days = _settingsProvider.historyRetention;
+    if (days > 0) {
+      final deletedCount = await _repo.cleanupHistory(days);
+      if (deletedCount > 0) {
+        await _refreshAll();
+      }
+    }
   }
 
   Future<void> toggleComplete(Task task, {bool useTimer = false}) async {
