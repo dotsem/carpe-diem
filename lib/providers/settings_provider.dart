@@ -75,10 +75,6 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> setThemeMode(ThemeMode mode) => _set(AppConstants.keyThemeMode, mode.name);
 
-  // Use System Color
-  bool get useSystemColor => _get(AppConstants.keyUseSystemColor, 'true') == 'true';
-  Future<void> setUseSystemColor(bool value) => _set(AppConstants.keyUseSystemColor, value.toString());
-
   // Task Gradient Width
   double get taskGradientWidth =>
       double.tryParse(_get(AppConstants.keyTaskGradientWidth, AppConstants.defaultTaskGradientWidth.toString())) ??

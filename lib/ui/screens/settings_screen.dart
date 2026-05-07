@@ -41,13 +41,6 @@ class SettingsScreen extends StatelessWidget {
                         },
                       ),
                       SettingsSwitchTile(
-                        icon: Icons.color_lens_outlined,
-                        title: 'Dynamic Colors',
-                        subtitle: 'Use system color palette (if supported)',
-                        value: settings.useSystemColor,
-                        onChanged: (value) => settings.setUseSystemColor(value),
-                      ),
-                      SettingsSwitchTile(
                         icon: Icons.compress_outlined,
                         title: 'Compact Mode',
                         subtitle: 'Reduce card size and text density',

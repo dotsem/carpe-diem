@@ -26,7 +26,6 @@ class AppConstants {
   static const String keyPrioritizeDeadlines = 'prioritize_deadlines';
   static const String keyInheritProjectDeadline = 'inherit_project_deadline';
   static const String keyThemeMode = 'theme_mode';
-  static const String keyUseSystemColor = 'use_system_color';
   static const String keyTaskGradientWidth = 'task_gradient_width';
   static const String keyCompactMode = 'compact_mode';
   static const String keyShowDescriptionOnCard = 'show_description_on_card';
