@@ -1,5 +1,6 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
+import 'package:carpe_diem/ui/dialogs/common/delete_dialog.dart';
 import 'package:carpe_diem/ui/dialogs/edit_label_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/data/models/label.dart';
@@ -23,7 +24,14 @@ void showLabelContextMenu(BuildContext context, Label label, Offset localPositio
         child: const ListTile(leading: Icon(Icons.edit), title: Text('Edit'), dense: true),
       ),
       PopupMenuItem(
-        onTap: () => provider.deleteLabel(label.id),
+        onTap: () => showDialog(
+          context: context,
+          builder: (context) => DeleteDialog(
+            title: 'Delete Label',
+            message: 'Are you sure you want to delete "${label.name}"?',
+            onConfirm: () => provider.deleteLabel(label.id),
+          ),
+        ),
         child: const ListTile(
           leading: Icon(Icons.delete, color: AppColors.error),
           title: Text('Delete', style: TextStyle(color: AppColors.error)),
