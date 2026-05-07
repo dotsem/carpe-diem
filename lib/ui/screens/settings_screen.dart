@@ -53,8 +53,8 @@ class SettingsScreen extends StatelessWidget {
                         subtitle: 'Days ahead to show in the date selector',
                         value: settings.maxPlanningDays.toDouble(),
                         min: 3,
-                        max: 30,
-                        divisions: 27,
+                        max: 14,
+                        divisions: 11,
                         onChanged: (value) => settings.setMaxPlanningDays(value.round()),
                       ),
                       SettingsDropdownTile<int>(

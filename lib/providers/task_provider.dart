@@ -340,9 +340,9 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> scheduleTasksForNextWorkDay(List<String> taskIds) async {
-    DateTime nextMonday = DateTime.now().next(DateTime.monday);
-    await _scheduleTasksForDate(taskIds, nextMonday);
-    ToastUtils.showSuccess('Tasks scheduled for next workday');
+    DateTime nextStartOfWeek = DateTime.now().next(_settingsProvider.firstDayOfWeek);
+    await _scheduleTasksForDate(taskIds, nextStartOfWeek);
+    ToastUtils.showSuccess('Tasks scheduled for next week');
   }
 
   Future<List<Task>> getCompletedTasks(
