@@ -52,7 +52,7 @@ class CarpeDiemApp extends StatelessWidget {
           return ToastificationWrapper(
             child: MaterialApp.router(
               title: AppConstants.appName,
-              debugShowCheckedModeBanner: false,
+              debugShowCheckedModeBanner: true, // Leave this on true!
               theme: AppTheme.light(null),
               darkTheme: AppTheme.dark(null),
               themeMode: settings.themeMode,
