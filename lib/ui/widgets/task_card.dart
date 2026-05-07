@@ -141,43 +141,43 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
       },
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 4),
-        child: InkWell(
-          focusNode: widget.focusNode,
-          autofocus: widget.autofocus,
-          onTap: widget.onTap,
-          onFocusChange: (focused) {
-            if (focused && mounted) {
-              Scrollable.ensureVisible(context, duration: Duration(milliseconds: 200), alignment: 0.5);
-            }
-            setState(() => _isFocused = focused);
-          },
-          onSecondaryTapDown: widget.onContextMenu != null
-              ? (details) => widget.onContextMenu!(details.localPosition, context.findRenderObject() as RenderBox)
-              : null,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: _isFocused ? Border.all(color: AppColors.accent, width: 2) : null,
-              gradient: widget.project?.color != null
-                  ? LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.surface,
-                        Theme.of(context).colorScheme.surface,
-                        widget.project!.color.themeDependentColor(context).withValues(alpha: 0),
-                        widget.project!.color.themeDependentColor(context).withValues(alpha: 0.4),
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      stops: [
-                        0.0,
-                        (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
-                        (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
-                        1.0,
-                      ],
-                    )
-                  : null,
-            ),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: _isFocused ? Border.all(color: AppColors.accent, width: 2) : null,
+            gradient: widget.project?.color != null
+                ? LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.surface,
+                      Theme.of(context).colorScheme.surface,
+                      widget.project!.color.themeDependentColor(context).withValues(alpha: 0),
+                      widget.project!.color.themeDependentColor(context).withValues(alpha: 0.4),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    stops: [
+                      0.0,
+                      (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
+                      (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
+                      1.0,
+                    ],
+                  )
+                : null,
+          ),
+          child: InkWell(
+            focusNode: widget.focusNode,
+            autofocus: widget.autofocus,
+            onTap: widget.onTap,
+            onFocusChange: (focused) {
+              if (focused && mounted) {
+                Scrollable.ensureVisible(context, duration: Duration(milliseconds: 200), alignment: 0.5);
+              }
+              setState(() => _isFocused = focused);
+            },
+            onSecondaryTapDown: widget.onContextMenu != null
+                ? (details) => widget.onContextMenu!(details.localPosition, context.findRenderObject() as RenderBox)
+                : null,
+            borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Stack(
