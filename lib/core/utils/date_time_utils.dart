@@ -1,5 +1,3 @@
-import 'package:carpe_diem/core/constants/app_constants.dart';
-
 /*
 Returns true if the date is Friday, Saturday, or Sunday.
 */

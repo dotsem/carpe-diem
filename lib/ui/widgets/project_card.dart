@@ -38,7 +38,7 @@ class _ProjectCardState extends State<ProjectCard> {
                     : BorderSide(
                         color: widget.project.isActive
                             ? widget.project.priority.color
-                            : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                            : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                       ),
               ),
               child: InkWell(
@@ -74,7 +74,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceVariant, shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, shape: BoxShape.circle),
                             child: Icon(
                               widget.project.priority.icon,
                               size: 16,

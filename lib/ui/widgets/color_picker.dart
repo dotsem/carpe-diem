@@ -32,7 +32,7 @@ class ProjectColorPicker extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: _presetColors.map((color) {
-        final isSelected = color.value == selected.value;
+        final isSelected = color == selected;
         return GestureDetector(
           onTap: () => onChanged(color),
           child: AnimatedContainer(

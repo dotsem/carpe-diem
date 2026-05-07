@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class ProjectBreakdownItem extends StatelessWidget {
@@ -40,7 +39,10 @@ class ProjectBreakdownItem extends StatelessWidget {
             children: [
               Container(
                 height: 8,
-                decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceVariant, borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
               FractionallySizedBox(
                 widthFactor: widthFactor,

@@ -265,7 +265,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
           height: 24,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isPending ? AppColors.accent.withOpacity(0.5) : AppColors.accent.withOpacity(0.3),
+            color: isPending ? AppColors.accent.withValues(alpha: 0.5) : AppColors.accent.withValues(alpha: 0.3),
             border: Border.all(color: AppColors.accent, width: 2),
           ),
           child: isPending ? Icon(Icons.close, size: 14, color: AppColors.accent) : null,
@@ -281,7 +281,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
           height: 24,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.success.withOpacity(0.1),
+            color: AppColors.success.withValues(alpha: 0.1),
             border: Border.all(color: AppColors.success, width: 2),
           ),
           child: Icon(Icons.play_arrow_rounded, size: 16, color: AppColors.success),
@@ -292,7 +292,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
     return Checkbox(
       value: effectiveIsChecked,
       onChanged: (value) => _handleToggle(value),
-      fillColor: isPending ? MaterialStateProperty.all(AppColors.accent.withOpacity(0.5)) : null,
+      fillColor: isPending ? WidgetStateProperty.all(AppColors.accent.withValues(alpha: 0.5)) : null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     );
   }

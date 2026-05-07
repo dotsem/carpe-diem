@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/task_card.dart';
@@ -128,13 +127,16 @@ class _HistoryItemsViewState extends State<HistoryItemsView> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.history, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.1)),
+          Icon(Icons.history, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
-          Text('No completed tasks found', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16)),
+          Text(
+            'No completed tasks found',
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 16),
+          ),
           const SizedBox(height: 8),
           Text(
             'Try selecting a different date range or clearing filters',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5), fontSize: 14),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5), fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ],

@@ -96,7 +96,7 @@ class _AppShellState extends State<AppShell> {
                           icon: Icon(Icons.menu),
                           onPressed: () => Scaffold.of(context).openDrawer(),
                           style: IconButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                            backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
                             foregroundColor: Theme.of(context).colorScheme.onSurface,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
@@ -304,7 +304,7 @@ class _NavItem extends StatelessWidget {
     return Padding(
       padding: outerPadding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected ? AppColors.accent.withOpacity(0.15) : Colors.transparent,
+        color: isSelected ? AppColors.accent.withValues(alpha: 0.15) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
@@ -333,14 +333,14 @@ class _NavItem extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.8),
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       shortcutHint!,
 
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

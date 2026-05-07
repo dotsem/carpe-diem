@@ -262,7 +262,7 @@ class _KanbanColumn extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.surfaceVariant),
+            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
           ),
           child: Column(
             children: [
@@ -270,7 +270,7 @@ class _KanbanColumn extends StatelessWidget {
               SmallChip(
                 padding: EdgeInsets.all(2.0),
                 borderRadius: 10,
-                color: titleColor.withOpacity(0.15),
+                color: titleColor.withValues(alpha: 0.15),
                 child: Text(
                   '${tasks.length}',
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: titleColor),
@@ -286,7 +286,7 @@ class _KanbanColumn extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
-                    color: titleColor.withOpacity(0.7),
+                    color: titleColor.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -301,10 +301,10 @@ class _KanbanColumn extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: isHighlighted ? titleColor.withOpacity(0.1) : Theme.of(context).scaffoldBackgroundColor,
+        color: isHighlighted ? titleColor.withValues(alpha: 0.1) : Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighlighted ? titleColor.withOpacity(0.4) : Theme.of(context).colorScheme.surfaceVariant,
+          color: isHighlighted ? titleColor.withValues(alpha: 0.4) : Theme.of(context).colorScheme.surfaceContainerHighest,
           width: isHighlighted ? 2 : 1,
         ),
       ),
@@ -325,7 +325,7 @@ class _KanbanColumn extends StatelessWidget {
                 const SizedBox(width: 8),
                 SmallChip(
                   borderRadius: 10,
-                  color: titleColor.withOpacity(0.15),
+                  color: titleColor.withValues(alpha: 0.15),
                   child: Text(
                     '${tasks.length}',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: titleColor),

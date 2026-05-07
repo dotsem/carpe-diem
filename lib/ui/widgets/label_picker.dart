@@ -2,7 +2,6 @@ import 'package:carpe_diem/ui/dialogs/add_label_dialog.dart';
 import 'package:carpe_diem/ui/widgets/context_menu/label_context_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
 
 class LabelPicker extends StatelessWidget {
@@ -46,10 +45,12 @@ class LabelPicker extends StatelessWidget {
                         onSelected(newIds);
                       },
                 avatar: CircleAvatar(backgroundColor: label.color, radius: 6),
-                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                 selectedColor: isInherited ? label.color.withAlpha(100) : label.color.withAlpha(200),
                 checkmarkColor: Colors.white,
-                labelStyle: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant),
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               );
 
               return Builder(
@@ -71,7 +72,7 @@ class LabelPicker extends StatelessWidget {
                 label: const Text('New Label'),
                 avatar: const Icon(Icons.add, size: 16),
                 onPressed: () => _showAddLabel(context),
-                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
           ],
         );

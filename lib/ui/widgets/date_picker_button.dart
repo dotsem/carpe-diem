@@ -1,5 +1,4 @@
 import 'package:carpe_diem/ui/dialogs/common/custom_date_picker_dialog.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class DatePickerButton extends StatelessWidget {
@@ -46,14 +45,21 @@ class DatePickerButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceVariant, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Row(
           children: [
             Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(width: 8),
             Text(
               date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
-              style: TextStyle(color: date != null ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                color: date != null
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             if (date != null) ...[
               const Spacer(),

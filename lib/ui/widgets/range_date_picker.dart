@@ -204,7 +204,7 @@ class _CalendarDay extends StatelessWidget {
 
     Color? textColor;
     if (!isEnabled) {
-      textColor = Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3);
+      textColor = Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3);
     } else if (isStart || isEnd) {
       textColor = Colors.white;
     } else if (isInRange) {
@@ -225,7 +225,7 @@ class _CalendarDay extends StatelessWidget {
           decoration: BoxDecoration(
             color: _getBackgroundColor(context),
             borderRadius: _getBorderRadius(),
-            border: isToday && !isStart && !isEnd ? Border.all(color: AppColors.accent.withOpacity(0.5)) : null,
+            border: isToday && !isStart && !isEnd ? Border.all(color: AppColors.accent.withValues(alpha: 0.5)) : null,
           ),
           child: Center(
             child: Text(
@@ -243,8 +243,8 @@ class _CalendarDay extends StatelessWidget {
 
   Color? _getBackgroundColor(BuildContext context) {
     if (isStart || isEnd) return AppColors.accent;
-    if (isInRange) return AppColors.accent.withOpacity(0.2);
-    if (isHovered) return Theme.of(context).colorScheme.surfaceVariant;
+    if (isInRange) return AppColors.accent.withValues(alpha: 0.2);
+    if (isHovered) return Theme.of(context).colorScheme.surfaceContainerHighest;
     return null;
   }
 

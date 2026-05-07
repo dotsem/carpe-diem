@@ -5,7 +5,6 @@ import 'package:carpe_diem/ui/widgets/project_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:carpe_diem/providers/project_provider.dart';
 import 'package:carpe_diem/ui/widgets/fuzzy_search_bar.dart';
 import 'package:carpe_diem/ui/widgets/screen_header.dart';
@@ -296,7 +295,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                 Text(
                   'ARCHIVED',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -322,8 +321,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   void _showAddProject(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) =>
-          ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: AddProjectDialog()),
+      builder: (_) => ChangeNotifierProvider.value(value: context.read<ProjectProvider>(), child: AddProjectDialog()),
     );
   }
 

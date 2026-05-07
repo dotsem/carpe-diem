@@ -1,4 +1,3 @@
-import 'package:carpe_diem/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class TaskHierarchyIndicator extends StatelessWidget {
@@ -16,7 +15,7 @@ class TaskHierarchyIndicator extends StatelessWidget {
       current = Container(
         margin: const EdgeInsets.only(left: 8),
         decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surfaceVariant, width: 2)),
+          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surfaceContainerHigh, width: 2)),
         ),
         padding: const EdgeInsets.only(left: 8),
         child: current,

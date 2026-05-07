@@ -98,9 +98,9 @@ class _ProjectPickerState extends State<ProjectPicker> {
         setState(() => _selectedIndex = 0);
       },
       style: MenuStyle(
-        backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.surfaceVariant),
-        elevation: MaterialStateProperty.all(8),
-        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHighest),
+        elevation: WidgetStateProperty.all(8),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
       ),
       menuChildren: [
         Padding(

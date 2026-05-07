@@ -12,7 +12,7 @@ class OverdueChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmallChip(
-      color: AppColors.error.withOpacity(0.2),
+      color: AppColors.error.withValues(alpha: 0.2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -31,7 +31,7 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmallChip(
-      color: AppColors.accent.withOpacity(0.2),
+      color: AppColors.accent.withValues(alpha: 0.2),
       child: const Text('In Progress', style: TextStyle(fontSize: 11, color: AppColors.accent)),
     );
   }
@@ -59,7 +59,7 @@ class DeadlineChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmallChip(
-      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.1),
+      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -83,7 +83,7 @@ class ScheduledChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmallChip(
-      color: AppColors.info.withOpacity(0.15),
+      color: AppColors.info.withValues(alpha: 0.15),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -107,7 +107,7 @@ class PriorityChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmallChip(
-      color: priority.color.withOpacity(0.2),
+      color: priority.color.withValues(alpha: 0.2),
       child: Text(priority.name, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface)),
     );
   }

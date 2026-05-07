@@ -326,7 +326,7 @@ extension TaskListViewPrivate on TaskListView {
         ),
         const SizedBox(width: 8),
         SmallChip(
-          color: color?.withOpacity(0.15) ?? Colors.transparent,
+          color: color?.withValues(alpha: 0.15) ?? Colors.transparent,
           borderRadius: 10,
           child: Text(
             '${amount ?? tasks.length}',

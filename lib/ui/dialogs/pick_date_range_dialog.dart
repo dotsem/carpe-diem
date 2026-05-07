@@ -95,7 +95,7 @@ class _DateTab extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 2),
         borderRadius: BorderRadius.circular(8),
-        color: isSelected ? AppColors.accent.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceVariant,
+        color: isSelected ? AppColors.accent.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surfaceContainerHighest,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
