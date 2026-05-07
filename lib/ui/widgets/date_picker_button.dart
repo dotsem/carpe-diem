@@ -42,33 +42,25 @@ class DatePickerButton extends StatelessWidget {
         );
         if (picked != null) onChanged(picked);
       },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          prefixIcon: Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          suffixIcon: date != null
+              ? IconButton(
+                  icon: const Icon(Icons.close, size: 16),
+                  onPressed: () => onChanged(null),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
-        child: Row(
-          children: [
-            Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-            const SizedBox(width: 8),
-            Text(
-              date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
-              style: TextStyle(
-                color: date != null
-                    ? Theme.of(context).colorScheme.onSurface
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (date != null) ...[
-              const Spacer(),
-              GestureDetector(
-                onTap: () => onChanged(null),
-                child: Icon(Icons.close, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ],
+        child: Text(
+          date != null ? '${date!.day}/${date!.month}/${date!.year}' : label,
+          style: TextStyle(
+            color: date != null ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

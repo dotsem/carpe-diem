@@ -47,6 +47,11 @@ class AppTheme {
           brightness: Brightness.light,
           primary: AppColors.accent,
           surface: AppColors.surfaceLight,
+          surfaceContainer: const Color(0xFFF8F8F8),
+          surfaceContainerHigh: const Color(0xFFF0F0F0),
+          surfaceContainerHighest: const Color(0xFFE8E8E8),
+          outline: const Color(0xFFD0D0D0),
+          outlineVariant: const Color(0xFFE8E8E8),
           error: AppColors.error,
         );
 
@@ -66,6 +71,11 @@ class AppTheme {
           brightness: Brightness.dark,
           primary: AppColors.accent,
           surface: AppColors.surfaceDark,
+          surfaceContainer: const Color(0xFF2C2C2C),
+          surfaceContainerHigh: const Color(0xFF333333),
+          surfaceContainerHighest: const Color(0xFF3D3D3D),
+          outline: const Color(0xFF4A4A4A),
+          outlineVariant: const Color(0xFF3D3D3D),
           error: AppColors.error,
         );
 
@@ -101,8 +111,19 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceLightColor,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        fillColor: isDark ? AppColors.surfaceLightDark : const Color(0xFFFBFBFB),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       dividerTheme: DividerThemeData(color: surfaceLightColor, thickness: 1, space: 1),
