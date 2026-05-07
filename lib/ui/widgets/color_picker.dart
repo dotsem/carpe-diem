@@ -1,3 +1,4 @@
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
 
@@ -32,7 +33,9 @@ class ProjectColorPicker extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: _presetColors.map((color) {
-        final isSelected = color == selected;
+        final isSelected = color.toARGB32() == selected.toARGB32();
+        final displayColor = color.themeDependentColor(context);
+
         return GestureDetector(
           onTap: () => onChanged(color),
           child: AnimatedContainer(
@@ -40,11 +43,11 @@ class ProjectColorPicker extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color,
+              color: displayColor,
               shape: BoxShape.circle,
               border: isSelected ? Border.all(color: Theme.of(context).colorScheme.onSurface, width: 2.5) : null,
             ),
-            child: isSelected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+            child: isSelected ? Icon(Icons.check, size: 16, color: displayColor.contrastColor) : null,
           ),
         );
       }).toList(),

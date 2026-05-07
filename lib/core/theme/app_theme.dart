@@ -30,6 +30,12 @@ class AppColors {
   static const priorityMedium = Color(0xFFFFA726);
   static const priorityLow = Color(0xFF66BB6A);
   static const priorityNone = Color(0xFF757575);
+
+  // Helper getters (backwards compatibility or default)
+  static Color get background => backgroundDark;
+  static Color get surface => surfaceDark;
+  static Color get text => textDark;
+  static Color get textSecondary => textSecondaryDark;
 }
 
 class AppTheme {
@@ -53,7 +59,7 @@ class AppTheme {
   }
 
   static ThemeData dark(ColorScheme? dynamicColorScheme) {
-    var colorScheme =
+    final colorScheme =
         dynamicColorScheme ??
         ColorScheme.fromSeed(
           seedColor: AppColors.accent,
@@ -62,14 +68,6 @@ class AppTheme {
           surface: AppColors.surfaceDark,
           error: AppColors.error,
         );
-
-    // Ensure primary actions always have white text for contrast on accent/primary
-    colorScheme = colorScheme.copyWith(
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onTertiary: Colors.white,
-      outline: AppColors.surfaceLightDark,
-    );
 
     final base = ThemeData.dark(useMaterial3: true);
     final textTheme = GoogleFonts.interTextTheme(
@@ -85,11 +83,7 @@ class AppTheme {
     final surfaceLightColor = isDark ? AppColors.surfaceLightDark : AppColors.surfaceLightLight;
 
     return base.copyWith(
-      colorScheme: colorScheme.copyWith(
-        outline: isDark ? AppColors.surfaceLightDark : AppColors.surfaceLightLight,
-        surfaceContainerHigh: surfaceLightColor,
-        onSurfaceVariant: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-      ),
+      colorScheme: colorScheme,
       textTheme: textTheme,
       scaffoldBackgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBarTheme: AppBarTheme(
@@ -105,27 +99,10 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: EdgeInsets.zero,
       ),
-      dialogTheme: DialogThemeData(
-        backgroundColor: surfaceColor,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        titleTextStyle: textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: isDark ? AppColors.textDark : AppColors.textLight,
-        ),
-        contentTextStyle: textTheme.bodyMedium?.copyWith(color: isDark ? AppColors.textDark : AppColors.textLight),
-      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceLightColor,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
-        ),
-        labelStyle: TextStyle(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-        hintStyle: TextStyle(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       dividerTheme: DividerThemeData(color: surfaceLightColor, thickness: 1, space: 1),
@@ -135,10 +112,4 @@ class AppTheme {
       ),
     );
   }
-}
-
-extension AppThemeX on BuildContext {
-  ColorScheme get colorScheme => Theme.of(this).colorScheme;
-  TextTheme get textTheme => Theme.of(this).textTheme;
-  Color get surfaceContainer => colorScheme.surfaceContainerHigh;
 }

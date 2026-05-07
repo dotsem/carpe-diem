@@ -1,4 +1,5 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:carpe_diem/data/models/priority.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/ui/widgets/chip/small_chip.dart';
@@ -44,9 +45,13 @@ class ProjectChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayColor = project!.color.themeDependentColor(context);
     return SmallChip(
-      color: project!.color,
-      child: Text(project!.name, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface)),
+      color: displayColor,
+      child: Text(
+        project!.name,
+        style: TextStyle(fontSize: 11, color: displayColor.contrastColor),
+      ),
     );
   }
 }

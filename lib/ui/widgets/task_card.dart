@@ -7,6 +7,7 @@ import 'package:carpe_diem/ui/widgets/chip/label_chip.dart';
 import 'package:carpe_diem/ui/widgets/priority_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:carpe_diem/data/models/task.dart';
 import 'package:carpe_diem/data/models/project.dart';
@@ -160,7 +161,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
               border: _isFocused ? Border.all(color: AppColors.accent, width: 2) : null,
               gradient: widget.project?.color != null
                   ? LinearGradient(
-                      colors: [Theme.of(context).colorScheme.surface, widget.project!.color],
+                      colors: [
+                        Theme.of(context).colorScheme.surface,
+                        widget.project!.color.themeDependentColor(context),
+                      ],
                       begin: Alignment.center,
                       end: Alignment.centerRight,
                     )
@@ -189,7 +193,9 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   decoration: (!widget.selectionMode && showDone && widget.showStrikeThroughOnCompleted)
                                       ? TextDecoration.lineThrough
                                       : null,
-                                  color: (showDone && !widget.selectionMode) ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurface,
+                                  color: (showDone && !widget.selectionMode)
+                                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                                      : Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               if (widget.task.description != null && widget.task.description!.isNotEmpty)
@@ -199,7 +205,10 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                     widget.task.description!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ),
                               if (widget.project != null ||

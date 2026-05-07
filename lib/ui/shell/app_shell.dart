@@ -1,3 +1,4 @@
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:carpe_diem/ui/dialogs/add_project_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -236,7 +237,7 @@ class _SideNav extends StatelessWidget {
                                 final isSelected = currentPath.startsWith('/projects/${project.id}');
                                 return _NavItem(
                                   icon: Icons.circle,
-                                  iconColor: project.color,
+                                  iconColor: project.color.themeDependentColor(context),
                                   iconSize: 12,
                                   label: project.name,
                                   isSelected: isSelected,

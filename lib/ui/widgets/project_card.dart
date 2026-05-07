@@ -1,4 +1,5 @@
 import 'package:carpe_diem/core/theme/app_theme.dart';
+import 'package:carpe_diem/core/utils/color_utils.dart';
 import 'package:carpe_diem/data/models/project.dart';
 import 'package:carpe_diem/data/models/label.dart';
 import 'package:carpe_diem/providers/label_provider.dart';
@@ -37,7 +38,7 @@ class _ProjectCardState extends State<ProjectCard> {
                     ? BorderSide(color: AppColors.accent, width: 2)
                     : BorderSide(
                         color: widget.project.isActive
-                            ? widget.project.priority.color
+                            ? widget.project.priority.color.themeDependentColor(context)
                             : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                       ),
               ),
@@ -61,7 +62,10 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 16,
                             height: 16,
-                            decoration: BoxDecoration(color: widget.project.color, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: widget.project.color.themeDependentColor(context),
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -74,11 +78,14 @@ class _ProjectCardState extends State<ProjectCard> {
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHigh, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                              shape: BoxShape.circle,
+                            ),
                             child: Icon(
                               widget.project.priority.icon,
                               size: 16,
-                              color: widget.project.priority.color,
+                              color: widget.project.priority.color.themeDependentColor(context),
                               semanticLabel: widget.project.priority.name,
                             ),
                           ),
