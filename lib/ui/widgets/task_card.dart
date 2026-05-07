@@ -163,10 +163,18 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                   ? LinearGradient(
                       colors: [
                         Theme.of(context).colorScheme.surface,
-                        widget.project!.color.themeDependentColor(context),
+                        Theme.of(context).colorScheme.surface,
+                        widget.project!.color.themeDependentColor(context).withValues(alpha: 0),
+                        widget.project!.color.themeDependentColor(context).withValues(alpha: 0.4),
                       ],
-                      begin: Alignment.center,
+                      begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
+                      stops: [
+                        0.0,
+                        (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
+                        (1.0 - context.watch<SettingsProvider>().taskGradientWidth).clamp(0.0, 1.0),
+                        1.0,
+                      ],
                     )
                   : null,
             ),
@@ -193,9 +201,7 @@ class _TaskCardState extends State<TaskCard> with SingleTickerProviderStateMixin
                                   decoration: (!widget.selectionMode && showDone && widget.showStrikeThroughOnCompleted)
                                       ? TextDecoration.lineThrough
                                       : null,
-                                  color: (showDone && !widget.selectionMode)
-                                      ? Theme.of(context).colorScheme.onSurfaceVariant
-                                      : Theme.of(context).colorScheme.onSurface,
+                                  color: (showDone && !widget.selectionMode) ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               if (widget.task.description != null && widget.task.description!.isNotEmpty)

@@ -9,6 +9,7 @@ class AppConstants {
   static const bool inheritParentDeadline = true;
   static const bool prioritizeDeadlines = true;
   static const bool inheritProjectDeadline = false;
+  static const double defaultTaskGradientWidth = 0.5;
 
   // Setting keys
   static const String keyMaxPlanningDays = 'max_planning_days';
@@ -19,4 +20,5 @@ class AppConstants {
   static const String keyInheritProjectDeadline = 'inherit_project_deadline';
   static const String keyThemeMode = 'theme_mode';
   static const String keyUseSystemColor = 'use_system_color';
+  static const String keyTaskGradientWidth = 'task_gradient_width';
 }

@@ -69,4 +69,8 @@ class SettingsProvider extends ChangeNotifier {
   // Use System Color
   bool get useSystemColor => _get(AppConstants.keyUseSystemColor, 'true') == 'true';
   Future<void> setUseSystemColor(bool value) => _set(AppConstants.keyUseSystemColor, value.toString());
+
+  // Task Gradient Width
+  double get taskGradientWidth => double.tryParse(_get(AppConstants.keyTaskGradientWidth, AppConstants.defaultTaskGradientWidth.toString())) ?? AppConstants.defaultTaskGradientWidth;
+  Future<void> setTaskGradientWidth(double value) => _set(AppConstants.keyTaskGradientWidth, value.toString());
 }
