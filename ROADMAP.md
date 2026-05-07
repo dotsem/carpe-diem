@@ -28,8 +28,8 @@ The focus of this version is adding history and statistics. It will also include
 
 ### Personalization
 
-- [⏳] **Dynamic Theming:** Manual toggle and system-based dark mode.
-- [⏳] **Personalization:** More customizability of the app.
+- [✅] **Dynamic Theming:** Manual toggle and system-based dark mode.
+- [✅] **Personalization:** More customizability of the app.
 
 ---
 
